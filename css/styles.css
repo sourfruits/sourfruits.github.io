@@ -1,0 +1,219 @@
+:root {
+  --bg: #fbfbf9;
+  --surface: #ffffff;
+  --ink: #1c1c1a;
+  --muted: #76766e;
+  --line: #e8e8e2;
+  --accent: #c7d92d;       /* sour citrus green-yellow */
+  --accent-ink: #4a5400;
+  --radius: 14px;
+  --maxw: 1040px;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 20px 64px;
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  text-align: center;
+  padding: 56px 20px 40px;
+}
+
+.site-title {
+  display: inline-block;
+  font-size: 2.4rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.site-title::after {
+  content: "";
+  display: block;
+  width: 44px;
+  height: 5px;
+  margin: 10px auto 0;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.site-tagline {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
+/* ---------- Grid ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 720px) {
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+}
+
+.tile {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--line);
+  text-decoration: none;
+}
+
+.tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.tile:hover img { transform: scale(1.06); }
+
+.tile-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+  color: #fff;
+  background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0) 55%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.tile:hover .tile-overlay,
+.tile:focus-visible .tile-overlay { opacity: 1; }
+
+.tile-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.tile-date {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* ---------- Post view ---------- */
+.back-link {
+  display: inline-block;
+  margin: 8px 0 24px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+.back-link:hover { color: var(--ink); }
+
+.post {
+  max-width: 760px;
+  margin: 0 auto;
+}
+
+.post-image {
+  width: 100%;
+  border-radius: var(--radius);
+  display: block;
+  background: var(--line);
+}
+
+.post-title {
+  font-size: 2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 28px 0 6px;
+}
+
+.post-date {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0 0 16px;
+}
+
+.post-body p {
+  font-size: 1.08rem;
+  margin: 0 0 1.1em;
+}
+
+/* ---------- Tags ---------- */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-ink);
+  background: var(--accent);
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+/* Tags are links on the post page — keep the pill look, add a hover state. */
+a.tag {
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+a.tag:hover,
+a.tag:focus-visible {
+  background: var(--accent-ink);
+  color: #fff;
+}
+
+/* Heading on the tag listing page (tag.html). */
+.tag-heading {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 8px 0 28px;
+}
+.tag-heading .tag-name { color: var(--accent-ink); }
+
+/* ---------- Misc ---------- */
+.status {
+  text-align: center;
+  color: var(--muted);
+  padding: 32px 0;
+}
+.status.error { color: #b00020; }
+.status:empty { display: none; }
+
+.site-footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85rem;
+  padding: 32px 20px 48px;
+  border-top: 1px solid var(--line);
+  margin-top: 24px;
+}
