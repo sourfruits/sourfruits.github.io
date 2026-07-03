@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sourfruits</title>
+  <title>Search — Sourfruits</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -21,16 +21,27 @@
   <main>
     <a class="back-link" href="index.html">&larr; All posts</a>
 
-    <article id="post" class="post">
-      <!-- Post content is injected here by js/post.js -->
-    </article>
-    <p id="status" class="status">Loading post…</p>
+    <form class="search-form" action="search.html" method="get" role="search">
+      <input type="search" id="search-input" name="q" placeholder="Search posts, tags, and text…" aria-label="Search posts" autocomplete="off">
+      <button type="submit" class="search-submit">Search</button>
+    </form>
+
+    <h1 id="search-heading" class="search-heading"></h1>
+
+    <ul id="results" class="search-results" aria-label="Search results">
+      <!-- Result cards are injected here by js/search.js -->
+    </ul>
+    <p id="status" class="status"></p>
+    <nav id="pagination" class="pagination" aria-label="Pagination">
+      <!-- Page links are injected here by js/search.js -->
+    </nav>
   </main>
 
   <footer class="site-footer">
     <p>&copy; <span id="year"></span> Sourfruits</p>
   </footer>
 
-  <script src="js/post.js"></script>
+  <script src="js/pagination.js"></script>
+  <script src="js/search.js"></script>
 </body>
 </html>

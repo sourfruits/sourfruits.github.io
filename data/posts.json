@@ -1,4 +1,13 @@
 [
+   {
+  "id": "from-russia-with-love",
+  "title": "From Russia with Love",
+  "date": "2026-06-29",
+  "tags": ["movie"],
+  "thumb": "images/from-russia-with-love.jpg",
+  "image": "images/from-russia-with-love.jpg",
+  "content": "My first post! Trying this experiment out in a dual effort to 1) learn Claude Code and Github for my internship, and 2) document my thoughts on books, movies, and music. Very exciting! Since I don't have anything prepared, I'll paste this Letterboxd review from the last movie I watched. \n\nFrom Russia with Love has Tintin-esque qualities — it’s a flamboyant and whimsical international romp filled with quirky gadgets and larger-than-life characters, from a chess-playing spymaster to Bond’s affable ally Kerim Bey. At the same time, the colorful constructed sets and vivid film stock, which create visual clarity in a way not unlike Hergé’s ligne claire, belie a real, sinister sense of danger rooted in the Cold War tensions of the time. Terence Young blends these tones together, flipping from beautiful location shooting into visceral claustrophobic fights, then back into campy one-liners (“she’s had her kicks”) in a way that never feels jarring."
+  },
   {
     "id": "morning-lemons",
     "title": "Morning Lemons",
@@ -43,6 +52,33 @@
     "thumb": "https://picsum.photos/id/225/600/600",
     "image": "https://picsum.photos/id/225/1400/1400",
     "content": "I went a little far this week. Pickled onions, pickled carrots, pickled a single lonely cucumber that didn't make it into anything else.\n\nThe fridge now sounds like a tiny brine orchestra every time I open the door. I have no regrets."
+  },
+  {
+    "id": "first-cherries",
+    "title": "First Cherries",
+    "date": "2026-04-27",
+    "tags": ["fruit", "red", "spring"],
+    "thumb": "https://picsum.photos/id/1084/600/600",
+    "image": "https://picsum.photos/id/1084/1400/1400",
+    "content": "The first sour cherries of the season showed up at the corner stand. The good kind, the ones that make your jaw clench for a second before you reach for another.\n\nI bought far too many and ate them on the walk home, leaving a trail of stems behind me like a very small, very tart breadcrumb path."
+  },
+  {
+    "id": "first-cherries",
+    "title": "First Cherries",
+    "date": "2026-04-27",
+    "tags": ["fruit", "red", "spring"],
+    "thumb": "https://picsum.photos/id/1084/600/600",
+    "image": "https://picsum.photos/id/1084/1400/1400",
+    "content": "The first sour cherries of the season showed up at the corner stand. The good kind, the ones that make your jaw clench for a second before you reach for another.\n\nI bought far too many and ate them on the walk home, leaving a trail of stems behind me like a very small, very tart breadcrumb path."
+  },
+  {
+    "id": "first-cherries",
+    "title": "First Cherries",
+    "date": "2026-04-27",
+    "tags": ["fruit", "red", "spring"],
+    "thumb": "https://picsum.photos/id/1084/600/600",
+    "image": "https://picsum.photos/id/1084/1400/1400",
+    "content": "The first sour cherries of the season showed up at the corner stand. The good kind, the ones that make your jaw clench for a second before you reach for another.\n\nI bought far too many and ate them on the walk home, leaving a trail of stems behind me like a very small, very tart breadcrumb path."
   },
   {
     "id": "first-cherries",

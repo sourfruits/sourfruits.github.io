@@ -31,8 +31,31 @@ main {
 
 /* ---------- Header ---------- */
 .site-header {
+  position: relative;
   text-align: center;
   padding: 56px 20px 40px;
+}
+
+.header-search {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.header-search:hover,
+.header-search:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
 }
 
 .site-title {
@@ -119,6 +142,54 @@ main {
   margin-top: 2px;
 }
 
+/* ---------- Pagination ---------- */
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+}
+.pagination:empty { display: none; }
+
+.page-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+a.page-link:hover,
+a.page-link:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.page-link.is-current {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  cursor: default;
+}
+
+.page-link.is-disabled {
+  color: var(--muted);
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* ---------- Post view ---------- */
 .back-link {
   display: inline-block;
@@ -199,6 +270,136 @@ a.tag:focus-visible {
   margin: 8px 0 28px;
 }
 .tag-heading .tag-name { color: var(--accent-ink); }
+
+/* ---------- Search ---------- */
+.search-form {
+  display: flex;
+  gap: 10px;
+  max-width: 760px;
+  margin: 0 auto 28px;
+}
+
+.search-form #search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 16px;
+  font-size: 1rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.search-form #search-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(199, 217, 45, 0.35);
+}
+
+.search-submit {
+  padding: 0 22px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.search-submit:hover,
+.search-submit:focus-visible {
+  background: var(--accent-ink);
+  border-color: var(--accent-ink);
+  color: #fff;
+}
+
+.search-heading {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 8px 0 28px;
+}
+.search-heading .query-term { color: var(--accent-ink); }
+
+.search-results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.result-card {
+  display: flex;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.result-card:hover,
+.result-card:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.result-thumb {
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+  object-fit: cover;
+  background: var(--line);
+  display: block;
+}
+
+.result-body {
+  padding: 14px 16px;
+  min-width: 0;
+}
+
+.result-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 2px;
+}
+
+.result-date {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 8px;
+}
+
+.result-tags {
+  margin: 0 0 8px;
+}
+
+.result-snippet {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.hl {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+
+@media (max-width: 520px) {
+  .result-thumb { width: 88px; height: 88px; }
+  .result-title { font-size: 1.05rem; }
+}
 
 /* ---------- Misc ---------- */
 .status {
