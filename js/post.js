@@ -4,20 +4,9 @@ const article = document.getElementById("post");
 const status = document.getElementById("status");
 
 document.getElementById("year").textContent = new Date().getFullYear();
+initBackButton();
 
 const id = new URLSearchParams(window.location.search).get("id");
-
-function formatDate(iso) {
-  const d = new Date(iso + "T00:00:00");
-  if (isNaN(d)) return iso;
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
-}
-
-function escapeHTML(str) {
-  return String(str).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[c]));
-}
 
 // Split the content on blank lines into separate <p> paragraphs.
 function renderParagraphs(text) {
@@ -37,7 +26,7 @@ function renderPost(post) {
   article.innerHTML = `
     <img class="post-image" src="${escapeHTML(post.image || post.thumb)}" alt="${escapeHTML(post.title)}">
     <h1 class="post-title">${escapeHTML(post.title)}</h1>
-    <p class="post-date">${escapeHTML(formatDate(post.date))}</p>
+    <p class="post-date">${escapeHTML(formatDate(post.date, "long"))}</p>
     ${tags}
     <div class="post-body">${renderParagraphs(post.content)}</div>
   `;
@@ -48,11 +37,7 @@ if (!id) {
   status.textContent = "No post specified.";
   status.classList.add("error");
 } else {
-  fetch("data/posts.json")
-    .then((res) => {
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return res.json();
-    })
+  fetchPosts()
     .then((posts) => {
       const post = posts.find((p) => p.id === id);
       if (!post) {

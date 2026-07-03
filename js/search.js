@@ -10,23 +10,12 @@ const input = document.getElementById("search-input");
 const PER_PAGE = 10;
 
 document.getElementById("year").textContent = new Date().getFullYear();
+initBackButton();
 
 const query = (new URLSearchParams(window.location.search).get("q") || "").trim();
 
 // Keep the search box populated with the active query.
 input.value = query;
-
-function formatDate(iso) {
-  const d = new Date(iso + "T00:00:00");
-  if (isNaN(d)) return iso;
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-}
-
-function escapeHTML(str) {
-  return String(str).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[c]));
-}
 
 // Build an href for a given page number, keeping the query and page 1 clean.
 function pageHref(page) {
@@ -128,11 +117,7 @@ if (!query) {
 } else {
   document.title = `“${query}” — Sourfruits`;
 
-  fetch("data/posts.json")
-    .then((res) => {
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return res.json();
-    })
+  fetchPosts()
     .then((posts) => {
       const found = posts.filter((p) => matches(p, query));
       setHeading(found.length);

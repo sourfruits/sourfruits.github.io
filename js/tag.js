@@ -8,20 +8,9 @@ const pagination = document.getElementById("pagination");
 const PER_PAGE = 9;
 
 document.getElementById("year").textContent = new Date().getFullYear();
+initBackButton();
 
 const tag = new URLSearchParams(window.location.search).get("tag");
-
-function formatDate(iso) {
-  const d = new Date(iso + "T00:00:00");
-  if (isNaN(d)) return iso;
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-}
-
-function escapeHTML(str) {
-  return String(str).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[c]));
-}
 
 // Build an href for a given page number, keeping the tag and page 1 clean.
 function pageHref(page) {
@@ -59,11 +48,7 @@ if (!tag) {
   document.title = `#${tag} — Sourfruits`;
   heading.innerHTML = `Posts tagged &ldquo;<span class="tag-name">${escapeHTML(tag)}</span>&rdquo;`;
 
-  fetch("data/posts.json")
-    .then((res) => {
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      return res.json();
-    })
+  fetchPosts()
     .then((posts) => {
       const matches = posts.filter((p) => Array.isArray(p.tags) && p.tags.includes(tag));
       renderGrid(matches);

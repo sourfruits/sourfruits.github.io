@@ -9,19 +9,6 @@ const PER_PAGE = 9;
 // Stamp the current year in the footer.
 document.getElementById("year").textContent = new Date().getFullYear();
 
-// Turn an ISO date (YYYY-MM-DD) into something friendlier, e.g. "Jun 21, 2026".
-function formatDate(iso) {
-  const d = new Date(iso + "T00:00:00");
-  if (isNaN(d)) return iso;
-  return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-}
-
-function escapeHTML(str) {
-  return String(str).replace(/[&<>"']/g, (c) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[c]));
-}
-
 // Build an href for a given page number, keeping page 1 clean (no ?page=).
 function pageHref(page) {
   return page <= 1 ? "index.html" : `index.html?page=${page}`;
@@ -52,11 +39,7 @@ function renderGrid(posts) {
   status.textContent = posts.length ? "" : "No posts yet.";
 }
 
-fetch("data/posts.json")
-  .then((res) => {
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    return res.json();
-  })
+fetchPosts()
   .then(renderGrid)
   .catch((err) => {
     status.textContent = "Couldn't load posts. If you opened this file directly, run a local server (see the README).";

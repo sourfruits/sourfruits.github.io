@@ -7,16 +7,8 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <header class="site-header">
-    <a class="site-title" href="index.html">Sourfruits</a>
-    <p class="site-tagline">A blog about life's tart little pleasures</p>
-    <a class="header-search" href="search.html" aria-label="Search">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <circle cx="11" cy="11" r="7"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-    </a>
-  </header>
+  <!-- Header markup is injected by js/header.js -->
+  <header class="site-header"></header>
 
   <main>
     <a class="back-link" href="index.html">&larr; All posts</a>
@@ -31,6 +23,8 @@
     <p>&copy; <span id="year"></span> Sourfruits</p>
   </footer>
 
+  <script src="js/utils.js"></script>
+  <script src="js/header.js"></script>
   <script src="js/post.js"></script>
 </body>
 </html>
