@@ -12,7 +12,9 @@ sourfruits-blog/
 ├── index.html        Homepage — the paginated photo grid
 ├── post.html         Single post view (reads ?id= from the URL)
 ├── tag.html          Posts filtered by one tag (reads ?tag= from the URL)
+├── tags.html         All tags used across posts, with post counts
 ├── search.html       Search results (reads ?q= from the URL)
+├── about.html        About page (static placeholder text to replace)
 ├── css/
 │   └── styles.css    All styling, shared by every page
 ├── js/
@@ -22,7 +24,9 @@ sourfruits-blog/
 │   ├── main.js       Homepage — loads posts.json, builds the grid
 │   ├── post.js       Post page — loads one post by its id and renders it
 │   ├── tag.js        Tag page — filters posts by tag, reuses the grid
-│   └── search.js     Search page — matches title/tags/text, renders cards
+│   ├── tags.js       Tags page — tallies tags across posts, renders pills
+│   ├── search.js     Search page — matches title/tags/text, renders cards
+│   └── about.js      About page — footer year + back button
 ├── data/
 │   └── posts.json    ← Your content lives here. Add posts here.
 ├── images/           Post images (see images/README.md)
@@ -47,6 +51,19 @@ npx serve                          # Node (if you have it)
 ```
 
 Then open http://localhost:8000 in your browser.
+
+## Deploying to GitHub
+
+Push your changes and GitHub Pages redeploys automatically:
+
+```bash
+git add .                        # stage all your changes
+git commit -m "message"          # save them with a short description
+git push origin main             # send them to GitHub
+```
+
+The live site at https://sourfruits.github.io updates within about a minute
+after pushing.
 
 ## Adding a new post
 
