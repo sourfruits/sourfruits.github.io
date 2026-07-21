@@ -343,7 +343,10 @@ a.page-link:focus-visible {
 
 .post-image {
   width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
   display: block;
+  margin-inline: auto;
   background: transparent;
 }
 
