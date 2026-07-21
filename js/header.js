@@ -28,8 +28,8 @@
         <a class="header-logo" href="index.html">${SITE_NAME}</a>
         <div class="header-actions">
           <nav class="site-nav" aria-label="Primary">
-            <a class="nav-link" href="about.html">About</a>
             <a class="nav-link" href="tags.html">Tags</a>
+            <a class="nav-link" href="about.html">About</a>
           </nav>
           <a class="header-search" href="search.html" aria-label="Search">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">

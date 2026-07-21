@@ -7,9 +7,6 @@ const pagination = document.getElementById("pagination");
 const tagSelect = document.getElementById("tag-select");
 const densityToggle = document.querySelector(".density-toggle");
 
-// Posts per page depends on the grid density so each page fills the grid:
-// normal is 3 columns (3x3 = 9), compact is 4 columns (4x4 = 16).
-const PER_PAGE = { normal: 9, compact: 16 };
 const DENSITY_KEY = "grid-density";
 
 let allPosts = [];
@@ -37,9 +34,11 @@ function renderGrid(posts) {
   // Newest first, regardless of order in the JSON file.
   posts.sort((a, b) => (a.date < b.date ? 1 : -1));
 
+  // Fill each page based on the grid's live column count (which follows both
+  // the density toggle and the screen-width breakpoints).
   Pagination.paginate({
     items: posts,
-    perPage: PER_PAGE[density],
+    perPage: Pagination.gridPerPage(grid),
     container: pagination,
     hrefFor: pageHref,
     renderItems: (pagePosts) => {

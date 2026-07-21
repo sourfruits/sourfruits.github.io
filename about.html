@@ -16,21 +16,8 @@
 
     <article class="post">
       <h1 class="post-title">About</h1>
-      <div class="post-body">
-        <p>
-          This is placeholder text — replace it with your own writing. Say hello,
-          explain what Sourfruits is about, and tell people what they'll find here.
-        </p>
-        <p>
-          A good About page usually covers who you are, why you started the blog, and
-          what kinds of things you post. Keep it short and personal; you can always
-          expand it later.
-        </p>
-        <p>
-          Want to get in touch? Drop your email address, social links, or anything else
-          you'd like readers to know right here.
-        </p>
-      </div>
+      <!-- Rendered from Markdown by js/about.js -->
+      <div id="about-body" class="post-body"></div>
     </article>
   </main>
 
@@ -38,6 +25,9 @@
     <p>&copy; <span id="year"></span> Sourfruits</p>
   </footer>
 
+  <!-- Markdown rendering (marked) + HTML sanitizing (DOMPurify) via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <script src="js/utils.js"></script>
   <script src="js/header.js"></script>
   <script src="js/about.js"></script>

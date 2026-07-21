@@ -6,6 +6,29 @@
 // its own `renderItems` (grid of tiles vs. list of cards).
 
 (function (global) {
+  // How many rows we want to fill for a given column count, so each page's
+  // grid comes out complete: 2 cols → 4 rows (8), 3 cols → 3 rows (9),
+  // 4 cols → 4 rows (16).
+  const ROWS_FOR_COLUMNS = { 2: 4, 3: 3, 4: 4 };
+
+  // Count the grid's rendered columns from its computed style. This reflects
+  // both the screen-width media queries and the compact/normal class, so it
+  // always matches what the visitor actually sees.
+  function columnCount(grid) {
+    const cols = getComputedStyle(grid)
+      .gridTemplateColumns
+      .split(" ")
+      .filter(Boolean).length;
+    return cols || 3;
+  }
+
+  // Posts per page for a grid = columns × the rows we want for that column
+  // count. Falls back to 3 rows for any unexpected column count.
+  function gridPerPage(grid) {
+    const cols = columnCount(grid);
+    return cols * (ROWS_FOR_COLUMNS[cols] || 3);
+  }
+
   // Read the requested page from ?page=, clamped to a valid range.
   function currentPage(totalPages) {
     const raw = parseInt(new URLSearchParams(window.location.search).get("page"), 10);
@@ -54,5 +77,5 @@
     return { page, totalPages };
   }
 
-  global.Pagination = { paginate };
+  global.Pagination = { paginate, gridPerPage };
 })(window);

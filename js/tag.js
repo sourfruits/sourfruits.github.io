@@ -5,8 +5,6 @@ const status = document.getElementById("status");
 const heading = document.getElementById("tag-heading");
 const pagination = document.getElementById("pagination");
 
-const PER_PAGE = 9;
-
 document.getElementById("year").textContent = new Date().getFullYear();
 initBackButton();
 
@@ -22,9 +20,11 @@ function renderGrid(posts) {
   // Newest first, regardless of order in the JSON file.
   posts.sort((a, b) => (a.date < b.date ? 1 : -1));
 
+  // Fill each page based on the grid's live column count (which follows the
+  // screen-width breakpoints).
   Pagination.paginate({
     items: posts,
-    perPage: PER_PAGE,
+    perPage: Pagination.gridPerPage(grid),
     container: pagination,
     hrefFor: pageHref,
     renderItems: (pagePosts) => {
