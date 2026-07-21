@@ -234,7 +234,7 @@ a.page-link:focus-visible {
   object-fit: contain;
   border-radius: var(--radius);
   display: block;
-  background: var(--line);
+  background: #faf8f3;
 }
 
 .post-title {
