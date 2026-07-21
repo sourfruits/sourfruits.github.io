@@ -253,6 +253,11 @@ a.page-link:focus-visible {
   margin: 0 0 1.1em;
 }
 
+/* Match list items to the paragraph font size. */
+.post-body li {
+  font-size: 1.08rem;
+}
+
 /* ---------- Tags ---------- */
 .tags {
   display: flex;

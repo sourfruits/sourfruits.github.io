@@ -88,6 +88,9 @@ Notes:
   **bold** (`**text**`), *italics* (`*text*`), and lists (`- item`). Blank lines
   still create paragraph breaks. (Write it as one JSON string, using `\n` for line
   breaks and `\n\n` between paragraphs.)
+- Tip: for longer posts, draft in Google Docs and use the "Docs to Markdown"
+  add-on to convert your formatting to Markdown, then paste the result into the
+  `content` field.
 - `thumb` and `image` can be local paths (e.g. `images/lemon.jpg`) or full URLs.
   If you omit `thumb`, the grid falls back to `image`, and vice versa.
 - The starter posts use placeholder images from picsum.photos — swap in your own.
