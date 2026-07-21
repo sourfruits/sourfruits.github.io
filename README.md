@@ -77,13 +77,17 @@ Open `data/posts.json` and add an object to the array:
   "tags": ["citrus", "kitchen"],
   "thumb": "images/my-photo-square.jpg",       // square image for the grid
   "image": "images/my-photo-full.jpg",         // full image for the post page
-  "content": "Your text.\n\nBlank lines become new paragraphs."
+  "content": "Your text.\n\n## A heading\n\nSome **bold** and *italic* text, plus a list:\n\n- first item\n- second item"
 }
 ```
 
 Notes:
 - `id` must be unique — it's how the post page finds the right entry.
 - Posts are sorted by `date` automatically, so order in the file doesn't matter.
+- `content` supports Markdown, rendered on the post page: headings (`## Heading`),
+  **bold** (`**text**`), *italics* (`*text*`), and lists (`- item`). Blank lines
+  still create paragraph breaks. (Write it as one JSON string, using `\n` for line
+  breaks and `\n\n` between paragraphs.)
 - `thumb` and `image` can be local paths (e.g. `images/lemon.jpg`) or full URLs.
   If you omit `thumb`, the grid falls back to `image`, and vice versa.
 - The starter posts use placeholder images from picsum.photos — swap in your own.
