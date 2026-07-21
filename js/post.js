@@ -8,12 +8,11 @@ initBackButton();
 
 const id = new URLSearchParams(window.location.search).get("id");
 
-// Split the content on blank lines into separate <p> paragraphs.
-function renderParagraphs(text) {
-  return String(text || "")
-    .split(/\n\s*\n/)
-    .map((p) => `<p>${escapeHTML(p.trim()).replace(/\n/g, "<br>")}</p>`)
-    .join("");
+// Render the post's Markdown content to HTML with marked, then sanitize the
+// result with DOMPurify before it reaches the DOM.
+function renderContent(text) {
+  const html = marked.parse(String(text || ""));
+  return DOMPurify.sanitize(html);
 }
 
 function renderPost(post) {
@@ -28,7 +27,7 @@ function renderPost(post) {
     <h1 class="post-title">${escapeHTML(post.title)}</h1>
     <p class="post-date">${escapeHTML(formatDate(post.date, "long"))}</p>
     ${tags}
-    <div class="post-body">${renderParagraphs(post.content)}</div>
+    <div class="post-body">${renderContent(post.content)}</div>
   `;
   status.textContent = "";
 }
