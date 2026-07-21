@@ -15,8 +15,40 @@ function renderContent(text) {
   return DOMPurify.sanitize(html);
 }
 
+// Create/update an <meta property="og:*"> tag in <head>.
+function setOG(property, content) {
+  if (!content) return;
+  let tag = document.head.querySelector(`meta[property="${property}"]`);
+  if (!tag) {
+    tag = document.createElement("meta");
+    tag.setAttribute("property", property);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute("content", content);
+}
+
+// Turn the post's Markdown content into a short plain-text snippet for previews.
+function contentSnippet(text, max = 160) {
+  const tmp = document.createElement("div");
+  tmp.innerHTML = renderContent(text);
+  const plain = (tmp.textContent || "").replace(/\s+/g, " ").trim();
+  return plain.length > max ? plain.slice(0, max - 1).trimEnd() + "…" : plain;
+}
+
+// Fill in Open Graph tags so shared links show the post's title, image, etc.
+function setPostMeta(post) {
+  const image = post.image || post.thumb;
+  setOG("og:type", "article");
+  setOG("og:site_name", "Sourfruits");
+  setOG("og:title", post.title);
+  setOG("og:description", contentSnippet(post.content));
+  if (image) setOG("og:image", new URL(image, window.location.href).href);
+  setOG("og:url", window.location.href);
+}
+
 function renderPost(post) {
   document.title = `${post.title} — Sourfruits`;
+  setPostMeta(post);
 
   const tags = Array.isArray(post.tags) && post.tags.length
     ? `<ul class="tags">${post.tags.map((t) => `<li><a class="tag" href="tag.html?tag=${encodeURIComponent(t)}">${escapeHTML(t)}</a></li>`).join("")}</ul>`

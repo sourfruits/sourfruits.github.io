@@ -4,6 +4,8 @@
   --ink: #1c1c1a;
   --muted: #76766e;
   --line: #e8e8e2;
+  --header-bg: #f0f0e9;    /* slightly darker than --bg for the navbar */
+  --header-line: #deded6;  /* divider under the navbar, a touch darker */
   --accent: #c7d92d;       /* sour citrus green-yellow */
   --accent-ink: #4a5400;
   --radius: 14px;
@@ -34,9 +36,16 @@ main {
   padding: 0 0 36px;
 }
 
-/* Top row: logo on the left, About + Tags links + search icon on the right,
-   within the content column, with a subtle divider beneath. */
+/* Full-width navbar: a slightly darker band stretching edge to edge, with the
+   content itself centered inside via .header-bar-inner. */
 .header-bar {
+  background: var(--header-bg);
+  border-bottom: 1px solid var(--header-line);
+}
+
+/* Top row content: logo on the left, About + Tags links + search icon on the
+   right, held within the centered content column. */
+.header-bar-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -44,7 +53,6 @@ main {
   max-width: var(--maxw);
   margin: 0 auto;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--line);
 }
 
 /* Small logo / site name, top left. */
@@ -148,18 +156,14 @@ main {
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
 }
 
 .tag-filter {
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.control-label {
-  color: var(--muted);
-  font-size: 0.9rem;
-  font-weight: 600;
 }
 
 .tag-select {
