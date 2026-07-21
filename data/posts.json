@@ -1,5 +1,14 @@
 [
-   {
+  {
+  "id": "kafka-the-trial",
+  "title": "The Trial by Franz Kafka",
+  "date": "2026-07-20",
+  "tags": ["books", "blurb"],
+  "thumb": "images/kafka-the-trial.jpg",
+  "image": "images/kafka-the-trial.jpg",
+  "content": "he was a boy, she was a girl, can i make it any more obvious?"
+  },
+  {
   "id": "from-russia-with-love",
   "title": "From Russia with Love",
   "date": "2026-06-29",
