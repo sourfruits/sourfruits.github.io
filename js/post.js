@@ -54,8 +54,15 @@ function renderPost(post) {
     ? `<ul class="tags">${post.tags.map((t) => `<li><a class="tag" href="tag.html?tag=${encodeURIComponent(t)}">${escapeHTML(t)}</a></li>`).join("")}</ul>`
     : "";
 
+  // The frame shows the same photo as a blurred, darkened backdrop (via the
+  // --post-bg custom property) so portrait/odd-ratio images fill the side space
+  // instead of leaving it empty. The real image sits centered on top.
+  const src = post.image || post.thumb;
+
   article.innerHTML = `
-    <img class="post-image" src="${escapeHTML(post.image || post.thumb)}" alt="${escapeHTML(post.title)}">
+    <div class="post-image-frame" style="--post-bg: url('${encodeURI(src)}')">
+      <img class="post-image" src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}">
+    </div>
     <h1 class="post-title">${escapeHTML(post.title)}</h1>
     <p class="post-date">${escapeHTML(formatDate(post.date, "long"))}</p>
     ${tags}

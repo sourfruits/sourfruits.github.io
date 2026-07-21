@@ -341,8 +341,36 @@ a.page-link:focus-visible {
   margin: 0 auto;
 }
 
-.post-image {
+/* Frame the post image: the same photo, blurred and darkened, fills the full
+   width behind the real image so odd-ratio photos don't leave empty side space.
+   Height is capped at 60vh; the actual image sits centered on top at its
+   natural proportions. */
+.post-image-frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
+  max-height: 60vh;
+  overflow: hidden;
+  background: transparent;
+}
+
+.post-image-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--post-bg);
+  background-size: cover;
+  background-position: center;
+  /* Scale up so the blur doesn't reveal soft edges at the frame border. */
+  transform: scale(1.15);
+  filter: blur(28px) brightness(0.55);
+}
+
+.post-image {
+  position: relative;
+  max-width: 100%;
   max-height: 60vh;
   object-fit: contain;
   display: block;
