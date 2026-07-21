@@ -229,7 +229,6 @@ a.page-link:focus-visible {
 
 .post-image {
   width: 100%;
-  border-radius: var(--radius);
   display: block;
   background: transparent;
 }
