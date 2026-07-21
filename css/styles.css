@@ -12,6 +12,19 @@
   --maxw: 1040px;
 }
 
+/* Dark mode: override only the color variables — every element reads from these,
+   so the whole site (tags, pagination, search, cards, dropdowns, footer, etc.)
+   flips automatically. The green accent stays identical in both modes. */
+[data-theme="dark"] {
+  --bg: #1a1814;
+  --surface: #141210;
+  --header-bg: #141210;
+  --header-line: #2a2520;
+  --ink: #e8e4dc;
+  --muted: #9a9288;
+  --line: #2a2520;
+}
+
 * { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -38,6 +51,9 @@ body::after {
   opacity: 0.18;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
 }
+/* The noise reads as light specks, which glow on the dark background — dial it
+   back so the grain stays subtle in dark mode. */
+[data-theme="dark"] body::after { opacity: 0.06; }
 
 main {
   max-width: var(--maxw);
@@ -121,6 +137,35 @@ main {
   color: var(--accent-ink);
 }
 
+/* Dark-mode toggle: same pill footprint as the search button. */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.theme-toggle:focus-visible { outline: none; }
+
+/* Show the moon in light mode (click → dark), the sun in dark mode (click →
+   light). */
+.theme-icon-sun { display: none; }
+[data-theme="dark"] .theme-icon-moon { display: none; }
+[data-theme="dark"] .theme-icon-sun { display: inline; }
+
 .site-nav {
   display: flex;
   align-items: center;
@@ -201,6 +246,11 @@ main {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 0.35);
+}
+/* The chevron color is baked into the data-URI, so swap it for the lighter
+   dark-mode muted tone. */
+[data-theme="dark"] .tag-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239a9288' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
 }
 
 .density-toggle {
