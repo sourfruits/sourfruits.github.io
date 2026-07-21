@@ -12,6 +12,37 @@
   <header class="site-header"></header>
 
   <main>
+    <div class="controls">
+      <div class="tag-filter">
+        <label class="control-label" for="tag-select">Filter</label>
+        <select id="tag-select" class="tag-select" aria-label="Filter posts by tag">
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="density-toggle" role="group" aria-label="Grid density">
+        <button type="button" class="density-btn" data-density="compact" aria-label="Compact grid (4 columns)" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <rect x="2" y="2" width="5" height="5" rx="1"></rect>
+            <rect x="9.5" y="2" width="5" height="5" rx="1"></rect>
+            <rect x="17" y="2" width="5" height="5" rx="1"></rect>
+            <rect x="2" y="9.5" width="5" height="5" rx="1"></rect>
+            <rect x="9.5" y="9.5" width="5" height="5" rx="1"></rect>
+            <rect x="17" y="9.5" width="5" height="5" rx="1"></rect>
+            <rect x="2" y="17" width="5" height="5" rx="1"></rect>
+            <rect x="9.5" y="17" width="5" height="5" rx="1"></rect>
+            <rect x="17" y="17" width="5" height="5" rx="1"></rect>
+          </svg>
+        </button>
+        <button type="button" class="density-btn" data-density="normal" aria-label="Normal grid (3 columns)" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <rect x="2" y="2" width="9" height="9" rx="1.5"></rect>
+            <rect x="13" y="2" width="9" height="9" rx="1.5"></rect>
+            <rect x="2" y="13" width="9" height="9" rx="1.5"></rect>
+            <rect x="13" y="13" width="9" height="9" rx="1.5"></rect>
+          </svg>
+        </button>
+      </div>
+    </div>
     <section id="grid" class="grid" aria-label="Photo posts">
       <!-- Thumbnails are injected here by js/main.js -->
     </section>

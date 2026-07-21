@@ -6,7 +6,7 @@
   if (!header) return;
 
   header.innerHTML = `
-    <div class="header-right">
+    <div class="header-bar">
       <nav class="site-nav" aria-label="Primary">
         <a class="nav-link" href="about.html">About</a>
         <a class="nav-link" href="tags.html">Tags</a>
@@ -18,7 +18,9 @@
         </svg>
       </a>
     </div>
-    <a class="site-title" href="index.html">Sourfruits</a>
-    <p class="site-tagline">A blog about life's tart little pleasures</p>
+    <div class="site-intro">
+      <a class="site-title" href="index.html">Sourfruits</a>
+      <p class="site-tagline">A blog about life's tart little pleasures</p>
+    </div>
   `;
 })();
