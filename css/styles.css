@@ -137,27 +137,21 @@ main {
   color: var(--accent-ink);
 }
 
-/* Dark-mode toggle: same pill footprint as the search button. */
+/* Dark-mode toggle: a plain icon matching the nav links — no frame, muted
+   color, same hover treatment as About/Tags. */
 .theme-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
   padding: 0;
   color: var(--muted);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  background: none;
+  border: none;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  transition: color 0.2s ease;
 }
 .theme-toggle:hover,
-.theme-toggle:focus-visible {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--accent-ink);
-}
+.theme-toggle:focus-visible { color: var(--accent-ink); }
 .theme-toggle:focus-visible { outline: none; }
 
 /* Show the moon in light mode (click → dark), the sun in dark mode (click →
