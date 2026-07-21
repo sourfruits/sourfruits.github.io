@@ -229,13 +229,9 @@ a.page-link:focus-visible {
 }
 
 .post-image {
-  max-width: 100%;
-  max-height: 500px;
-  width: auto;
-  height: auto;
+  width: 100%;
   border-radius: var(--radius);
   display: block;
-  margin-inline: auto;
   background: transparent;
 }
 
