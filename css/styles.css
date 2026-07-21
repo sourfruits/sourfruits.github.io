@@ -6,8 +6,8 @@
   --line: #e8e8e2;
   --header-bg: #f1eeec;    /* soft warm greige navbar (warm, not yellow) */
   --header-line: #e2dfdd;  /* divider under the navbar, a touch darker */
-  --accent: #115207;       /* deep green */
-  --accent-ink: #ffffff;   /* light text for legibility on the dark accent */
+  --accent: #67b35d;       /* medium green */
+  --accent-ink: #4a5400;   /* dark text/icons sitting on top of --accent */
   --radius: 14px;
   --maxw: 1040px;
 }
@@ -186,7 +186,7 @@ main {
 .tag-select:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(199, 217, 45, 0.35);
+  box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 0.35);
 }
 
 .density-toggle {
@@ -485,7 +485,7 @@ a.tag:focus-visible {
 }
 .search-form #search-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(199, 217, 45, 0.35);
+  box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 0.35);
 }
 
 .search-submit {
