@@ -230,6 +230,8 @@ a.page-link:focus-visible {
 
 .post-image {
   width: 100%;
+  max-height: 500px;
+  object-fit: contain;
   border-radius: var(--radius);
   display: block;
   background: var(--line);
