@@ -1,5 +1,14 @@
 [
   {
+  "id": "stranger-than-paradise-heidegger",
+  "title": "Heidegger and Boredom in Stranger Than Paradise (1984)",
+  "date": "2026-07-21",
+  "tags": ["movies", "philosophy", "writeup"],
+  "thumb": "images/stranger-than-paradise.jpeg",
+  "image": "images/stranger-than-paradise.jpeg",
+  "content": "yep"
+  },
+  {
   "id": "kafka-the-trial",
   "title": "The Trial by Franz Kafka",
   "date": "2026-07-20",
@@ -10,7 +19,7 @@
   },
   {
   "id": "from-russia-with-love",
-  "title": "From Russia with Love",
+  "title": "From Russia with Love (1963)",
   "date": "2026-06-29",
   "tags": ["movies", "blurb"],
   "thumb": "images/from-russia-with-love.jpg",
