@@ -7,10 +7,13 @@ const pagination = document.getElementById("pagination");
 const tagSelect = document.getElementById("tag-select");
 const densityToggle = document.querySelector(".density-toggle");
 
-const PER_PAGE = 9;
+// Posts per page depends on the grid density so each page fills the grid:
+// normal is 3 columns (3x3 = 9), compact is 4 columns (4x4 = 16).
+const PER_PAGE = { normal: 9, compact: 16 };
 const DENSITY_KEY = "grid-density";
 
 let allPosts = [];
+let density = "normal";
 
 // Stamp the current year in the footer.
 document.getElementById("year").textContent = new Date().getFullYear();
@@ -36,7 +39,7 @@ function renderGrid(posts) {
 
   Pagination.paginate({
     items: posts,
-    perPage: PER_PAGE,
+    perPage: PER_PAGE[density],
     container: pagination,
     hrefFor: pageHref,
     renderItems: (pagePosts) => {
@@ -97,16 +100,19 @@ tagSelect.addEventListener("change", () => {
 });
 
 // Switch the grid between the compact (4-col) and normal (3-col) layouts,
-// highlighting the active button and remembering the choice.
-function setDensity(density) {
-  const compact = density === "compact";
+// highlighting the active button, remembering the choice, and re-paginating
+// (page size changes with the density). Skips the re-render before posts load.
+function setDensity(next) {
+  density = next;
+  const compact = next === "compact";
   grid.classList.toggle("is-compact", compact);
   densityToggle.querySelectorAll(".density-btn").forEach((btn) => {
-    const active = btn.dataset.density === density;
+    const active = btn.dataset.density === next;
     btn.classList.toggle("is-active", active);
     btn.setAttribute("aria-pressed", active ? "true" : "false");
   });
-  try { localStorage.setItem(DENSITY_KEY, density); } catch (err) { /* ignore */ }
+  try { localStorage.setItem(DENSITY_KEY, next); } catch (err) { /* ignore */ }
+  if (allPosts.length) applyFilter();
 }
 
 densityToggle.addEventListener("click", (e) => {
