@@ -4,8 +4,8 @@
   --ink: #1c1c1a;
   --muted: #76766e;
   --line: #e8e8e2;
-  --header-bg: #eeeef0;    /* neutral grey navbar, no warm tint */
-  --header-line: #dcdcde;  /* divider under the navbar, a touch darker */
+  --header-bg: #f1eeec;    /* soft warm greige navbar (warm, not yellow) */
+  --header-line: #e2dfdd;  /* divider under the navbar, a touch darker */
   --accent: #c7d92d;       /* sour citrus green-yellow */
   --accent-ink: #4a5400;
   --radius: 14px;
