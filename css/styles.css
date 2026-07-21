@@ -341,17 +341,14 @@ a.page-link:focus-visible {
   margin: 0 auto;
 }
 
-/* Frame the post image: the same photo, blurred and darkened, fills the full
-   width behind the real image so odd-ratio photos don't leave empty side space.
-   Height is capped at 60vh; the actual image sits centered on top at its
-   natural proportions. */
+/* Frame the post image in a fixed 3:2 box. The same photo, blurred and
+   darkened, is stretched to fill the frame as a backdrop; the actual image
+   sits centered on top via object-fit: contain. Wide images fill naturally,
+   while square/portrait images get blurred sides instead of empty space. */
 .post-image-frame {
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  aspect-ratio: 3 / 2;
   width: 100%;
-  max-height: 60vh;
   overflow: hidden;
   background: transparent;
 }
@@ -370,12 +367,17 @@ a.page-link:focus-visible {
 
 .post-image {
   position: relative;
-  max-width: 100%;
-  max-height: 60vh;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
-  margin-inline: auto;
   background: transparent;
+}
+
+/* On narrow screens a 3:2 landscape frame is too short and wastes the space;
+   a square frame fits phones better (and suits the mostly-square content). */
+@media (max-width: 720px) {
+  .post-image-frame { aspect-ratio: 1 / 1; }
 }
 
 .post-title {
