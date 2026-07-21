@@ -18,7 +18,7 @@
     ? `
     <div class="site-intro">
       <a class="site-title" href="index.html">${SITE_NAME}</a>
-      <p class="site-tagline">A blog about life's tart little pleasures</p>
+      <p class="site-tagline">Documenting what I read, watch, and create.</p>
     </div>`
     : "";
 
