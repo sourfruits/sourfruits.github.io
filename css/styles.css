@@ -25,15 +25,15 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Film-grain overlay: a fixed, full-viewport layer of SVG noise (feTurbulence,
-   generated inline so there's no external image) sitting over the whole page
-   for a subtle, Letterboxd-like texture. pointer-events:none keeps it from
-   blocking clicks; the low opacity keeps it noticeable but not distracting. */
+/* Film-grain texture: a fixed, full-viewport layer of SVG noise (feTurbulence,
+   generated inline so there's no external image) that sits above the page
+   background but behind all content (z-index:-1), so the grain only shows on
+   the background, not over text/images/UI. Subtle but noticeable. */
 body::after {
   content: "";
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: -1;
   pointer-events: none;
   opacity: 0.18;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
