@@ -553,7 +553,7 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
    2 on mobile (matching the grid's column counts). Images stay lazy-loaded. */
 .grid.is-carousel .tile {
   flex: 0 0 auto;
-  --carousel-tile: calc((min(100vw, var(--maxw)) - 40px) / 2.5);
+  --carousel-tile: calc((min(100vw, var(--maxw)) - 40px) / 1.6);
   width: var(--carousel-tile);
   height: var(--carousel-tile);
   aspect-ratio: 1 / 1;
