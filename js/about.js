@@ -6,9 +6,9 @@
 // post bodies are.
 
 const ABOUT_CONTENT = `
-I enjoy music, books, movies, and learning, and I want to see what I gravitate towards across time and why I do.
+I enjoy music, books, movies, and learning, and I want to see what I gravitate towards across time and why I do so.
 
-It turns out obsessively collecting and sorting my interests across Google Docs, Spotify, and a hundred different apps and websites isn’t the most efficient way to do so, so I made this website as my own visual archive of taste. The hope is that this site becomes a way for me to:
+It turns out obsessively collecting and sorting my interests across Google Docs, Spotify, and a hundred different apps and websites isn’t the most efficient way to do that, so I made this website as my own visual archive of taste. The hope is that this site becomes a way for me to:
 
 1. Catalogue my taste as it evolves  
 2. Learn to articulate what matters to me
