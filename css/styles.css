@@ -484,9 +484,10 @@ main {
   color: #fff;
   background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0) 55%);
   /* Two-layer shadow (tight + soft) behind the caption so the white title/date
-     stay legible over bright photos, not just dark ones. Inherited by the
+     stay legible over bright photos, not just dark ones. Softened a touch so it
+     reads as a gentle halo rather than a hard outline. Inherited by the
      title/date text below. */
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 10px rgba(0, 0, 0, 0.45);
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.6), 0 0 12px rgba(0, 0, 0, 0.38);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -566,17 +567,39 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
   .grid.is-carousel .tile { --carousel-tile: 80vw; }
 }
 
-/* Soft shadow hugging each tile's inner edges so the strip reads as separate,
-   slightly framed photos rather than one continuous image cut into pieces — no
-   actual gap added. On a ::after (above the photo) because an inset box-shadow
-   on the tile itself would be painted behind the <img>. Kept light so it's a
-   depth cue, not a border. */
-.grid.is-carousel .tile:not(.carousel-seeall)::after {
+/* Soft shadow hugging every photo tile's inner edges (grid, tag, and carousel
+   alike) so images read as separate, slightly framed photos rather than one
+   continuous sheet — no actual gap added. On a ::after (above the photo)
+   because an inset box-shadow on the tile itself would be painted behind the
+   <img>. Kept light so it's a depth cue, not a border. */
+.tile:not(.carousel-seeall)::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.22);
+}
+
+/* Carousel captions are persistent: title and date stay visible at the bottom
+   of each tile (grid stays hover-only). The overlay still overlays the
+   full-bleed photo via a gradient scrim — a touch stronger than the grid's,
+   since it's always on and must read over bright images too (with the inherited
+   text shadow). On hover/focus the caption grows a little. */
+.grid.is-carousel .tile-overlay {
+  opacity: 1;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0) 60%);
+}
+.grid.is-carousel .tile-title,
+.grid.is-carousel .tile-date {
+  transition: font-size 0.25s ease;
+}
+.grid.is-carousel .tile:hover .tile-title,
+.grid.is-carousel .tile:focus-visible .tile-title {
+  font-size: var(--text-heading-sm);
+}
+.grid.is-carousel .tile:hover .tile-date,
+.grid.is-carousel .tile:focus-visible .tile-date {
+  font-size: var(--text-base);
 }
 
 /* Carousel sits close to the footer — drop the tall grid padding beneath it. */
@@ -1102,6 +1125,19 @@ a.tag:focus-visible {
 }
 
 /* ---------- Misc ---------- */
+/* Balance the line breaks on titles/headings so a lone trailing token (e.g.
+   "(1984)") doesn't get orphaned onto its own line; multi-line titles split
+   evenly instead. Ignored gracefully by browsers without text-wrap support. */
+.tile-title,
+.post-title,
+.post-subtitle,
+.result-title,
+.related-title,
+.tag-heading,
+.search-heading {
+  text-wrap: balance;
+}
+
 .status {
   text-align: center;
   color: var(--muted);
