@@ -615,6 +615,16 @@ body:has(.grid.is-carousel) main { padding-bottom: 24px; }
 .carousel-arrow-left { left: 14px; }
 .carousel-arrow-right { right: 14px; }
 
+/* Greyed out at the start/end of the strip. */
+.grid-wrap.is-carousel .carousel-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+  box-shadow: none;
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
 /* "See all posts" card closing the strip — square like the tiles, but a dashed
    surface panel rather than a photo. */
 .carousel-seeall {

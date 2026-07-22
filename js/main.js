@@ -85,11 +85,21 @@ function renderCarousel(posts) {
      </a>`;
   // No pager in carousel mode.
   pagination.innerHTML = "";
+  updateCarouselArrows();
 }
 
 // Scroll the filmstrip roughly one viewport of tiles in the given direction.
 function scrollCarousel(direction) {
   grid.scrollBy({ left: direction * grid.clientWidth * 0.8, behavior: "smooth" });
+}
+
+// Grey out (disable) the prev arrow at the start of the strip and the next
+// arrow at the end. The 1px tolerance absorbs sub-pixel scroll rounding.
+function updateCarouselArrows() {
+  if (currentView !== "carousel") return;
+  const maxScroll = grid.scrollWidth - grid.clientWidth;
+  carouselPrev.disabled = grid.scrollLeft <= 1;
+  carouselNext.disabled = grid.scrollLeft >= maxScroll - 1;
 }
 
 // The pool the grid and tag menu work from: all posts, minus drafts unless the
@@ -229,6 +239,9 @@ densityToggle.addEventListener("click", (e) => {
 // normal grid (rather than following its href).
 carouselPrev.addEventListener("click", () => scrollCarousel(-1));
 carouselNext.addEventListener("click", () => scrollCarousel(1));
+// Keep the arrows' enabled/greyed state in sync with the scroll position.
+grid.addEventListener("scroll", updateCarouselArrows);
+window.addEventListener("resize", updateCarouselArrows);
 grid.addEventListener("click", (e) => {
   if (e.target.closest("[data-seeall]")) {
     e.preventDefault();
