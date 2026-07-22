@@ -6,13 +6,14 @@
 // post bodies are.
 
 const ABOUT_CONTENT = `
-I like music, books, movies, learning, and I want to see what I like and why I like it.
+I like music, books, movies, learning, and I want to see what I gravitate towards across time and why I do.
 
-I’ve been obsessively collecting and sorting my interests across Google Docs, Spotify, and numerous other apps for far too long, so I made this website as my own visual archive of taste. Hopefully, this can become a way for me to:
-* Catalogue my taste as it evolves  
-* Learn to articulate what matters to me
+It turns out obsessively collecting and sorting my interests across Google Docs, Spotify, and a hundred different apps and websites isn’t the most efficient way to do so, so I made this website as my own visual archive of taste. The hope is that this site becomes a way for me to:
 
-Check back to find out what I’m reading/watching/listening to, as well as my short-form *\[tag:blurb\]* and occasional long-form *\[tag:writeup\]* thoughts.
+1. Catalogue my taste as it evolves  
+2. Learn to articulate what matters to me
+
+Check back to find out what I’m reading/watching/listening to, as well as my short-form *\[blurb\]* and occasional long-form *\[writeup\]* thoughts.
 `;
 
 initBackButton();
