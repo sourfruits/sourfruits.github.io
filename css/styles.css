@@ -546,14 +546,14 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
 }
 .grid.is-carousel::-webkit-scrollbar { display: none; }
 
-/* Square tiles about half the viewport tall. Because their width is tied to
-   viewport height (not width), the row almost always ends mid-tile, leaving a
-   peek of the next tile that hints the strip scrolls. Images stay lazy-loaded
-   (renderTile sets loading="lazy"). */
+/* Square tiles about half the viewport tall, but never wider than ~80% of the
+   viewport — so on tall, narrow phones (where 50vh would exceed the screen
+   width) a whole tile plus a peek of the next still fits. The peek hints the
+   strip scrolls. Images stay lazy-loaded (renderTile sets loading="lazy"). */
 .grid.is-carousel .tile {
   flex: 0 0 auto;
-  height: 50vh;
-  width: 50vh;
+  height: min(50vh, 80vw);
+  width: min(50vh, 80vw);
   aspect-ratio: 1 / 1;
 }
 
