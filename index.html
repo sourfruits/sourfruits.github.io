@@ -22,10 +22,16 @@
 
   <main>
     <div class="controls">
-      <div class="tag-filter">
-        <select id="tag-select" class="tag-select" aria-label="Filter posts by tag">
-          <option value="">All</option>
-        </select>
+      <div class="tag-filter" id="tag-filter">
+        <button type="button" class="tag-dropdown-toggle" id="tag-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+          <span class="tag-dropdown-label" id="tag-dropdown-label">All tags</span>
+          <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="tag-dropdown-menu" id="tag-dropdown-menu" role="group" aria-label="Filter posts by tag" hidden>
+          <!-- Clear-all + tag checkboxes are injected here by js/main.js -->
+        </div>
       </div>
       <div class="density-toggle" role="group" aria-label="Grid density">
         <button type="button" class="density-btn" data-density="compact" aria-label="Compact grid (4 columns)" aria-pressed="false">

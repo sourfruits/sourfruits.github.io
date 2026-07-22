@@ -1,27 +1,39 @@
 // Homepage: load every post from data/posts.json and render the thumbnail grid,
-// with a tag filter (synced to ?tag=) and a grid-density toggle.
+// with a multi-select tag filter (AND logic, synced to ?tags=) and a grid-density
+// toggle.
 
 const grid = document.getElementById("grid");
 const status = document.getElementById("status");
 const pagination = document.getElementById("pagination");
-const tagSelect = document.getElementById("tag-select");
+const tagFilter = document.getElementById("tag-filter");
+const tagToggle = document.getElementById("tag-dropdown-toggle");
+const tagMenu = document.getElementById("tag-dropdown-menu");
+const tagLabel = document.getElementById("tag-dropdown-label");
 const densityToggle = document.querySelector(".density-toggle");
 
 const DENSITY_KEY = "grid-density";
 
 let allPosts = [];
-let density = "normal";
+let allTags = [];              // every tag, ordered by post count (ties alphabetical)
+let selectedTags = new Set();  // the tags currently checked
 
-// The tag currently selected via ?tag= (empty string means "All").
-function currentTag() {
-  return new URLSearchParams(window.location.search).get("tag") || "";
+// Selected tags parsed from ?tags= (comma-separated).
+function tagsFromURL() {
+  const raw = new URLSearchParams(window.location.search).get("tags") || "";
+  return raw.split(",").map((s) => s.trim()).filter(Boolean);
 }
 
-// Build an href for a given page number, keeping the active tag and page 1 clean.
+// The selected tags as a comma-joined string, in the menu's display order so
+// the URL is stable and readable.
+function selectedParam() {
+  return allTags.filter((t) => selectedTags.has(t)).join(",");
+}
+
+// Build an href for a given page number, preserving ?tags= and keeping page 1 clean.
 function pageHref(page) {
   const params = new URLSearchParams();
-  const tag = currentTag();
-  if (tag) params.set("tag", tag);
+  const tags = selectedParam();
+  if (tags) params.set("tags", tags);
   if (page > 1) params.set("page", page);
   const qs = params.toString();
   return qs ? `index.html?${qs}` : "index.html";
@@ -43,55 +55,113 @@ function renderGrid(posts) {
     },
   });
 
-  status.textContent = posts.length ? "" : "No posts here yet.";
+  status.textContent = posts.length
+    ? ""
+    : (selectedTags.size ? "No posts match these tags." : "No posts here yet.");
 }
 
-// Show only the posts matching the active tag (or all of them for "All").
-function applyFilter() {
-  const tag = currentTag();
-  const posts = tag
-    ? allPosts.filter((p) => Array.isArray(p.tags) && p.tags.includes(tag))
-    : allPosts;
-  renderGrid(posts);
+// AND logic: a post must carry every selected tag. No selection → show all.
+function filteredPosts() {
+  if (selectedTags.size === 0) return allPosts;
+  const wanted = [...selectedTags];
+  return allPosts.filter((p) =>
+    Array.isArray(p.tags) && wanted.every((t) => p.tags.includes(t)));
 }
 
-// Populate the dropdown with tags sorted by post count (ties alphabetical),
-// preceded by an "All" option, and reflect whatever ?tag= is active.
-function buildTagOptions(posts) {
+// Build the dropdown checklist: a "Clear all" action, then one checkbox per
+// tag, ordered by post count (ties alphabetical).
+function buildMenu(posts) {
   const counts = new Map();
   posts.forEach((post) => {
     if (!Array.isArray(post.tags)) return;
     post.tags.forEach((tag) => counts.set(tag, (counts.get(tag) || 0) + 1));
   });
-
-  const tags = [...counts.keys()].sort((a, b) =>
+  allTags = [...counts.keys()].sort((a, b) =>
     counts.get(b) - counts.get(a) ||
     a.localeCompare(b, undefined, { sensitivity: "base" }));
 
-  tagSelect.innerHTML = `<option value="">All</option>` + tags.map((tag) =>
-    `<option value="${escapeHTML(tag)}">${escapeHTML(tag)} (${counts.get(tag)})</option>`
-  ).join("");
-
-  tagSelect.value = currentTag();
+  tagMenu.innerHTML =
+    `<button type="button" class="tag-clear" id="tag-clear">Clear all</button>
+     <div class="tag-dropdown-divider"></div>` +
+    allTags.map((tag) => `
+      <label class="tag-option">
+        <input type="checkbox" value="${escapeHTML(tag)}">
+        <span class="tag-option-name">${escapeHTML(tag)}</span>
+        <span class="tag-option-count">${counts.get(tag)}</span>
+      </label>`).join("");
 }
 
-// Changing the filter updates the URL (?tag=), resets to page 1, and re-renders.
-tagSelect.addEventListener("change", () => {
-  const tag = tagSelect.value;
+// Reflect the selection on the checkboxes, the toggle label, and whether
+// "Clear all" is enabled.
+function syncMenu() {
+  tagMenu.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+    cb.checked = selectedTags.has(cb.value);
+  });
+  const n = selectedTags.size;
+  tagLabel.textContent = n === 0 ? "All tags" : (n === 1 ? selectedParam() : `${n} tags`);
+  const clear = document.getElementById("tag-clear");
+  if (clear) clear.disabled = n === 0;
+}
+
+// Write the selection to ?tags= (dropped when empty), resetting to page 1.
+function updateURL() {
   const params = new URLSearchParams(window.location.search);
-  if (tag) params.set("tag", tag);
-  else params.delete("tag");
+  const tags = selectedParam();
+  if (tags) params.set("tags", tags);
+  else params.delete("tags");
   params.delete("page");
   const qs = params.toString();
   history.replaceState(null, "", qs ? `index.html?${qs}` : "index.html");
+}
+
+function applyFilter() {
+  syncMenu();
+  renderGrid(filteredPosts());
+}
+
+// --- dropdown open/close ---
+function openMenu() {
+  tagMenu.hidden = false;
+  tagToggle.setAttribute("aria-expanded", "true");
+}
+function closeMenu() {
+  tagMenu.hidden = true;
+  tagToggle.setAttribute("aria-expanded", "false");
+}
+
+tagToggle.addEventListener("click", () => {
+  if (tagMenu.hidden) openMenu();
+  else closeMenu();
+});
+document.addEventListener("click", (e) => {
+  if (!tagFilter.contains(e.target)) closeMenu();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeMenu();
+});
+
+// Checking a tag toggles it in the selection; "Clear all" empties it. The menu
+// stays open so several tags can be picked in one go.
+tagMenu.addEventListener("change", (e) => {
+  const cb = e.target.closest('input[type="checkbox"]');
+  if (!cb) return;
+  if (cb.checked) selectedTags.add(cb.value);
+  else selectedTags.delete(cb.value);
+  updateURL();
   applyFilter();
+});
+tagMenu.addEventListener("click", (e) => {
+  if (e.target.closest("#tag-clear")) {
+    selectedTags.clear();
+    updateURL();
+    applyFilter();
+  }
 });
 
 // Switch the grid between the compact (4-col) and normal (3-col) layouts,
 // highlighting the active button, remembering the choice, and re-paginating
 // (page size changes with the density). Skips the re-render before posts load.
 function setDensity(next) {
-  density = next;
   const compact = next === "compact";
   grid.classList.toggle("is-compact", compact);
   densityToggle.querySelectorAll(".density-btn").forEach((btn) => {
@@ -115,7 +185,8 @@ setDensity(initialDensity);
 fetchPosts()
   .then((posts) => {
     allPosts = posts;
-    buildTagOptions(posts);
+    buildMenu(posts);
+    selectedTags = new Set(tagsFromURL().filter((t) => allTags.includes(t)));
     applyFilter();
   })
   .catch((err) => {
