@@ -12,13 +12,19 @@ const tagLabel = document.getElementById("tag-dropdown-label");
 const densityToggle = document.querySelector(".density-toggle");
 const draftsToggle = document.getElementById("drafts-toggle");
 const draftsLabel = draftsToggle.querySelector(".drafts-label");
+const gridWrap = document.getElementById("grid-wrap");
+const carouselPrev = document.getElementById("carousel-prev");
+const carouselNext = document.getElementById("carousel-next");
 
 const DENSITY_KEY = "grid-density";
+const VIEWS = ["compact", "normal", "carousel"];
+const CAROUSEL_MAX = 10;       // most-recent posts shown in the carousel strip
 
 let allPosts = [];
 let allTags = [];              // every tag, ordered by post count (ties alphabetical)
 let selectedTags = new Set();  // the tags currently checked
 let showDrafts = true;         // whether draft posts are revealed (shown by default)
+let currentView = "normal";    // compact | normal | carousel
 
 // Selected tags parsed from ?tags= (comma-separated).
 function tagsFromURL() {
@@ -46,21 +52,44 @@ function renderGrid(posts) {
   // Newest first, regardless of order in the JSON file.
   sortByDateDesc(posts);
 
-  // Fill each page based on the grid's live column count (which follows both
-  // the density toggle and the screen-width breakpoints).
-  Pagination.paginate({
-    items: posts,
-    perPage: Pagination.gridPerPage(grid),
-    container: pagination,
-    hrefFor: pageHref,
-    renderItems: (pagePosts) => {
-      grid.innerHTML = pagePosts.map(renderTile).join("");
-    },
-  });
+  if (currentView === "carousel") {
+    renderCarousel(posts);
+  } else {
+    // Fill each page based on the grid's live column count (which follows both
+    // the density toggle and the screen-width breakpoints).
+    Pagination.paginate({
+      items: posts,
+      perPage: Pagination.gridPerPage(grid),
+      container: pagination,
+      hrefFor: pageHref,
+      renderItems: (pagePosts) => {
+        grid.innerHTML = pagePosts.map(renderTile).join("");
+      },
+    });
+  }
 
   status.textContent = posts.length
     ? ""
     : (selectedTags.size ? "No posts match these tags." : "No posts here yet.");
+}
+
+// Carousel view: the newest posts as a single horizontal filmstrip (no
+// pagination), capped at CAROUSEL_MAX, with a "See all posts" card at the end
+// that drops back to the normal grid.
+function renderCarousel(posts) {
+  const strip = posts.slice(0, CAROUSEL_MAX);
+  grid.innerHTML =
+    strip.map(renderTile).join("") +
+    `<a class="tile carousel-seeall" href="index.html" data-seeall>
+       <span class="carousel-seeall-inner">See all posts <span aria-hidden="true">&rarr;</span></span>
+     </a>`;
+  // No pager in carousel mode.
+  pagination.innerHTML = "";
+}
+
+// Scroll the filmstrip roughly one viewport of tiles in the given direction.
+function scrollCarousel(direction) {
+  grid.scrollBy({ left: direction * grid.clientWidth * 0.8, behavior: "smooth" });
 }
 
 // The pool the grid and tag menu work from: all posts, minus drafts unless the
@@ -173,12 +202,15 @@ tagMenu.addEventListener("click", (e) => {
   }
 });
 
-// Switch the grid between the compact (4-col) and normal (3-col) layouts,
-// highlighting the active button, remembering the choice, and re-paginating
-// (page size changes with the density). Skips the re-render before posts load.
+// Switch the grid between the compact (4-col), normal (3-col), and carousel
+// (horizontal filmstrip) views, highlighting the active button, remembering the
+// choice, and re-rendering. Skips the re-render before posts load.
 function setDensity(next) {
-  const compact = next === "compact";
-  grid.classList.toggle("is-compact", compact);
+  currentView = next;
+  const carousel = next === "carousel";
+  grid.classList.toggle("is-compact", next === "compact");
+  grid.classList.toggle("is-carousel", carousel);
+  gridWrap.classList.toggle("is-carousel", carousel);
   densityToggle.querySelectorAll(".density-btn").forEach((btn) => {
     const active = btn.dataset.density === next;
     btn.classList.toggle("is-active", active);
@@ -193,6 +225,17 @@ densityToggle.addEventListener("click", (e) => {
   if (btn) setDensity(btn.dataset.density);
 });
 
+// Carousel arrows scroll the strip; the "See all posts" card drops back to the
+// normal grid (rather than following its href).
+carouselPrev.addEventListener("click", () => scrollCarousel(-1));
+carouselNext.addEventListener("click", () => scrollCarousel(1));
+grid.addEventListener("click", (e) => {
+  if (e.target.closest("[data-seeall]")) {
+    e.preventDefault();
+    setDensity("normal");
+  }
+});
+
 // Drafts toggle: flip whether drafts are included, then rebuild the tag menu
 // (its counts follow the visible pool) and re-render the grid.
 draftsToggle.addEventListener("click", () => {
@@ -202,9 +245,12 @@ draftsToggle.addEventListener("click", () => {
   applyFilter();
 });
 
-let initialDensity = "normal";
-try { initialDensity = localStorage.getItem(DENSITY_KEY) || "normal"; } catch (err) { /* ignore */ }
-setDensity(initialDensity);
+let initialView = "carousel";
+try {
+  const saved = localStorage.getItem(DENSITY_KEY);
+  if (VIEWS.includes(saved)) initialView = saved;
+} catch (err) { /* ignore */ }
+setDensity(initialView);
 
 fetchPosts()
   .then((posts) => {

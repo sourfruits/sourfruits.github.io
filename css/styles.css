@@ -521,6 +521,102 @@ main {
   color: var(--bg);
 }
 
+/* ---------- Carousel (filmstrip) view ---------- */
+/* Only the carousel runs full-bleed — edge to edge across the viewport — while
+   the compact/normal grid stays in main's centered 1040px column. main's
+   symmetric padding makes the calc land exactly on the viewport edges.
+   (position: relative also anchors the carousel arrows.) */
+.grid-wrap.is-carousel {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+/* Keep the full-bleed carousel from adding a horizontal scrollbar to the page. */
+body:has(.grid.is-carousel) { overflow-x: hidden; }
+
+.grid.is-carousel {
+  display: flex;
+  gap: 1px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  /* Hide the scrollbar — still freely scrollable via trackpad/mouse/arrows. */
+  scrollbar-width: none;
+}
+.grid.is-carousel::-webkit-scrollbar { display: none; }
+
+/* Square tiles about half the viewport tall. Because their width is tied to
+   viewport height (not width), the row almost always ends mid-tile, leaving a
+   peek of the next tile that hints the strip scrolls. Images stay lazy-loaded
+   (renderTile sets loading="lazy"). */
+.grid.is-carousel .tile {
+  flex: 0 0 auto;
+  height: 50vh;
+  width: 50vh;
+  aspect-ratio: 1 / 1;
+}
+
+/* Carousel sits close to the footer — drop the tall grid padding beneath it. */
+body:has(.grid.is-carousel) main { padding-bottom: 24px; }
+
+/* Scroll arrows: circular buttons pinned to the strip's left/right edges,
+   hidden outside carousel view. Free trackpad/mouse scrolling still works via
+   the container's overflow-x. */
+.carousel-arrow { display: none; }
+.grid-wrap.is-carousel .carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.16);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.grid-wrap.is-carousel .carousel-arrow:hover,
+.grid-wrap.is-carousel .carousel-arrow:focus-visible {
+  outline: none;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.carousel-arrow-left { left: 14px; }
+.carousel-arrow-right { right: 14px; }
+
+/* "See all posts" card closing the strip — square like the tiles, but a dashed
+   surface panel rather than a photo. */
+.carousel-seeall {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  color: var(--ink);
+  text-align: center;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.carousel-seeall:hover,
+.carousel-seeall:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.carousel-seeall-inner {
+  font-weight: 700;
+  font-size: var(--text-medium);
+}
+
 /* ---------- Pagination ---------- */
 /* A unified, centered group — Prev · 1 · 2 · 3 · Next — sitting under a thin
    divider line. Every element shares the same height, border, and 6px radius;
