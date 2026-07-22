@@ -31,14 +31,31 @@
             <a class="nav-link" href="tags.html">Tags</a>
             <a class="nav-link" href="about.html">About</a>
           </nav>
-          <a class="header-search" href="search.html" aria-label="Search">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="7"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </a>
+          <form class="header-search" action="search.html" method="get" role="search">
+            <input type="search" name="q" class="header-search-input" aria-label="Search posts" autocomplete="off">
+            <button type="submit" class="header-search-btn" aria-label="Search">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
+          </form>
         </div>
       </div>
     </div>${intro}
   `;
+
+  // Search: the magnifier is a submit button. With a query typed, submitting
+  // (button click or Enter) navigates to search.html. When the field is empty,
+  // don't navigate — just focus the input so the user can start typing.
+  const searchForm = header.querySelector(".header-search");
+  if (searchForm) {
+    const searchInput = searchForm.querySelector(".header-search-input");
+    searchForm.addEventListener("submit", (e) => {
+      if (!searchInput.value.trim()) {
+        e.preventDefault();
+        searchInput.focus();
+      }
+    });
+  }
 })();

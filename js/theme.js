@@ -1,12 +1,12 @@
-// Site-wide dark-mode toggle. Injects a small floating moon/sun icon fixed in
-// the bottom-right corner of every page, toggles data-theme="dark" on <html>,
+// Site-wide dark-mode toggle. Injects a small floating button fixed in the
+// bottom-right corner of every page that toggles data-theme="dark" on <html>,
 // and remembers the choice in localStorage across pages and sessions.
 
 (function () {
   const THEME_KEY = "theme";
 
-  // Build the floating toggle. Moon shows in light mode (click → dark), sun
-  // shows in dark mode (click → light); the CSS swaps which icon is visible.
+  // Build the floating toggle button. Moon shows in light mode (click → dark),
+  // sun shows in dark mode (click → light); the CSS swaps which icon is visible.
   const toggle = document.createElement("button");
   toggle.type = "button";
   toggle.id = "theme-toggle";

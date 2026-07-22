@@ -118,27 +118,73 @@ main {
   padding: 20px 10px 0;
 }
 
+/* Inline search bar: same 150x40 footprint as the tag-filter button, filled with
+   the page background, magnifier on the right, no visible border. On focus it
+   turns white (both light and dark mode) with dark text. Fixed size — no
+   hover/focus expansion. */
 .header-search {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
+  gap: 6px;
+  width: 150px;
+  height: 30px;
+  padding: 0 6px 0 14px;
   border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--muted);
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  border: 1px solid transparent;
+  background: var(--bg);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
-.header-search:hover,
-.header-search:focus-visible {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--accent-ink);
+.header-search:focus-within {
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 0.25);
 }
 
-/* Dark-mode toggle: a small plain moon/sun icon floating in the bottom-right
-   corner of every page — no frame, muted color, subtle and unobtrusive. */
+.header-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  caret-color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 500;
+  outline: none;
+}
+/* White field on focus → force dark text/caret so it's legible in both modes. */
+.header-search:focus-within .header-search-input {
+  color: #1c1c1a;
+  caret-color: #1c1c1a;
+}
+
+/* Hide the native search "clear" (×) button for a cleaner look. */
+.header-search-input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+/* Magnifier as a submit button: focuses the field when empty, searches when a
+   query is typed (empty-vs-typed logic lives in header.js). */
+.header-search-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.header-search-btn:hover,
+.header-search-btn:focus-visible { color: var(--accent-ink); }
+.header-search-btn:focus-visible { outline: none; }
+/* Readable grey on the white focused field. */
+.header-search:focus-within .header-search-btn { color: #76766e; }
+
+/* Dark-mode toggle: a single plain moon/sun icon floating in the bottom-right
+   corner of every page — no frame or background, muted color, subtle. */
 .theme-toggle {
   position: fixed;
   right: 18px;
@@ -230,6 +276,8 @@ main {
 .tag-select {
   appearance: none;
   -webkit-appearance: none;
+  width: 150px;
+  height: 33px;
   padding: 8px 36px 8px 14px;
   font-size: 0.9rem;
   font-weight: 600;
