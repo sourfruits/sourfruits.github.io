@@ -14,6 +14,18 @@
   --maxw: 1040px;
   --post-width: 700px;     /* reading column for post/search/tag content */
 
+  /* Shared tag treatment — one place to tune tags everywhere (post page, tags
+     listing, search results). */
+  --tag-size: var(--text-small);
+  --tag-letter-spacing: 0.05em;
+  --tag-gap: 10px;
+
+  /* Shared page-heading treatment (post/About, tag, search, tags list). The
+     homepage hero title and nav logo are intentionally excepted. */
+  --heading-size: var(--text-heading-sm);
+  --heading-weight: 800;
+  --heading-letter-spacing: -0.01em;
+
   /* Type scale */
   --text-tiny: 0.85rem;
   --text-small: 0.9rem;
@@ -910,11 +922,25 @@ a.page-link:focus-visible {
   background: transparent;
 }
 
+/* Post titles keep their own larger size and sit left-aligned to the reading
+   column (which is itself centered on the page). The utility-page headings
+   (About, tag, search, tags list) use the smaller shared --heading-size,
+   centered. */
 .post-title {
   font-size: var(--text-heading-lg);
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 28px 0 6px;
+}
+
+/* Utility-page heading (About): centered, shared size, with breathing room
+   before the body text below. */
+.page-heading {
+  text-align: center;
+  font-size: var(--heading-size);
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-letter-spacing);
+  margin: 8px 0 32px;
 }
 
 /* Optional post subtitle: a smaller italic line under the title. */
@@ -938,28 +964,33 @@ a.page-link:focus-visible {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0 10px;
+  gap: 0;
   margin: 0 0 24px;
   color: var(--muted);
   font-size: var(--text-base);
 }
 .post-meta .post-date { margin: 0; }
 
+/* Shared tag style, used everywhere a tag appears (post meta, tags page, search
+   results). Links get a hover state; plain spans (e.g. inside a search card,
+   which is itself a link) don't. */
 .post-tag {
   color: var(--muted);
   text-decoration: none;
-  text-transform: none;
+  font-size: var(--tag-size);
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--tag-letter-spacing);
   transition: color 0.2s ease;
 }
-.post-tag:hover,
-.post-tag:focus-visible { color: var(--accent); }
+a.post-tag:hover,
+a.post-tag:focus-visible { color: var(--accent); }
 
-/* Dot before every item after the first, giving "date · tag · tag". */
+/* Dot before every item after the first, giving "date · tag · tag". Symmetric
+   margin carries the whole gap (no flex gap stacked on top), so the spacing
+   reads as one consistent --tag-gap. */
 .post-meta > * + *::before {
   content: "·";
-  margin-right: 10px;
+  margin: 0 calc(var(--tag-gap) / 2);
   color: var(--muted);
 }
 
@@ -979,74 +1010,97 @@ a.page-link:focus-visible {
 }
 
 /* ---------- Tags ---------- */
-.tags {
+/* Shared tag list: .post-tag links/spans laid out inline and separated by a
+   dot — the same treatment as the post page's meta row. Used by the tags
+   listing page and search-result cards. */
+.tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin: 16px 0 24px;
+  align-items: baseline;
+  gap: 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
-
-.tag {
-  display: inline-block;
-  font-size: var(--text-tiny);
-  font-weight: 600;
-  color: var(--accent-ink);
-  background: var(--accent);
-  padding: 4px 12px;
-  border-radius: var(--radius-pill);
-}
-
-/* Tags are links on the post page — keep the pill look, add a hover state. */
-a.tag {
-  text-decoration: none;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-a.tag:hover,
-a.tag:focus-visible {
-  background: var(--accent-ink);
-  color: #fff;
+/* One consistent gap: the dot carries all the spacing via a symmetric margin
+   (no flex gap on top of it), so the total between items is a single --tag-gap. */
+.tag-list > * + *::before {
+  content: "·";
+  margin: 0 calc(var(--tag-gap) / 2);
+  color: var(--muted);
 }
 
 /* Heading on the tag listing page (tag.html). */
 .tag-heading {
   text-align: center;
-  font-size: var(--text-heading-sm);
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  font-size: var(--heading-size);
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-letter-spacing);
   margin: 8px 0 28px;
 }
 .tag-heading .tag-name { color: var(--accent-ink); }
+/* On the tags-list page, keep the heading within (and left-aligned to) the
+   centered index column, not the full page width. */
+.tags-heading {
+  max-width: var(--post-width);
+  margin-left: auto;
+  margin-right: auto;
+}
 
-/* The full tag list (tags.html) — pills laid out as a centered cloud. */
-.tag-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
+/* The full tag list (tags.html): an editorial index — tag name, dotted leader,
+   post count — in two columns (one below 600px). Quiet by design: no boxes,
+   shadows, or pills; the dotted leader is the only structural device. Distinct
+   from the inline .post-tag treatment used elsewhere. */
+.tag-index {
+  columns: 2;
+  column-gap: 48px;
   max-width: var(--post-width);
   margin: 0 auto;
-  padding: 0;
-  list-style: none;
 }
-.tag-cloud .tag {
+@media (max-width: 600px) {
+  .tag-index { columns: 1; }
+}
+.tag-index-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  break-inside: avoid;
+  padding: 7px 0;
+  text-decoration: none;
+}
+.tag-index-name {
+  font-family: Georgia, serif;
+  font-size: var(--text-medium);
+  color: var(--ink);
+}
+.tag-index-leader {
+  flex: 1 1 auto;
+  border-bottom: 2px dotted var(--line);
+  margin-bottom: 0.3em;
+}
+.tag-index-count {
+  flex-shrink: 0;
   font-size: var(--text-small);
-  padding: 6px 14px;
+  color: var(--muted);
 }
-.tag-count {
-  margin-left: 6px;
-  font-weight: 700;
-  opacity: 0.65;
+.tag-index-row:hover .tag-index-name,
+.tag-index-row:hover .tag-index-count,
+.tag-index-row:focus-visible .tag-index-name,
+.tag-index-row:focus-visible .tag-index-count {
+  color: var(--accent-ink);
 }
 
 /* ---------- Search ---------- */
+/* Heading with a thin divider under it, aligned to the results column. */
 .search-heading {
+  max-width: var(--post-width);
+  margin: 8px auto 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
   text-align: center;
-  font-size: var(--text-heading-sm);
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  margin: 8px 0 28px;
+  font-size: var(--heading-size);
+  font-weight: var(--heading-weight);
+  letter-spacing: var(--heading-letter-spacing);
 }
 .search-heading .query-term { color: var(--accent-ink); }
 
@@ -1057,29 +1111,22 @@ a.tag:focus-visible {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 14px;
 }
+/* Thin divider between results — none above the first. */
+.search-results li + li { border-top: 1px solid var(--line); }
 
+/* No card: just a plain row with vertical padding so the dividers breathe. */
 .result-card {
   display: flex;
-  gap: 16px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  overflow: hidden;
+  gap: 18px;
+  padding: 26px 0;
   text-decoration: none;
   color: var(--ink);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.result-card:hover,
-.result-card:focus-visible {
-  border-color: var(--accent);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 .result-thumb {
-  width: 120px;
-  height: 120px;
+  width: 150px;
+  height: 150px;
   flex-shrink: 0;
   object-fit: cover;
   background: var(--line);
@@ -1087,7 +1134,6 @@ a.tag:focus-visible {
 }
 
 .result-body {
-  padding: 14px 16px;
   min-width: 0;
 }
 
@@ -1111,8 +1157,9 @@ a.tag:focus-visible {
 .result-snippet {
   margin: 0;
   color: var(--ink);
+  font-family: Georgia, serif;
   font-size: var(--text-base);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .hl {
@@ -1123,7 +1170,7 @@ a.tag:focus-visible {
 }
 
 @media (max-width: 520px) {
-  .result-thumb { width: 88px; height: 88px; }
+  .result-thumb { width: 112px; height: 112px; }
   .result-title { font-size: var(--text-base); }
 }
 

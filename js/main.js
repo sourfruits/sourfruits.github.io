@@ -18,7 +18,7 @@ const carouselNext = document.getElementById("carousel-next");
 
 const DENSITY_KEY = "grid-density";
 const VIEWS = ["normal", "carousel"];
-const CAROUSEL_MAX = 10;       // most-recent posts shown in the carousel strip
+const CAROUSEL_MAX = 6;        // most-recent posts shown in the carousel strip
 
 let allPosts = [];
 let allTags = [];              // every tag, ordered by post count (ties alphabetical)

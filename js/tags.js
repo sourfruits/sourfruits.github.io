@@ -20,15 +20,18 @@ fetchPosts()
       counts.get(b) - counts.get(a) ||
       a.localeCompare(b, undefined, { sensitivity: "base" }));
 
-    list.innerHTML = tags.map((tag) => `
-      <li>
-        <a class="tag" href="tag.html?tag=${encodeURIComponent(tag)}">
-          ${escapeHTML(tag)}<span class="tag-count">${counts.get(tag)}</span>
-        </a>
-      </li>
-    `).join("");
+    list.innerHTML = tags.map((tag) =>
+      `<a class="tag-index-row" href="tag.html?tag=${encodeURIComponent(tag)}">` +
+        `<span class="tag-index-name">${escapeHTML(tag)}</span>` +
+        `<span class="tag-index-leader" aria-hidden="true"></span>` +
+        `<span class="tag-index-count">${counts.get(tag)}</span>` +
+      `</a>`
+    ).join("");
 
-    status.textContent = tags.length ? "" : "No tags yet.";
+    const postCount = posts.filter((p) => !isDraft(p)).length;
+    status.textContent = tags.length
+      ? `${tags.length} tags across ${postCount} posts`
+      : "No tags yet.";
   })
   .catch((err) => {
     status.textContent = "Couldn't load tags. If you opened this file directly, run a local server (see the README).";

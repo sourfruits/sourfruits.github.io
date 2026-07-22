@@ -77,9 +77,9 @@ function renderResults(posts) {
       resultsEl.innerHTML = pagePosts.map((post) => {
         const tags = Array.isArray(post.tags) ? post.tags : [];
         const tagsHTML = tags.length
-          ? `<ul class="tags result-tags">${tags
-              .map((t) => `<li class="tag">${escapeHTML(t)}</li>`)
-              .join("")}</ul>`
+          ? `<div class="tag-list result-tags">${tags
+              .map((t) => `<span class="post-tag">${escapeHTML(t)}</span>`)
+              .join("")}</div>`
           : "";
 
         return `

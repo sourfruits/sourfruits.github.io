@@ -7,9 +7,9 @@
 
 (function (global) {
   // How many rows we want to fill for a given column count, so each page's
-  // grid comes out complete: 2 cols → 4 rows (8), 3 cols → 3 rows (9),
+  // grid comes out complete: 2 cols → 4 rows (8), 3 cols → 4 rows (12),
   // 4 cols → 4 rows (16).
-  const ROWS_FOR_COLUMNS = { 2: 4, 3: 3, 4: 4 };
+  const ROWS_FOR_COLUMNS = { 2: 4, 3: 4, 4: 4 };
 
   // Count the grid's rendered columns from its computed style. This reflects
   // both the screen-width media queries and the compact/normal class, so it
