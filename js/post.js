@@ -122,6 +122,45 @@ function fitNavTitles() {
 
 window.addEventListener("resize", fitNavTitles);
 
+// "More like this": up to 3 posts sharing at least one tag with the current
+// post, ranked by most matching tags then most recent. Hidden entirely when
+// there are no matches (or the current post has no tags).
+function renderRelated(posts, current) {
+  const section = document.getElementById("related");
+  if (!section) return;
+
+  const currentTags = new Set(Array.isArray(current.tags) ? current.tags : []);
+  const related = posts
+    .filter((p) => p.id !== current.id && Array.isArray(p.tags))
+    .map((p) => {
+      const matched = p.tags.filter((t) => currentTags.has(t));
+      return { post: p, matched, matches: matched.length };
+    })
+    .filter((x) => x.matches > 0)
+    .sort((a, b) =>
+      b.matches - a.matches ||
+      (a.post.date < b.post.date ? 1 : a.post.date > b.post.date ? -1 : 0))
+    .slice(0, 3);
+
+  if (!related.length) {
+    section.hidden = true;
+    return;
+  }
+
+  section.querySelector(".related-grid").innerHTML = related.map(({ post, matched }) => {
+    const src = post.thumb || post.image;
+    // Only the tags shared with the current post; CSS truncates with ellipsis.
+    const tags = matched.join(" · ");
+    return `
+      <a class="related-card" href="post.html?id=${encodeURIComponent(post.id)}">
+        <span class="related-thumb"><img src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}" loading="lazy"></span>
+        <span class="related-title">${escapeHTML(post.title)}</span>
+        ${tags ? `<span class="related-tags">${escapeHTML(tags)}</span>` : ""}
+      </a>`;
+  }).join("");
+  section.hidden = false;
+}
+
 if (!id) {
   status.textContent = "No post specified.";
   status.classList.add("error");
@@ -136,6 +175,7 @@ if (!id) {
       }
       renderPost(post);
       renderPostNav(posts, post);
+      renderRelated(posts, post);
     })
     .catch((err) => {
       status.textContent = "Couldn't load this post. If you opened this file directly, run a local server (see the README).";

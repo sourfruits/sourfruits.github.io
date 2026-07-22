@@ -10,6 +10,17 @@
   --accent-ink: #4a5400;   /* dark text/icons sitting on top of --accent */
   --radius: 14px;
   --maxw: 1040px;
+  --post-width: 700px;     /* reading column for post/search/tag content */
+
+  /* Type scale */
+  --text-tiny: 0.85rem;
+  --text-small: 0.9rem;
+  --text-base: 1rem;
+  --text-medium: 1.05rem;
+  --text-reading: 1.25rem;
+  --text-heading-sm: 1.4rem;
+  --text-heading-lg: 2rem;
+  --text-display: 2.4rem;
 }
 
 /* Dark mode: override only the color variables — every element reads from these,
@@ -90,7 +101,7 @@ main {
   display: inline-flex;
   align-items: center;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: var(--text-medium);
   letter-spacing: -0.01em;
   color: var(--ink);
   text-decoration: none;
@@ -147,7 +158,7 @@ main {
   background: transparent;
   color: var(--ink);
   caret-color: var(--ink);
-  font-size: 0.9rem;
+  font-size: var(--text-small);
   font-weight: 500;
   outline: none;
 }
@@ -223,7 +234,7 @@ main {
 .nav-link {
   color: var(--muted);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: var(--text-base);
   font-weight: 600;
   transition: color 0.2s ease;
 }
@@ -232,7 +243,7 @@ main {
 
 .site-title {
   display: inline-block;
-  font-size: 2.4rem;
+  font-size: var(--text-display);
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -252,7 +263,7 @@ main {
 .site-tagline {
   margin: 14px 0 0;
   color: var(--muted);
-  font-size: 1rem;
+  font-size: var(--text-base);
 }
 
 /* ---------- Homepage controls ---------- */
@@ -279,7 +290,7 @@ main {
   width: 150px;
   height: 33px;
   padding: 8px 36px 8px 14px;
-  font-size: 0.9rem;
+  font-size: var(--text-small);
   font-weight: 600;
   color: var(--ink);
   background-color: var(--surface);
@@ -382,12 +393,12 @@ main {
 
 .tile-title {
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: var(--text-medium);
   line-height: 1.25;
 }
 
 .tile-date {
-  font-size: 0.8rem;
+  font-size: var(--text-tiny);
   opacity: 0.85;
   margin-top: 2px;
 }
@@ -414,7 +425,7 @@ main {
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
-  font-size: 0.9rem;
+  font-size: var(--text-small);
   font-weight: 600;
   text-decoration: none;
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
@@ -446,7 +457,7 @@ a.page-link:focus-visible {
   margin: 8px 0 24px;
   color: var(--muted);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: var(--text-base);
 }
 .back-link:hover { color: var(--ink); }
 
@@ -457,7 +468,9 @@ a.page-link:focus-visible {
 .post-nav {
   display: flex;
   gap: 16px;
-  margin: 48px 0 24px;
+  /* Align to the post reading column (centered) rather than the full page. */
+  max-width: var(--post-width);
+  margin: 56px auto 24px;
 }
 .post-nav:empty { display: none; }
 .post-nav a {
@@ -465,11 +478,11 @@ a.page-link:focus-visible {
   align-items: center;
   gap: 6px;
   /* Cap each link so long titles can't let the two overlap. */
-  max-width: 20%;
+  max-width: 25%;
   min-width: 0;
   color: var(--muted);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: var(--text-base);
 }
 .post-nav a:hover { color: var(--ink); }
 /* Only the title truncates; the arrow stays put on the outer edge. */
@@ -482,8 +495,85 @@ a.page-link:focus-visible {
 .post-nav-arrow { flex-shrink: 0; }
 .post-nav-next { margin-left: auto; }
 
+/* "More like this": related posts sharing tags, aligned with the post body so
+   the cards read a little smaller than the homepage tiles. A thin divider sits
+   above the section (below the prev/next navigation). */
+.related {
+  max-width: var(--post-width);
+  margin: 40px auto 0;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.related[hidden] { display: none; }
+
+.related-heading {
+  margin: 0 0 16px;
+  font-size: var(--text-tiny);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.related-card {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+/* Square thumbnail with the same cover + hover-zoom as the homepage tiles. */
+.related-thumb {
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--line);
+}
+.related-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+.related-card:hover .related-thumb img,
+.related-card:focus-visible .related-thumb img { transform: scale(1.06); }
+
+/* Title below the thumbnail, capped at two lines. */
+.related-title {
+  margin-top: 8px;
+  font-size: var(--text-base);
+  font-weight: 700;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Tags below the title, muted and kept to a single line. */
+.related-tags {
+  margin-top: 4px;
+  font-size: var(--text-tiny);
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 520px) {
+  .related-grid { gap: 10px; }
+  .related-title { font-size: var(--text-tiny); }
+}
+
 .post {
-  max-width: 760px;
+  max-width: var(--post-width);
   margin: 0 auto;
 }
 
@@ -525,7 +615,7 @@ a.page-link:focus-visible {
 }
 
 .post-title {
-  font-size: 2rem;
+  font-size: var(--text-heading-lg);
   font-weight: 800;
   letter-spacing: -0.02em;
   margin: 28px 0 6px;
@@ -533,18 +623,23 @@ a.page-link:focus-visible {
 
 .post-date {
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: var(--text-base);
   margin: 0 0 16px;
 }
 
+.post-body {
+  font-family: Georgia, serif;
+}
+
 .post-body p {
-  font-size: 1.08rem;
+  font-size: var(--text-reading);
+  line-height: 1.8;
   margin: 0 0 1.1em;
 }
 
 /* Match list items to the paragraph font size. */
 .post-body li {
-  font-size: 1.08rem;
+  font-size: var(--text-reading);
 }
 
 /* ---------- Tags ---------- */
@@ -559,7 +654,7 @@ a.page-link:focus-visible {
 
 .tag {
   display: inline-block;
-  font-size: 0.8rem;
+  font-size: var(--text-tiny);
   font-weight: 600;
   color: var(--accent-ink);
   background: var(--accent);
@@ -581,7 +676,7 @@ a.tag:focus-visible {
 /* Heading on the tag listing page (tag.html). */
 .tag-heading {
   text-align: center;
-  font-size: 1.4rem;
+  font-size: var(--text-heading-sm);
   font-weight: 800;
   letter-spacing: -0.01em;
   margin: 8px 0 28px;
@@ -594,13 +689,13 @@ a.tag:focus-visible {
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
-  max-width: 760px;
+  max-width: var(--post-width);
   margin: 0 auto;
   padding: 0;
   list-style: none;
 }
 .tag-cloud .tag {
-  font-size: 0.9rem;
+  font-size: var(--text-small);
   padding: 6px 14px;
 }
 .tag-count {
@@ -613,7 +708,7 @@ a.tag:focus-visible {
 .search-form {
   display: flex;
   gap: 10px;
-  max-width: 760px;
+  max-width: var(--post-width);
   margin: 0 auto 28px;
 }
 
@@ -621,7 +716,7 @@ a.tag:focus-visible {
   flex: 1;
   min-width: 0;
   padding: 12px 16px;
-  font-size: 1rem;
+  font-size: var(--text-base);
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--line);
@@ -636,7 +731,7 @@ a.tag:focus-visible {
 
 .search-submit {
   padding: 0 22px;
-  font-size: 0.95rem;
+  font-size: var(--text-base);
   font-weight: 700;
   color: var(--accent-ink);
   background: var(--accent);
@@ -654,7 +749,7 @@ a.tag:focus-visible {
 
 .search-heading {
   text-align: center;
-  font-size: 1.3rem;
+  font-size: var(--text-heading-sm);
   font-weight: 800;
   letter-spacing: -0.01em;
   margin: 8px 0 28px;
@@ -665,7 +760,7 @@ a.tag:focus-visible {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-width: 760px;
+  max-width: var(--post-width);
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -704,7 +799,7 @@ a.tag:focus-visible {
 }
 
 .result-title {
-  font-size: 1.15rem;
+  font-size: var(--text-reading);
   font-weight: 700;
   letter-spacing: -0.01em;
   margin: 0 0 2px;
@@ -712,7 +807,7 @@ a.tag:focus-visible {
 
 .result-date {
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--text-tiny);
   margin: 0 0 8px;
 }
 
@@ -723,7 +818,7 @@ a.tag:focus-visible {
 .result-snippet {
   margin: 0;
   color: var(--ink);
-  font-size: 0.95rem;
+  font-size: var(--text-base);
   line-height: 1.5;
 }
 
@@ -736,7 +831,7 @@ a.tag:focus-visible {
 
 @media (max-width: 520px) {
   .result-thumb { width: 88px; height: 88px; }
-  .result-title { font-size: 1.05rem; }
+  .result-title { font-size: var(--text-base); }
 }
 
 /* ---------- Misc ---------- */
@@ -751,7 +846,7 @@ a.tag:focus-visible {
 .site-footer {
   text-align: center;
   color: var(--muted);
-  font-size: 0.85rem;
+  font-size: var(--text-tiny);
   padding: 32px 20px 48px;
   border-top: 1px solid var(--line);
   margin-top: 24px;
