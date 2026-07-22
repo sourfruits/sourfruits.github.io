@@ -91,14 +91,16 @@ function buildMenu(posts) {
       </label>`).join("");
 }
 
-// Reflect the selection on the checkboxes, the toggle label, and whether
-// "Clear all" is enabled.
-function syncMenu() {
+// Reflect the selection on the checkboxes, the toggle label (with the number of
+// matching posts), and whether "Clear all" is enabled.
+function syncMenu(matchCount) {
   tagMenu.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
     cb.checked = selectedTags.has(cb.value);
   });
   const n = selectedTags.size;
-  tagLabel.textContent = n === 0 ? "All tags" : (n === 1 ? selectedParam() : `${n} tags`);
+  if (n === 0) tagLabel.textContent = "All tags";
+  else if (n === 1) tagLabel.textContent = `${selectedParam()} (${matchCount})`;
+  else tagLabel.textContent = `${n} tags (${matchCount})`;
   const clear = document.getElementById("tag-clear");
   if (clear) clear.disabled = n === 0;
 }
@@ -115,8 +117,9 @@ function updateURL() {
 }
 
 function applyFilter() {
-  syncMenu();
-  renderGrid(filteredPosts());
+  const posts = filteredPosts();
+  syncMenu(posts.length);
+  renderGrid(posts);
 }
 
 // --- dropdown open/close ---
