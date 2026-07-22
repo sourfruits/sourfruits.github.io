@@ -14,6 +14,10 @@
   --maxw: 1040px;
   --post-width: 700px;     /* reading column for post/search/tag content */
 
+  /* Font stacks */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: Georgia, serif;
+
   /* Shared tag treatment — one place to tune tags everywhere (post page, tags
      listing, search results). */
   --tag-size: var(--text-small);
@@ -63,7 +67,7 @@ body {
   background-image: linear-gradient(to bottom, var(--bg-top), var(--bg) 40vh);
   background-repeat: no-repeat;
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
@@ -995,7 +999,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 
 .post-body {
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
 }
 
 .post-body p {
@@ -1069,7 +1073,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   text-decoration: none;
 }
 .tag-index-name {
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: var(--text-medium);
   color: var(--ink);
 }
@@ -1157,7 +1161,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 .result-snippet {
   margin: 0;
   color: var(--ink);
-  font-family: Georgia, serif;
+  font-family: var(--font-serif);
   font-size: var(--text-base);
   line-height: 1.6;
 }
