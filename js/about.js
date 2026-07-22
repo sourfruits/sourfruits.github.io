@@ -17,7 +17,6 @@ Want to get in touch? Drop your email address, social links, or anything else
 you'd like readers to know right here.
 `;
 
-document.getElementById("year").textContent = new Date().getFullYear();
 initBackButton();
 
 // Render the Markdown to HTML with marked, then sanitize before it hits the DOM.

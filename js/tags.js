@@ -4,7 +4,6 @@
 const list = document.getElementById("tag-list");
 const status = document.getElementById("status");
 
-document.getElementById("year").textContent = new Date().getFullYear();
 initBackButton();
 
 fetchPosts()

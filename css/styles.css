@@ -9,6 +9,7 @@
   --accent: #67b35d;       /* medium green */
   --accent-ink: #4a5400;   /* dark text/icons sitting on top of --accent */
   --radius: 14px;
+  --radius-pill: 999px;
   --maxw: 1040px;
   --post-width: 700px;     /* reading column for post/search/tag content */
 
@@ -129,10 +130,10 @@ main {
   padding: 20px 10px 0;
 }
 
-/* Inline search bar: same 150x40 footprint as the tag-filter button, filled with
-   the page background, magnifier on the right, no visible border. On focus it
-   turns white (both light and dark mode) with dark text. Fixed size — no
-   hover/focus expansion. */
+/* Inline search bar: a compact 150x30 bar sitting by the tag-filter button,
+   filled with the page background, magnifier on the right, no visible border.
+   On focus it turns white (both light and dark mode) with dark text. Fixed
+   size — no hover/focus expansion. */
 .header-search {
   display: inline-flex;
   align-items: center;
@@ -140,7 +141,7 @@ main {
   width: 150px;
   height: 30px;
   padding: 0 6px 0 14px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid transparent;
   background: var(--bg);
   transition: background 0.2s ease, box-shadow 0.2s ease;
@@ -182,7 +183,7 @@ main {
   height: 28px;
   padding: 0;
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--muted);
   cursor: pointer;
@@ -261,7 +262,7 @@ main {
   width: 44px;
   height: 5px;
   margin: 10px auto 0;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent);
 }
 
@@ -303,7 +304,7 @@ main {
   background-repeat: no-repeat;
   background-position: right 12px center;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -325,7 +326,7 @@ main {
   padding: 4px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 .density-btn {
@@ -336,7 +337,7 @@ main {
   height: 32px;
   padding: 0;
   border: none;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--muted);
   cursor: pointer;
@@ -426,7 +427,7 @@ main {
   min-width: 40px;
   height: 40px;
   padding: 0 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
@@ -628,6 +629,14 @@ a.page-link:focus-visible {
   margin: 28px 0 6px;
 }
 
+/* Optional post subtitle: a smaller italic line under the title. */
+.post-subtitle {
+  font-size: var(--text-heading-sm);
+  font-style: italic;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
 .post-date {
   color: var(--muted);
   font-size: var(--text-base);
@@ -666,7 +675,7 @@ a.page-link:focus-visible {
   color: var(--accent-ink);
   background: var(--accent);
   padding: 4px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 /* Tags are links on the post page — keep the pill look, add a hover state. */
@@ -727,7 +736,7 @@ a.tag:focus-visible {
   color: var(--ink);
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -743,7 +752,7 @@ a.tag:focus-visible {
   color: var(--accent-ink);
   background: var(--accent);
   border: 1px solid var(--accent);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
@@ -765,7 +774,6 @@ a.tag:focus-visible {
 
 .search-results {
   list-style: none;
-  margin: 0;
   padding: 0;
   max-width: var(--post-width);
   margin: 0 auto;
@@ -857,4 +865,56 @@ a.tag:focus-visible {
   padding: 32px 20px 48px;
   border-top: 1px solid var(--line);
   margin-top: 24px;
+}
+
+/* ---------- Load-in animations ---------- */
+/* Subtle opacity 0→1 fades (no movement). Sequenced hero → controls → grid
+   tiles, and on the post page image → title → subtitle → date → tags → body. */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* 1. Hero/intro fades in immediately on load (no upward drift). */
+.site-intro { animation: fadeIn 0.9s ease both; }
+
+/* Home controls (tag filter + density toggle) fade in just after the hero. */
+.controls { animation: fadeIn 0.4s ease both; animation-delay: 0.45s; }
+
+/* 2. Grid tiles stagger in (fade only, no drift); per-tile animation-delay is
+   set inline in JS (0.3s base + 0.05s per tile, left-to-right, top-to-bottom). */
+.tile { animation: fadeIn 0.5s ease both; }
+
+/* Post page: hidden until the image loads (JS adds .is-loaded to #post). */
+#post .post-image-frame,
+#post .post-title,
+#post .post-subtitle,
+#post .post-date,
+#post .tags,
+#post .post-body { opacity: 0; }
+
+/* 3. Image fades in on load. */
+#post.is-loaded .post-image-frame { animation: fadeIn 0.4s ease both; }
+
+/* 4. Content cascades in after the image, each element just after the last. */
+#post.is-loaded .post-title    { animation: fadeIn 0.3s ease both; animation-delay: 0.10s; }
+#post.is-loaded .post-subtitle { animation: fadeIn 0.3s ease both; animation-delay: 0.15s; }
+#post.is-loaded .post-date     { animation: fadeIn 0.3s ease both; animation-delay: 0.20s; }
+#post.is-loaded .tags          { animation: fadeIn 0.3s ease both; animation-delay: 0.30s; }
+#post.is-loaded .post-body     { animation: fadeIn 0.3s ease both; animation-delay: 0.40s; }
+
+/* Respect reduced-motion: show everything at rest, no animation. */
+@media (prefers-reduced-motion: reduce) {
+  .site-intro,
+  .tile,
+  #post .post-image-frame,
+  #post .post-title,
+  #post .post-subtitle,
+  #post .post-date,
+  #post .tags,
+  #post .post-body {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }

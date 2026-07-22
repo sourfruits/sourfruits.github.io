@@ -3,7 +3,6 @@
 const article = document.getElementById("post");
 const status = document.getElementById("status");
 
-document.getElementById("year").textContent = new Date().getFullYear();
 initBackButton();
 
 const id = new URLSearchParams(window.location.search).get("id");
@@ -59,16 +58,34 @@ function renderPost(post) {
   // instead of leaving it empty. The real image sits centered on top.
   const src = post.image || post.thumb;
 
+  // Optional subtitle, shown between the title and the date.
+  const subtitle = post.subtitle
+    ? `<p class="post-subtitle">${escapeHTML(post.subtitle)}</p>`
+    : "";
+
   article.innerHTML = `
     <div class="post-image-frame" style="--post-bg: url('${encodeURI(src)}')">
       <img class="post-image" src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}">
     </div>
     <h1 class="post-title">${escapeHTML(post.title)}</h1>
+    ${subtitle}
     <p class="post-date">${escapeHTML(formatDate(post.date, "long"))}</p>
     ${tags}
     <div class="post-body">${renderContent(post.content)}</div>
   `;
   status.textContent = "";
+
+  // Fade the image in once it loads, then cascade the content in (see the
+  // load-in animation rules in the CSS). Reveal immediately if the image is
+  // already cached or fails to load, so content never gets stuck hidden.
+  const image = article.querySelector(".post-image");
+  const reveal = () => article.classList.add("is-loaded");
+  if (image && !image.complete) {
+    image.addEventListener("load", reveal);
+    image.addEventListener("error", reveal);
+  } else {
+    reveal();
+  }
 }
 
 // Bottom-of-page previous/next links, matching the newest-first grid order
@@ -78,11 +95,12 @@ function renderPostNav(posts, current) {
   const nav = document.getElementById("post-nav");
   if (!nav) return;
 
-  const ordered = posts.slice().sort((a, b) =>
-    a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  // Newest-first, matching the grid; so the newer neighbour is the previous
+  // index and the older neighbour is the next index.
+  const ordered = sortByDateDesc(posts.slice());
   const i = ordered.findIndex((p) => p.id === current.id);
-  const newer = i >= 0 && i < ordered.length - 1 ? ordered[i + 1] : null;
-  const older = i > 0 ? ordered[i - 1] : null;
+  const newer = i > 0 ? ordered[i - 1] : null;
+  const older = i >= 0 && i < ordered.length - 1 ? ordered[i + 1] : null;
   const prev = newer; // Previous → newer post (previous in grid order)
   const next = older; // Next → older post (next in grid order)
 

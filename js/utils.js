@@ -24,6 +24,25 @@ function fetchPosts() {
   });
 }
 
+// Sort posts newest-first by ISO date. Mutates and returns the array.
+function sortByDateDesc(posts) {
+  return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+// One homepage/tag grid tile. `i` is the item's index on the page, driving the
+// staggered load-in animation delay (see the .tile rule in the CSS).
+function renderTile(post, i) {
+  return `
+    <a class="tile" href="post.html?id=${encodeURIComponent(post.id)}" style="animation-delay: ${(0.3 + i * 0.05).toFixed(2)}s">
+      <img src="${escapeHTML(post.thumb || post.image)}" alt="${escapeHTML(post.title)}" loading="lazy">
+      <div class="tile-overlay">
+        <span class="tile-title">${escapeHTML(post.title)}</span>
+        <span class="tile-date">${escapeHTML(formatDate(post.date))}</span>
+      </div>
+    </a>
+  `;
+}
+
 // Pick the back-link label based on the page the user came from.
 function backLabel() {
   const ref = document.referrer;

@@ -58,4 +58,9 @@
       }
     });
   }
+
+  // Stamp the current year into the footer's year slot (present on every page),
+  // so individual page scripts don't each repeat it.
+  const yearEl = document.getElementById("year");
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 })();

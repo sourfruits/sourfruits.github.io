@@ -9,7 +9,6 @@ const input = document.getElementById("search-input");
 
 const PER_PAGE = 10;
 
-document.getElementById("year").textContent = new Date().getFullYear();
 initBackButton();
 
 const query = (new URLSearchParams(window.location.search).get("q") || "").trim();
@@ -71,7 +70,7 @@ function matches(post, q) {
 
 function renderResults(posts) {
   // Newest first, regardless of order in the JSON file.
-  posts.sort((a, b) => (a.date < b.date ? 1 : -1));
+  sortByDateDesc(posts);
 
   Pagination.paginate({
     items: posts,

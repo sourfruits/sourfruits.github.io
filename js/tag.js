@@ -5,7 +5,6 @@ const status = document.getElementById("status");
 const heading = document.getElementById("tag-heading");
 const pagination = document.getElementById("pagination");
 
-document.getElementById("year").textContent = new Date().getFullYear();
 initBackButton();
 
 const tag = new URLSearchParams(window.location.search).get("tag");
@@ -18,7 +17,7 @@ function pageHref(page) {
 
 function renderGrid(posts) {
   // Newest first, regardless of order in the JSON file.
-  posts.sort((a, b) => (a.date < b.date ? 1 : -1));
+  sortByDateDesc(posts);
 
   // Fill each page based on the grid's live column count (which follows the
   // screen-width breakpoints).
@@ -28,15 +27,7 @@ function renderGrid(posts) {
     container: pagination,
     hrefFor: pageHref,
     renderItems: (pagePosts) => {
-      grid.innerHTML = pagePosts.map((post) => `
-        <a class="tile" href="post.html?id=${encodeURIComponent(post.id)}">
-          <img src="${escapeHTML(post.thumb || post.image)}" alt="${escapeHTML(post.title)}" loading="lazy">
-          <div class="tile-overlay">
-            <span class="tile-title">${escapeHTML(post.title)}</span>
-            <span class="tile-date">${escapeHTML(formatDate(post.date))}</span>
-          </div>
-        </a>
-      `).join("");
+      grid.innerHTML = pagePosts.map(renderTile).join("");
     },
   });
 }

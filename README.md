@@ -1,9 +1,14 @@
 # Sourfruits
 
 A small Instagram-style photo blog as a static website. The homepage is a grid of
-square thumbnails; clicking one opens a post with the full image, date, tags, and text.
-You can also browse by tag or search across every post. All posts live in a single
-JSON file so adding a new one is a one-block edit.
+square thumbnails; clicking one opens a post with the full image, optional subtitle,
+date, tags, and text. You can also browse by tag or search across every post. All
+posts live in a single JSON file so adding a new one is a one-block edit.
+
+Extras baked in: a light/dark theme toggle (floating, remembered per browser), an
+inline header search box, gentle load-in fade animations (which respect
+`prefers-reduced-motion`), and — at the bottom of every post — previous/next links
+and a "More like this" row of posts sharing its tags.
 
 ## File structure
 
@@ -18,8 +23,9 @@ sourfruits-blog/
 ├── css/
 │   └── styles.css    All styling, shared by every page
 ├── js/
-│   ├── utils.js      Shared helpers: formatDate, escapeHTML, fetchPosts, initBackButton
-│   ├── header.js     Injects the shared site header/nav into every page
+│   ├── utils.js      Shared helpers: formatDate, escapeHTML, fetchPosts, sortByDateDesc, renderTile, initBackButton
+│   ├── header.js     Injects the shared header/nav + search into every page (also stamps the footer year)
+│   ├── theme.js      Floating dark-mode toggle; remembers the choice per browser
 │   ├── pagination.js Shared page slicing + prev/next/numbered nav
 │   ├── main.js       Homepage — loads posts.json, builds the grid
 │   ├── post.js       Post page — loads one post by its id and renders it
@@ -34,10 +40,11 @@ sourfruits-blog/
 ```
 
 There is no build step and no framework — just HTML, CSS, and a little vanilla
-JavaScript. Each page loads `utils.js` and `header.js`; the list pages (home, tag,
-search) also load `pagination.js`, then their own page script. Scripts talk to each
-other through a few plain globals (`formatDate`, `escapeHTML`, `fetchPosts`,
-`Pagination`) — no modules or bundler involved.
+JavaScript. Each page loads `utils.js`, `header.js`, and `theme.js`; the list pages
+(home, tag, search) also load `pagination.js`, then their own page script. Scripts
+talk to each other through a few plain globals (`formatDate`, `escapeHTML`,
+`fetchPosts`, `sortByDateDesc`, `renderTile`, `Pagination`) — no modules or bundler
+involved.
 
 ## Running it
 
@@ -73,6 +80,7 @@ Open `data/posts.json` and add an object to the array:
 {
   "id": "unique-slug",                         // used in the URL: post.html?id=unique-slug
   "title": "Post Title",
+  "subtitle": "An optional italic line",       // optional — omit it to show nothing
   "date": "2026-06-29",                        // YYYY-MM-DD — used for sorting (newest first)
   "tags": ["citrus", "kitchen"],
   "thumb": "images/my-photo-square.jpg",       // square image for the grid
@@ -83,7 +91,11 @@ Open `data/posts.json` and add an object to the array:
 
 Notes:
 - `id` must be unique — it's how the post page finds the right entry.
+- `subtitle` is optional: when present it appears in italics under the title, above
+  the date. Omit the field (or leave it empty) and nothing is shown.
 - Posts are sorted by `date` automatically, so order in the file doesn't matter.
+- The post page automatically adds previous/next links and a "More like this" row
+  (up to 3 posts sharing the most tags) — no configuration needed.
 - `content` supports Markdown, rendered on the post page: headings (`## Heading`),
   **bold** (`**text**`), *italics* (`*text*`), and lists (`- item`). Blank lines
   still create paragraph breaks. (Write it as one JSON string, using `\n` for line
@@ -111,11 +123,13 @@ New pages follow the same skeleton as the existing ones. In the HTML `<body>`:
   <!-- Header markup is injected by js/header.js -->
   <header class="site-header"></header>
   ```
-- Load the scripts at the end of `<body>`, `utils.js` first, then the page's own
-  script (add `pagination.js` too if the page shows a paginated list):
+- Load the scripts at the end of `<body>`, `utils.js` first, then `header.js` and
+  `theme.js`, then the page's own script (add `pagination.js` too if the page shows
+  a paginated list):
   ```html
   <script src="js/utils.js"></script>
   <script src="js/header.js"></script>
+  <script src="js/theme.js"></script>
   <script src="js/your-page.js"></script>
   ```
 
