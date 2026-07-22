@@ -31,17 +31,6 @@
             <a class="nav-link" href="tags.html">Tags</a>
             <a class="nav-link" href="about.html">About</a>
           </nav>
-          <button type="button" id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
-            <!-- Moon: shown in light mode (click to switch to dark) -->
-            <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-            <!-- Sun: shown in dark mode (click to switch to light) -->
-            <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="4"></circle>
-              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
-            </svg>
-          </button>
           <a class="header-search" href="search.html" aria-label="Search">
             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="7"></circle>
@@ -52,28 +41,4 @@
       </div>
     </div>${intro}
   `;
-
-  // ---------- Dark-mode toggle (site-wide) ----------
-  // Apply a theme ("light" or "dark") to the document, reflect it on the toggle
-  // button, and remember the choice in localStorage so it persists across pages
-  // and sessions. The CSS swaps the moon/sun icon and the color variables based
-  // on the data-theme attribute on <html>.
-  const THEME_KEY = "theme";
-  const themeToggle = header.querySelector("#theme-toggle");
-
-  function setTheme(next) {
-    document.documentElement.setAttribute("data-theme", next);
-    themeToggle.setAttribute("aria-pressed", next === "dark" ? "true" : "false");
-    try { localStorage.setItem(THEME_KEY, next); } catch (err) { /* ignore */ }
-  }
-
-  themeToggle.addEventListener("click", () => {
-    const current = document.documentElement.getAttribute("data-theme") || "light";
-    setTheme(current === "dark" ? "light" : "dark");
-  });
-
-  // Initialize from the saved choice (default light).
-  let initialTheme = "light";
-  try { initialTheme = localStorage.getItem(THEME_KEY) || "light"; } catch (err) { /* ignore */ }
-  setTheme(initialTheme);
 })();
