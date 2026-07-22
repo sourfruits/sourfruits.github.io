@@ -483,6 +483,10 @@ main {
   padding: 16px;
   color: #fff;
   background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0) 55%);
+  /* Two-layer shadow (tight + soft) behind the caption so the white title/date
+     stay legible over bright photos, not just dark ones. Inherited by the
+     title/date text below. */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85), 0 0 10px rgba(0, 0, 0, 0.45);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -553,13 +557,26 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
    2 on mobile (matching the grid's column counts). Images stay lazy-loaded. */
 .grid.is-carousel .tile {
   flex: 0 0 auto;
-  --carousel-tile: calc((min(100vw, var(--maxw)) - 40px) / 1.6);
+  --carousel-tile: calc((min(100vw, var(--maxw)) - 40px) / 2);
   width: var(--carousel-tile);
   height: var(--carousel-tile);
   aspect-ratio: 1 / 1;
 }
 @media (max-width: 720px) {
   .grid.is-carousel .tile { --carousel-tile: 80vw; }
+}
+
+/* Soft shadow hugging each tile's inner edges so the strip reads as separate,
+   slightly framed photos rather than one continuous image cut into pieces — no
+   actual gap added. On a ::after (above the photo) because an inset box-shadow
+   on the tile itself would be painted behind the <img>. Kept light so it's a
+   depth cue, not a border. */
+.grid.is-carousel .tile:not(.carousel-seeall)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.22);
 }
 
 /* Carousel sits close to the footer — drop the tall grid padding beneath it. */
@@ -632,8 +649,9 @@ body:has(.grid.is-carousel) main { padding-bottom: 24px; }
   justify-content: center;
   align-items: center;
   gap: 0;
-  margin-top: 40px;
-  padding-top: 24px;
+  /* Even 16px on both sides of the divider — same as the controls divider. */
+  margin-top: 16px;
+  padding-top: 16px;
   border-top: 1px solid var(--line);
 }
 .pagination:empty { display: none; }
@@ -1086,9 +1104,11 @@ a.tag:focus-visible {
   text-align: center;
   color: var(--muted);
   font-size: var(--text-tiny);
-  padding: 32px 20px 48px;
+  /* Even 16px above (margin) and below (padding-top) the divider; the larger
+     bottom padding is deliberate page-end breathing room. */
+  padding: 16px 20px 48px;
   border-top: 1px solid var(--line);
-  margin-top: 24px;
+  margin-top: 16px;
 }
 
 /* ---------- Load-in animations ---------- */
