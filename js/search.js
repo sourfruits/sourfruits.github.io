@@ -5,16 +5,12 @@ const resultsEl = document.getElementById("results");
 const status = document.getElementById("status");
 const heading = document.getElementById("search-heading");
 const pagination = document.getElementById("pagination");
-const input = document.getElementById("search-input");
 
 const PER_PAGE = 10;
 
 initBackButton();
 
 const query = (new URLSearchParams(window.location.search).get("q") || "").trim();
-
-// Keep the search box populated with the active query.
-input.value = query;
 
 // Build an href for a given page number, keeping the query and page 1 clean.
 function pageHref(page) {
@@ -112,13 +108,13 @@ function setHeading(count) {
 if (!query) {
   heading.textContent = "Search Sourfruits";
   status.textContent = "Type something above to search posts, tags, and text.";
-  input.focus();
+  document.querySelector(".header-search-input")?.focus();
 } else {
   document.title = `“${query}” — Sourfruits`;
 
   fetchPosts()
     .then((posts) => {
-      const found = posts.filter((p) => matches(p, query));
+      const found = posts.filter((p) => !isDraft(p) && matches(p, query));
       setHeading(found.length);
       renderResults(found);
       status.textContent = found.length

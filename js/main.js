@@ -10,12 +10,15 @@ const tagToggle = document.getElementById("tag-dropdown-toggle");
 const tagMenu = document.getElementById("tag-dropdown-menu");
 const tagLabel = document.getElementById("tag-dropdown-label");
 const densityToggle = document.querySelector(".density-toggle");
+const draftsToggle = document.getElementById("drafts-toggle");
+const draftsLabel = draftsToggle.querySelector(".drafts-label");
 
 const DENSITY_KEY = "grid-density";
 
 let allPosts = [];
 let allTags = [];              // every tag, ordered by post count (ties alphabetical)
 let selectedTags = new Set();  // the tags currently checked
+let showDrafts = true;         // whether draft posts are revealed (shown by default)
 
 // Selected tags parsed from ?tags= (comma-separated).
 function tagsFromURL() {
@@ -60,11 +63,18 @@ function renderGrid(posts) {
     : (selectedTags.size ? "No posts match these tags." : "No posts here yet.");
 }
 
+// The pool the grid and tag menu work from: all posts, minus drafts unless the
+// drafts toggle is on.
+function baseSet() {
+  return showDrafts ? allPosts : allPosts.filter((p) => !isDraft(p));
+}
+
 // AND logic: a post must carry every selected tag. No selection → show all.
 function filteredPosts() {
-  if (selectedTags.size === 0) return allPosts;
+  const base = baseSet();
+  if (selectedTags.size === 0) return base;
   const wanted = [...selectedTags];
-  return allPosts.filter((p) =>
+  return base.filter((p) =>
     Array.isArray(p.tags) && wanted.every((t) => p.tags.includes(t)));
 }
 
@@ -101,6 +111,8 @@ function syncMenu(matchCount) {
   if (n === 0) tagLabel.textContent = "All tags";
   else if (n === 1) tagLabel.textContent = `${selectedParam()} (${matchCount})`;
   else tagLabel.textContent = `${n} tags (${matchCount})`;
+  // Underline the toggle while a filter is applied.
+  tagToggle.classList.toggle("is-active", n > 0);
   const clear = document.getElementById("tag-clear");
   if (clear) clear.disabled = n === 0;
 }
@@ -181,6 +193,15 @@ densityToggle.addEventListener("click", (e) => {
   if (btn) setDensity(btn.dataset.density);
 });
 
+// Drafts toggle: flip whether drafts are included, then rebuild the tag menu
+// (its counts follow the visible pool) and re-render the grid.
+draftsToggle.addEventListener("click", () => {
+  showDrafts = !showDrafts;
+  draftsToggle.setAttribute("aria-pressed", showDrafts ? "true" : "false");
+  buildMenu(baseSet());
+  applyFilter();
+});
+
 let initialDensity = "normal";
 try { initialDensity = localStorage.getItem(DENSITY_KEY) || "normal"; } catch (err) { /* ignore */ }
 setDensity(initialDensity);
@@ -188,7 +209,17 @@ setDensity(initialDensity);
 fetchPosts()
   .then((posts) => {
     allPosts = posts;
-    buildMenu(posts);
+
+    // Reveal the drafts toggle only when there's at least one draft to show.
+    // Drafts are shown by default, so the toggle starts in its pressed state.
+    const draftCount = allPosts.filter(isDraft).length;
+    if (draftCount > 0) {
+      draftsLabel.textContent = `Drafts (${draftCount})`;
+      draftsToggle.setAttribute("aria-pressed", showDrafts ? "true" : "false");
+      draftsToggle.hidden = false;
+    }
+
+    buildMenu(baseSet());
     selectedTags = new Set(tagsFromURL().filter((t) => allTags.includes(t)));
     applyFilter();
   })

@@ -41,7 +41,8 @@ if (!tag) {
 
   fetchPosts()
     .then((posts) => {
-      const matches = posts.filter((p) => Array.isArray(p.tags) && p.tags.includes(tag));
+      const matches = posts.filter((p) =>
+        !isDraft(p) && Array.isArray(p.tags) && p.tags.includes(tag));
       renderGrid(matches);
       status.textContent = matches.length ? "" : "No posts with this tag yet.";
     })

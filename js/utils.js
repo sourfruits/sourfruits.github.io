@@ -24,16 +24,27 @@ function fetchPosts() {
   });
 }
 
-// Sort posts newest-first by ISO date. Mutates and returns the array.
+// Sort posts newest-first by ISO date. Mutates and returns the array. Ties
+// (same date) return 0, so the stable sort keeps their order from posts.json.
 function sortByDateDesc(posts) {
-  return posts.sort((a, b) => (a.date < b.date ? 1 : -1));
+  return posts.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+}
+
+// A post is a draft if it's flagged "draft": true, or dated in 2099 or later
+// (a convention for posts parked in the future). Drafts are hidden by default.
+function isDraft(post) {
+  if (post.draft === true) return true;
+  const year = parseInt(String(post.date || "").slice(0, 4), 10);
+  return year >= 2099;
 }
 
 // One homepage/tag grid tile. `i` is the item's index on the page, driving the
 // staggered load-in animation delay (see the .tile rule in the CSS).
 function renderTile(post, i) {
+  const draft = isDraft(post);
   return `
-    <a class="tile" href="post.html?id=${encodeURIComponent(post.id)}" style="animation-delay: ${(0.3 + i * 0.05).toFixed(2)}s">
+    <a class="tile${draft ? " is-draft" : ""}" href="post.html?id=${encodeURIComponent(post.id)}" style="animation-delay: ${(0.3 + i * 0.05).toFixed(2)}s">
+      ${draft ? '<span class="draft-badge">DRAFT</span>' : ""}
       <img src="${escapeHTML(post.thumb || post.image)}" alt="${escapeHTML(post.title)}" loading="lazy">
       <div class="tile-overlay">
         <span class="tile-title">${escapeHTML(post.title)}</span>

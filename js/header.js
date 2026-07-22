@@ -51,6 +51,9 @@
   const searchForm = header.querySelector(".header-search");
   if (searchForm) {
     const searchInput = searchForm.querySelector(".header-search-input");
+    // On the search page, reflect the active ?q= so the header bar shows it.
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q) searchInput.value = q;
     searchForm.addEventListener("submit", (e) => {
       if (!searchInput.value.trim()) {
         e.preventDefault();

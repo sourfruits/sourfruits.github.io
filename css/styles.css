@@ -10,7 +10,7 @@
   --accent: #67b35d;       /* medium green */
   --accent-ink: #4a5400;   /* dark text/icons sitting on top of --accent */
   --radius: 14px;
-  --radius-pill: 999px;
+  --radius-pill: 6px;      /* was a full pill (999px); now a soft 6px on all controls */
   --maxw: 1040px;
   --post-width: 700px;     /* reading column for post/search/tag content */
 
@@ -145,7 +145,7 @@ main {
   width: 150px;
   height: 30px;
   padding: 0 6px 0 14px;
-  border-radius: var(--radius-pill);
+  border-radius: 999px;
   border: 1px solid transparent;
   background: var(--bg);
   transition: background 0.2s ease, box-shadow 0.2s ease;
@@ -187,7 +187,7 @@ main {
   height: 28px;
   padding: 0;
   border: none;
-  border-radius: var(--radius-pill);
+  border-radius: 999px;
   background: transparent;
   color: var(--muted);
   cursor: pointer;
@@ -291,36 +291,60 @@ main {
   border-bottom: 1px solid var(--line);
 }
 
-.tag-filter {
-  position: relative;
+/* Left cluster of the controls row: the tag dropdown and the drafts toggle,
+   kept together so the density toggle stays pushed to the right. */
+.controls-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
 }
 
-/* Dropdown toggle: a pill matching the site's other controls, with a chevron
-   that flips when open. */
-.tag-dropdown-toggle {
+.tag-filter {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Plain-text controls: no border/background/pill. Muted by default; the "on"
+   state (drafts shown / a tag filter applied) darkens to ink and gets a 1.5px
+   underline 3px below the label. */
+.tag-dropdown-toggle,
+.drafts-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-width: 150px;
-  height: 33px;
-  padding: 0 14px;
+  gap: 6px;
+  padding: 0;
   font-size: var(--text-small);
   font-weight: 600;
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
+  color: var(--muted);
+  background: none;
+  border: none;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: color 0.2s ease;
 }
-.tag-dropdown-toggle:hover { border-color: var(--accent); }
-.tag-dropdown-toggle:focus-visible {
+.tag-dropdown-toggle:hover,
+.tag-dropdown-toggle:focus-visible,
+.drafts-toggle:hover,
+.drafts-toggle:focus-visible {
   outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 0.35);
+  color: var(--ink);
 }
+
+/* On/active states: just darken to ink, no underline. */
+.tag-dropdown-toggle.is-active,
+.drafts-toggle[aria-pressed="true"] {
+  color: var(--ink);
+}
+
+.drafts-toggle[hidden] { display: none; }
+.drafts-toggle .drafts-icon { flex-shrink: 0; }
+/* Show the open eye when drafts are visible (aria-pressed="true"), the
+   crossed-out eye when they're hidden. */
+.drafts-toggle .drafts-icon-closed { display: none; }
+.drafts-toggle[aria-pressed="false"] .drafts-icon-open { display: none; }
+.drafts-toggle[aria-pressed="false"] .drafts-icon-closed { display: inline; }
+
 .tag-dropdown-toggle .chevron {
-  margin-left: auto;
   color: var(--muted);
   transition: transform 0.2s ease;
 }
@@ -393,35 +417,30 @@ main {
   font-size: var(--text-tiny);
 }
 
+/* Grid density toggle: icon-only, no border or background. The muted icons
+   darken to ink on hover and for the active density. */
 .density-toggle {
   display: inline-flex;
   flex-shrink: 0;
-  gap: 4px;
-  padding: 4px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
+  gap: 8px;
 }
 
 .density-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   padding: 0;
   border: none;
-  border-radius: var(--radius-pill);
-  background: transparent;
+  background: none;
   color: var(--muted);
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: color 0.2s ease;
 }
-.density-btn:hover { color: var(--accent-ink); }
-.density-btn.is-active {
-  background: var(--accent);
-  color: var(--accent-ink);
-}
+.density-btn:hover { color: var(--ink); }
+.density-btn.is-active { color: var(--ink); }
+.density-btn:focus-visible { outline: none; color: var(--ink); }
 
 /* ---------- Grid ---------- */
 .grid {
@@ -483,25 +502,53 @@ main {
   margin-top: 2px;
 }
 
+/* Draft tiles: dimmed, with a small badge pinned to the top-left corner so
+   they read as unpublished when the drafts toggle reveals them. */
+.tile.is-draft { opacity: 0.55; }
+.tile.is-draft:hover { opacity: 0.85; }
+
+.draft-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  padding: 2px 7px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  border-radius: 4px;
+  background: var(--ink);
+  color: var(--bg);
+}
+
 /* ---------- Pagination ---------- */
+/* A unified, centered group — Prev · 1 · 2 · 3 · Next — sitting under a thin
+   divider line. Every element shares the same height, border, and 6px radius;
+   the current page is filled with the accent. Same markup on the homepage, tag,
+   and search views. */
 .pagination {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  margin-top: 28px;
+  gap: 0;
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
 }
 .pagination:empty { display: none; }
 
 .page-link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 40px;
-  height: 40px;
-  padding: 0 12px;
-  border-radius: var(--radius-pill);
+  min-width: 38px;
+  height: 38px;
+  padding: 0 14px;
+  /* Collapse the shared edge with the previous cell so the whole row reads as
+     one connected box instead of separate pills. */
+  margin-left: -1px;
+  border-radius: 0;
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
@@ -510,12 +557,23 @@ main {
   text-decoration: none;
   transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
+/* Round only the outer corners of the group (Prev is always first, Next last). */
+.page-link:first-child {
+  margin-left: 0;
+  border-top-left-radius: var(--radius-pill);
+  border-bottom-left-radius: var(--radius-pill);
+}
+.page-link:last-child {
+  border-top-right-radius: var(--radius-pill);
+  border-bottom-right-radius: var(--radius-pill);
+}
 
 a.page-link:hover,
 a.page-link:focus-visible {
   border-color: var(--accent);
   background: var(--accent);
   color: var(--accent-ink);
+  z-index: 1; /* lift the accent border above its neighbours' shared edge */
 }
 
 .page-link.is-current {
@@ -523,6 +581,7 @@ a.page-link:focus-visible {
   border-color: var(--accent);
   color: var(--accent-ink);
   cursor: default;
+  z-index: 1;
 }
 
 .page-link.is-disabled {
@@ -717,6 +776,38 @@ a.page-link:focus-visible {
   margin: 0 0 16px;
 }
 
+/* Header meta row: date followed by tag links, all inline on one muted line —
+   "date · tag · tag". Tags are small-caps text links (no pill), turning the
+   accent green on hover. A dot separates each item. */
+.post-meta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  margin: 0 0 24px;
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+.post-meta .post-date { margin: 0; }
+
+.post-tag {
+  color: var(--muted);
+  text-decoration: none;
+  text-transform: none;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition: color 0.2s ease;
+}
+.post-tag:hover,
+.post-tag:focus-visible { color: var(--accent); }
+
+/* Dot before every item after the first, giving "date · tag · tag". */
+.post-meta > * + *::before {
+  content: "·";
+  margin-right: 10px;
+  color: var(--muted);
+}
+
 .post-body {
   font-family: Georgia, serif;
 }
@@ -795,48 +886,6 @@ a.tag:focus-visible {
 }
 
 /* ---------- Search ---------- */
-.search-form {
-  display: flex;
-  gap: 10px;
-  max-width: var(--post-width);
-  margin: 0 auto 28px;
-}
-
-.search-form #search-input {
-  flex: 1;
-  min-width: 0;
-  padding: 12px 16px;
-  font-size: var(--text-base);
-  color: var(--ink);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-.search-form #search-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 0.35);
-}
-
-.search-submit {
-  padding: 0 22px;
-  font-size: var(--text-base);
-  font-weight: 700;
-  color: var(--accent-ink);
-  background: var(--accent);
-  border: 1px solid var(--accent);
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease;
-}
-.search-submit:hover,
-.search-submit:focus-visible {
-  background: var(--accent-ink);
-  border-color: var(--accent-ink);
-  color: #fff;
-}
-
 .search-heading {
   text-align: center;
   font-size: var(--text-heading-sm);
@@ -963,8 +1012,7 @@ a.tag:focus-visible {
 #post .post-image-frame,
 #post .post-title,
 #post .post-subtitle,
-#post .post-date,
-#post .tags,
+#post .post-meta,
 #post .post-body { opacity: 0; }
 
 /* 3. Image fades in on load. */
@@ -973,8 +1021,7 @@ a.tag:focus-visible {
 /* 4. Content cascades in after the image, each element just after the last. */
 #post.is-loaded .post-title    { animation: fadeIn 0.3s ease both; animation-delay: 0.10s; }
 #post.is-loaded .post-subtitle { animation: fadeIn 0.3s ease both; animation-delay: 0.15s; }
-#post.is-loaded .post-date     { animation: fadeIn 0.3s ease both; animation-delay: 0.20s; }
-#post.is-loaded .tags          { animation: fadeIn 0.3s ease both; animation-delay: 0.30s; }
+#post.is-loaded .post-meta     { animation: fadeIn 0.3s ease both; animation-delay: 0.20s; }
 #post.is-loaded .post-body     { animation: fadeIn 0.3s ease both; animation-delay: 0.40s; }
 
 /* Respect reduced-motion: show everything at rest, no animation. */
@@ -984,8 +1031,7 @@ a.tag:focus-visible {
   #post .post-image-frame,
   #post .post-title,
   #post .post-subtitle,
-  #post .post-date,
-  #post .tags,
+  #post .post-meta,
   #post .post-body {
     animation: none;
     opacity: 1;

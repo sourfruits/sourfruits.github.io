@@ -49,8 +49,18 @@ function renderPost(post) {
   document.title = `${post.title} — Sourfruits`;
   setPostMeta(post);
 
-  const tags = Array.isArray(post.tags) && post.tags.length
-    ? `<ul class="tags">${post.tags.map((t) => `<li><a class="tag" href="tag.html?tag=${encodeURIComponent(t)}">${escapeHTML(t)}</a></li>`).join("")}</ul>`
+  // Show the content-type tag first ("writeup" or "blurb"), then the rest in
+  // their original order (Array.sort is stable, so ties are left untouched).
+  const LEAD_TAGS = ["writeup", "blurb"];
+  const leadRank = (t) => {
+    const i = LEAD_TAGS.indexOf(t);
+    return i === -1 ? LEAD_TAGS.length : i;
+  };
+  const orderedTags = Array.isArray(post.tags)
+    ? [...post.tags].sort((a, b) => leadRank(a) - leadRank(b))
+    : [];
+  const tags = orderedTags.length
+    ? orderedTags.map((t) => `<a class="post-tag" href="tag.html?tag=${encodeURIComponent(t)}">${escapeHTML(t)}</a>`).join("")
     : "";
 
   // The frame shows the same photo as a blurred, darkened backdrop (via the
@@ -69,8 +79,10 @@ function renderPost(post) {
     </div>
     <h1 class="post-title">${escapeHTML(post.title)}</h1>
     ${subtitle}
-    <p class="post-date">${escapeHTML(formatDate(post.date, "long"))}</p>
-    ${tags}
+    <div class="post-meta">
+      <p class="post-date">${escapeHTML(formatDate(post.date, "long"))}</p>
+      ${tags}
+    </div>
     <div class="post-body">${renderContent(post.content)}</div>
   `;
   status.textContent = "";
@@ -191,9 +203,12 @@ if (!id) {
         status.classList.add("error");
         return;
       }
+      // The current post always renders (a draft is reachable by direct link),
+      // but drafts never appear as neighbours or "more like this".
+      const published = posts.filter((p) => !isDraft(p));
       renderPost(post);
-      renderPostNav(posts, post);
-      renderRelated(posts, post);
+      renderPostNav(published, post);
+      renderRelated(published, post);
     })
     .catch((err) => {
       status.textContent = "Couldn't load this post. If you opened this file directly, run a local server (see the README).";
