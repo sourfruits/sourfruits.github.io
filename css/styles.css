@@ -590,7 +590,7 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
    text shadow). On hover/focus the caption grows a little. */
 .grid.is-carousel .tile-overlay {
   opacity: 1;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0) 60%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0) 60%);
 }
 .grid.is-carousel .tile-title,
 .grid.is-carousel .tile-date {
