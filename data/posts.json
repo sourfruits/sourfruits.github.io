@@ -1,5 +1,35 @@
 [
   {
+  "id": "chan-is-missing",
+  "title": "Chan Is Missing (1982)",
+  "subtitle": "xx",
+  "date": "2099-07-22",
+  "tags": ["writeup", "movies"],
+  "thumb": "images/chan-is-missing.jpeg",
+  "image": "images/chan-is-missing.jpeg",
+  "content": "yep"
+  },
+  {
+  "id": "casts-of-a-dreamer",
+  "title": "454: Casts of a Dreamer",
+  "subtitle": "floridian greatness",
+  "date": "2099-07-22",
+  "tags": ["blurb", "music"],
+  "thumb": "images/casts-of-a-dreamer.jpg",
+  "image": "images/casts-of-a-dreamer.jpeg",
+  "content": "yep"
+  },
+  {
+  "id": "enter-the-dragon",
+  "title": "Enter the Dragon (1973)",
+  "subtitle": "I am literally Bruce Lee",
+  "date": "2099-07-22",
+  "tags": ["writeup", "movies"],
+  "thumb": "images/enter-the-dragon.jpeg",
+  "image": "images/enter-the-dragon.jpeg",
+  "content": "yep"
+  },
+  {
   "id": "stranger-than-paradise-heidegger",
   "title": "Heidegger and Boredom in Stranger Than Paradise (1984)",
   "subtitle": "Sitting with boredom and the journey to authentic living",
