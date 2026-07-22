@@ -30,7 +30,7 @@
    flips automatically. The green accent stays identical in both modes. */
 [data-theme="dark"] {
   --bg: #1a1814;
-  --bg-top: #26221b;
+  --bg-top: #1a1814;       /* same as --bg — gradient hidden in dark mode for now */
   --surface: #141210;
   --header-bg: #141210;
   --header-line: #2a2520;
@@ -113,14 +113,12 @@ main {
   color: var(--ink);
   text-decoration: none;
 }
-.header-logo::before {
-  content: "";
-  width: 9px;
-  height: 9px;
-  margin-right: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-}
+/* Logo mark: two overlapping dots — green upper-left underneath, yellow
+   lower-right on top. */
+.dot-wrap { position: relative; width: 13px; height: 13px; flex-shrink: 0; margin-right: 8px; }
+.dot { position: absolute; width: 9px; height: 9px; border-radius: 50%; }
+.dot-green { background: #67b35d; top: 0; left: 0; z-index: 0; }
+.dot-yellow { background: #e8c840; top: 4px; left: 4px; z-index: 1; }
 .header-logo:hover,
 .header-logo:focus-visible { color: var(--accent-ink); }
 
@@ -359,12 +357,12 @@ main {
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
+  gap: 1px;
 }
 .grid.is-compact { grid-template-columns: repeat(4, 1fr); }
 
 @media (max-width: 720px) {
-  .grid { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 1px; }
   .grid.is-compact { grid-template-columns: repeat(3, 1fr); }
 }
 

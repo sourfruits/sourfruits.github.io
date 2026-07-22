@@ -25,7 +25,7 @@
   header.innerHTML = `
     <div class="header-bar">
       <div class="header-bar-inner">
-        <a class="header-logo" href="index.html">${SITE_NAME}</a>
+        <a class="header-logo" href="index.html"><span class="dot-wrap"><span class="dot dot-green"></span><span class="dot dot-yellow"></span></span>${SITE_NAME}</a>
         <div class="header-actions">
           <nav class="site-nav" aria-label="Primary">
             <a class="nav-link" href="tags.html">Tags</a>
