@@ -546,15 +546,20 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
 }
 .grid.is-carousel::-webkit-scrollbar { display: none; }
 
-/* Square tiles about half the viewport tall, but never wider than ~80% of the
-   viewport — so on tall, narrow phones (where 50vh would exceed the screen
-   width) a whole tile plus a peek of the next still fits. The peek hints the
-   strip scrolls. Images stay lazy-loaded (renderTile sets loading="lazy"). */
+/* Square tiles sized off the SAME 1040px-capped content width the grid uses
+   (min(100vw, --maxw) − main's 40px padding, ÷ tiles-per-row), so a carousel
+   tile is the same size as a grid tile and scales identically on zoom/resize —
+   even though the strip container itself stays full-bleed. 3 across normally,
+   2 on mobile (matching the grid's column counts). Images stay lazy-loaded. */
 .grid.is-carousel .tile {
   flex: 0 0 auto;
-  height: min(50vh, 80vw);
-  width: min(50vh, 80vw);
+  --carousel-tile: calc((min(100vw, var(--maxw)) - 40px) / 2.5);
+  width: var(--carousel-tile);
+  height: var(--carousel-tile);
   aspect-ratio: 1 / 1;
+}
+@media (max-width: 720px) {
+  .grid.is-carousel .tile { --carousel-tile: calc((100vw - 40px) / 2); }
 }
 
 /* Carousel sits close to the footer — drop the tall grid padding beneath it. */
