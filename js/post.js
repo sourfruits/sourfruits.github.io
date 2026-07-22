@@ -71,6 +71,57 @@ function renderPost(post) {
   status.textContent = "";
 }
 
+// Bottom-of-page previous/next links, matching the newest-first grid order
+// (newest is top-left). "Previous" (left) is the newer post, "Next" (right) is
+// the older post. Whichever direction doesn't exist is simply left out.
+function renderPostNav(posts, current) {
+  const nav = document.getElementById("post-nav");
+  if (!nav) return;
+
+  const ordered = posts.slice().sort((a, b) =>
+    a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+  const i = ordered.findIndex((p) => p.id === current.id);
+  const newer = i >= 0 && i < ordered.length - 1 ? ordered[i + 1] : null;
+  const older = i > 0 ? ordered[i - 1] : null;
+  const prev = newer; // Previous → newer post (previous in grid order)
+  const next = older; // Next → older post (next in grid order)
+
+  const href = (p) => `post.html?id=${encodeURIComponent(p.id)}`;
+  const prevHtml = prev
+    ? `<a class="post-nav-prev" href="${href(prev)}"><span class="post-nav-arrow">&larr;</span><span class="post-nav-title">${escapeHTML(prev.title)}</span></a>`
+    : "";
+  const nextHtml = next
+    ? `<a class="post-nav-next" href="${href(next)}"><span class="post-nav-title">${escapeHTML(next.title)}</span><span class="post-nav-arrow">&rarr;</span></a>`
+    : "";
+  nav.innerHTML = prevHtml + nextHtml;
+  fitNavTitles();
+}
+
+// Trim each nav title to a word boundary so it never cuts mid-word or
+// mid-parenthesis. The title span is overflow-hidden, so we drop trailing words
+// (adding an ellipsis) until the content fits its visible box. A single word
+// too long to fit is left to the CSS text-overflow ellipsis. Re-run on resize
+// since the box width is a percentage of the page.
+function fitNavTitles() {
+  document.querySelectorAll(".post-nav-title").forEach((span) => {
+    const full = span.dataset.fullTitle || span.textContent;
+    span.dataset.fullTitle = full;
+    span.textContent = full;
+    if (span.scrollWidth <= span.clientWidth) return;
+
+    const words = full.split(/\s+/);
+    while (words.length > 1) {
+      words.pop();
+      span.textContent = words.join(" ") + "…";
+      if (span.scrollWidth <= span.clientWidth) return;
+    }
+    // One long word — hand it back to the CSS ellipsis.
+    span.textContent = full;
+  });
+}
+
+window.addEventListener("resize", fitNavTitles);
+
 if (!id) {
   status.textContent = "No post specified.";
   status.classList.add("error");
@@ -84,6 +135,7 @@ if (!id) {
         return;
       }
       renderPost(post);
+      renderPostNav(posts, post);
     })
     .catch((err) => {
       status.textContent = "Couldn't load this post. If you opened this file directly, run a local server (see the README).";
