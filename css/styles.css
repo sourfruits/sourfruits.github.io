@@ -559,7 +559,7 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
   aspect-ratio: 1 / 1;
 }
 @media (max-width: 720px) {
-  .grid.is-carousel .tile { --carousel-tile: calc((100vw - 40px) / 2); }
+  .grid.is-carousel .tile { --carousel-tile: 80vw; }
 }
 
 /* Carousel sits close to the footer — drop the tall grid padding beneath it. */
