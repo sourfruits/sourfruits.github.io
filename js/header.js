@@ -14,11 +14,11 @@
   const file = window.location.pathname.split("/").pop();
   const isHome = file === "" || file === "index.html";
 
+  // Homepage hero: the big centered title + green divider line.
   const intro = isHome
     ? `
     <div class="site-intro">
       <a class="site-title" href="index.html">${SITE_NAME}</a>
-      <p class="site-tagline">Documenting what I read, watch, and create.</p>
     </div>`
     : "";
 

@@ -286,6 +286,9 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  /* Pull the toolbar up a little, tightening the gap below the hero's green
+     divider line (homepage-only, since .controls only exists here). */
+  margin-top: -6px;
   margin-bottom: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
@@ -558,7 +561,7 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
    2 on mobile (matching the grid's column counts). Images stay lazy-loaded. */
 .grid.is-carousel .tile {
   flex: 0 0 auto;
-  --carousel-tile: calc((min(100vw, var(--maxw)) - 40px) / 2);
+  --carousel-tile: calc((min(100vw, var(--maxw)) - 40px) / 2.2);
   width: var(--carousel-tile);
   height: var(--carousel-tile);
   aspect-ratio: 1 / 1;
