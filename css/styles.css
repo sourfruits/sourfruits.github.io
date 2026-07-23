@@ -1111,7 +1111,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 .tag-index-row:hover .tag-index-count,
 .tag-index-row:focus-visible .tag-index-name,
 .tag-index-row:focus-visible .tag-index-count {
-  color: var(--ink);
+  color: var(--accent);
 }
 
 /* ---------- Search ---------- */
