@@ -209,10 +209,14 @@ function render(mode) {
   const nodeAll = nodeEnter.merge(node)
     .attr("class", (d) => `node${d.isSource ? " is-source" : ""}`);
 
+  // Content nodes are yellow in Discovery view, green in Connections view;
+  // source hubs stay hollow in both. (The stroke follows the fill.)
+  const contentFill = mode === "discovery" ? "var(--accent2)" : "var(--accent)";
+  const contentStroke = mode === "discovery" ? "var(--accent2)" : "var(--accent-ink)";
   nodeAll.select("circle")
     .attr("r", nodeRadius)
-    .style("fill", (d) => (d.isSource ? "var(--bg)" : "var(--accent)"))
-    .style("stroke", (d) => (d.isSource ? "var(--muted)" : "var(--accent-ink)"))
+    .style("fill", (d) => (d.isSource ? "var(--bg)" : contentFill))
+    .style("stroke", (d) => (d.isSource ? "var(--muted)" : contentStroke))
     .style("stroke-width", (d) => (d.isSource ? 1.5 : 1))
     .style("stroke-dasharray", (d) => (d.isSource ? "3 2" : null));
 

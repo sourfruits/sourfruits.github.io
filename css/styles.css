@@ -8,7 +8,8 @@
   --header-bg: #f1eeec;    /* soft warm greige navbar (warm, not yellow) */
   --header-line: #e2dfdd;  /* divider under the navbar, a touch darker */
   --accent: #67b35d;       /* medium green */
-  --accent-ink: #4a5400;   /* dark text/icons sitting on top of --accent */
+  --accent-ink: var(--accent);  /* TEMP TEST: identical to --accent for now */
+  --accent2: #e8c840;      /* logo yellow (the lower-right dot in the mark) */
   --causal: #c0503c;       /* muted red — asserted (causal) edges on the graph */
   --radius: 14px;
   --radius-pill: 6px;      /* was a full pill (999px); now a soft 6px on all controls */
@@ -942,8 +943,8 @@ a.page-link:focus-visible {
 /* Utility-page heading (About): centered, shared size, with breathing room
    before the body text below. */
 .page-heading {
-  text-align: center;
-  font-size: var(--heading-size);
+  text-align: left;   /* aligns with the body text in the reading column */
+  font-size: var(--text-heading-lg);
   font-weight: var(--heading-weight);
   letter-spacing: var(--heading-letter-spacing);
   margin: 8px 0 32px;
@@ -1045,6 +1046,9 @@ a.post-tag:focus-visible { color: var(--accent); }
   margin: 8px 0 28px;
 }
 .tag-heading .tag-name { color: var(--accent-ink); }
+/* Single-tag page (tag.html): left-align the heading to the page margin, in
+   line with the logo/back-link. (tags.html keeps its own centered treatment.) */
+#tag-heading { text-align: left; }
 /* On the tags-list page, keep the heading within (and left-aligned to) the
    centered index column, not the full page width. */
 .tags-heading {
@@ -1096,10 +1100,10 @@ a.post-tag:focus-visible { color: var(--accent); }
 /* Heading with a thin divider under it, aligned to the results column. */
 .search-heading {
   max-width: var(--post-width);
-  margin: 8px auto 0;
+  margin: 8px 0 0;   /* left-aligned to the page margin (logo/back-link edge) */
   padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
-  text-align: center;
+  text-align: left;
   font-size: var(--heading-size);
   font-weight: var(--heading-weight);
   letter-spacing: var(--heading-letter-spacing);
@@ -1259,6 +1263,26 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 
 /* ---------- Precursors (force-directed graph) ---------- */
+/* Page title matches the homepage "Sourfruits" title exactly — same display
+   size and the same little accent underline — but left-aligned to the page
+   margin like every other heading, rather than centered. */
+.precursors-title {
+  font-size: var(--text-display);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 8px 0 14px;
+}
+.precursors-title::after {
+  content: "";
+  display: block;
+  width: 44px;
+  height: 5px;
+  margin: 10px 0 0;   /* left-aligned bar (homepage centers it with auto) */
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
 .precursors-intro {
   color: var(--muted);
   font-size: var(--text-medium);
@@ -1296,6 +1320,13 @@ a.post-tag:focus-visible { color: var(--accent); }
   background: var(--accent);
   color: var(--accent-ink);
 }
+/* The Connections view reads as yellow (the logo's other dot) when active,
+   instead of the default green. Dark label so it stays legible on yellow in
+   both themes. */
+.mode-btn[data-mode="connections"].is-active {
+  background: var(--accent2);
+  color: #2b2600;
+}
 .mode-btn:focus-visible { outline: none; color: var(--ink); }
 
 .graph-legend {
@@ -1322,7 +1353,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   border-radius: 50%;
   border-top-width: 1.5px;
 }
-.legend-swatch.swatch-node { background: var(--accent); border-color: var(--accent-ink); }
+.legend-swatch.swatch-node { background: var(--accent2); border-color: var(--accent2); }
 .legend-swatch.swatch-source { background: var(--bg); border-color: var(--muted); border-style: dashed; }
 
 .graph-wrap {
@@ -1381,3 +1412,43 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 [data-theme="dark"] .graph-tooltip .tip-posts { color: var(--accent); }
 .graph-tooltip .tip-note { display: block; }
+
+/* Precursors nav link — hover easter egg. Letters shift out of alignment and
+   turn green (staggered), then a faint node-graph of lines + dots fades in
+   between them a beat later. No glow/text-shadow — just colour, shift, lines. */
+.nav-precursors { position: relative; }
+.np-letter {
+  display: inline-block;
+  position: relative;
+  z-index: 1;   /* letters sit above the connecting lines/dots */
+  transition: transform 0.25s ease, color 0.2s ease;
+  will-change: transform;
+}
+.nav-precursors:hover .np-letter,
+.nav-precursors:focus-visible .np-letter {
+  transform: translateY(var(--dy, 0));
+  color: var(--accent-ink);
+  transition-delay: var(--d, 0s);   /* the gentle stagger */
+}
+.np-graph {
+  position: absolute;
+  inset: 0;
+  z-index: 0;   /* behind the letters */
+  overflow: visible;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.nav-precursors:hover .np-graph,
+.nav-precursors:focus-visible .np-graph {
+  opacity: 1;
+  transition-delay: 0.15s;          /* fade in shortly after the letters move */
+}
+.np-line { stroke: var(--muted); stroke-width: 1; }
+.np-dot { fill: var(--muted); }
+
+/* Reduced-motion: keep the colour shift + lines, drop the letter movement. */
+@media (prefers-reduced-motion: reduce) {
+  .nav-precursors:hover .np-letter,
+  .nav-precursors:focus-visible .np-letter { transform: none; }
+}

@@ -14,6 +14,16 @@
   const file = window.location.pathname.split("/").pop();
   const isHome = file === "" || file === "index.html";
 
+  // "Precursors" nav link, one <span> per letter so each can jitter and colour
+  // independently on hover. `--dy` is that letter's little vertical nudge; `--d`
+  // staggers the transition so they don't all move as one block. The empty
+  // <svg> is filled on hover with the connecting lines/dots (see below).
+  const PRECURSORS = "Precursors";
+  const JITTER = [-3, 2, -2, 3, -1, 2, -3, 2, -2, 1];  // px, gentle up/down
+  const precursorsLetters = [...PRECURSORS].map((ch, i) =>
+    `<span class="np-letter" style="--dy:${JITTER[i % JITTER.length]}px;--d:${(i * 0.015).toFixed(3)}s">${ch}</span>`
+  ).join("");
+
   // Homepage hero: the big centered title + green divider line.
   const intro = isHome
     ? `
@@ -28,9 +38,9 @@
         <a class="header-logo" href="index.html"><span class="dot-wrap"><span class="dot dot-green"></span><span class="dot dot-yellow"></span></span>${SITE_NAME}</a>
         <div class="header-actions">
           <nav class="site-nav" aria-label="Primary">
-            <a class="nav-link" href="precursors.html">Precursors</a>
-            <a class="nav-link" href="tags.html">Tags</a>
+            <a class="nav-link nav-precursors" href="precursors.html">${precursorsLetters}<svg class="np-graph" aria-hidden="true"></svg></a>
             <a class="nav-link" href="about.html">About</a>
+            <a class="nav-link" href="tags.html">Tags</a>
           </nav>
           <form class="header-search" action="search.html" method="get" role="search">
             <input type="search" name="q" class="header-search-input" aria-label="Search posts" autocomplete="off">
@@ -60,6 +70,52 @@
         e.preventDefault();
         searchInput.focus();
       }
+    });
+  }
+
+  // Precursors easter egg: on hover the letters jitter + turn green (CSS), and a
+  // beat later a faint node-graph fades in between them — a line from each letter
+  // to the next, with a dot at every letter. The dots sit at each letter's
+  // *hovered* position (its rest centre plus its --dy nudge). Rebuilt on every
+  // enter so it tracks window resizing / zoom without extra listeners.
+  const precursorsLink = header.querySelector(".nav-precursors");
+  if (precursorsLink) {
+    const graphSvg = precursorsLink.querySelector(".np-graph");
+    const letterEls = [...precursorsLink.querySelectorAll(".np-letter")];
+    const SVG_NS = "http://www.w3.org/2000/svg";
+
+    precursorsLink.addEventListener("mouseenter", () => {
+      const box = precursorsLink.getBoundingClientRect();
+      graphSvg.setAttribute("width", box.width);
+      graphSvg.setAttribute("height", box.height);
+      const pts = letterEls.map((el) => {
+        const r = el.getBoundingClientRect();
+        const dy = parseFloat(getComputedStyle(el).getPropertyValue("--dy")) || 0;
+        return {
+          x: r.left - box.left + r.width / 2,
+          y: r.top - box.top + r.height / 2 + dy,
+        };
+      });
+
+      while (graphSvg.firstChild) graphSvg.removeChild(graphSvg.firstChild);
+      // Lines first so the dots sit on top of the joins.
+      for (let i = 0; i < pts.length - 1; i++) {
+        const line = document.createElementNS(SVG_NS, "line");
+        line.setAttribute("class", "np-line");
+        line.setAttribute("x1", pts[i].x);
+        line.setAttribute("y1", pts[i].y);
+        line.setAttribute("x2", pts[i + 1].x);
+        line.setAttribute("y2", pts[i + 1].y);
+        graphSvg.appendChild(line);
+      }
+      pts.forEach((p) => {
+        const dot = document.createElementNS(SVG_NS, "circle");
+        dot.setAttribute("class", "np-dot");
+        dot.setAttribute("cx", p.x);
+        dot.setAttribute("cy", p.y);
+        dot.setAttribute("r", 1.6);
+        graphSvg.appendChild(dot);
+      });
     });
   }
 
