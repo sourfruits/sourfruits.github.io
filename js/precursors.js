@@ -13,14 +13,22 @@
 // automatically — no hardcoded hex values here.
 
 // ── Tunable ────────────────────────────────────────────────────────────────
-// A node's label is shown by default once its on-screen radius (data size ×
-// current zoom) reaches this many pixels; below it, the label is hidden until
-// hover. Lower it to reveal more labels, raise it to show fewer. Edit this one
-// number to tune label density — nothing else needs to change.
-const LABEL_SIZE_THRESHOLD = 5;
-// Labels longer than this many characters are cut off with an ellipsis on the
-// graph (the full name still shows on hover). Edit this one number to tune it.
-const MAX_LABEL_CHARS = 24;
+// Label density and node/label sizing. Edit these defaults, or adjust them live
+// via the "Tuning" panel on the page (toggle button in the toolbar) — handy for
+// troubleshooting without an edit-and-refresh loop.
+const TUNING = {
+  labelThreshold: 5,   // on-screen node radius (size × zoom, px) to show a label by default
+  maxLabelWidth: 170,  // label pixel width (world units) before it's cut off with an ellipsis
+  nodeBase: 11,        // leaf/content node radius (world units)
+  growthStep: 3,       // + radius per outgoing directional link, capped at 4 steps
+  sourceRadius: 7,     // discovery source-hub radius
+  nodeFont: 18,        // content label font (px)
+  sourceFont: 15,      // source-hub label font (px)
+  // Force-simulation knobs:
+  charge: -260,        // many-body repulsion (more negative = nodes push apart harder)
+  linkDistance: 90,    // preferred edge length
+  collidePad: 22,      // extra spacing beyond each node's radius (collision force)
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 const svg = d3.select("#graph");
@@ -30,6 +38,9 @@ const legend = document.getElementById("graph-legend");
 const status = document.getElementById("status");
 const modeButtons = document.querySelectorAll(".mode-btn");
 const fsBtn = document.getElementById("graph-fs");
+const tuningBtn = document.getElementById("graph-tuning-btn");
+const tuningPanel = document.getElementById("tuning-panel");
+const resetBtn = document.getElementById("graph-reset");
 
 let rawData = null;      // parsed precursors.json
 let postTitles = {};     // post id -> title, for hover labels
@@ -54,7 +65,9 @@ const RELATIONSHIP_TYPES = {
   adaptation: { directional: true,  label: "Adaptation", color: "var(--rel-adaptation)" },
   influence:  { directional: true,  label: "Influence",  color: "var(--rel-influence)" },
   thematic:   { directional: false, label: "Thematic",   color: "var(--rel-thematic)" },
-  authorship: { directional: true,  label: "Authorship", color: "var(--rel-authorship)", dashed: true },
+  // Authorship is directional but doesn't grow the author directly; instead it
+  // propagates the authored work's own size (one hop) — see buildConnections.
+  authorship: { directional: true,  label: "Authorship", color: "var(--rel-authorship)", dashed: true, propagates: true },
 };
 
 // One arrowhead marker per directional relationship type, coloured to match its
@@ -187,7 +200,6 @@ function buildDiscovery(data) {
 // Directional edges also count toward their origin node's size (out-degree).
 function buildConnections(data) {
   const nodes = data.nodes.map((n) => ({ ...n, isSource: false, growth: 0 }));
-  const byId = new Map(nodes.map((n) => [n.id, n]));
   const known = new Set(nodes.map((n) => n.id));
   const pairs = new Map();  // normalized "a b" key -> array of entries
 
@@ -229,12 +241,36 @@ function buildConnections(data) {
       } else {
         const d = directional[0];
         edge = { source: d.from, target: d.to, type: d.type, directional: true, kind: "connection" };
-        const origin = byId.get(d.from);
-        if (origin) origin.growth += 1;  // out-degree drives node size
       }
     }
     edge.note = note;
     edges.push(edge);
+  });
+
+  // --- node size (growth) ---
+  // Base size = a node's own outgoing size-directional out-degree (influence /
+  // adaptation). Authorship doesn't count directly; instead, for each work a
+  // node authored, that work's OWN base out-degree is added — exactly one hop,
+  // so a work's downstream (third-level) activity never cascades back.
+  // outDegree (all directional out, authorship included) is kept for the hover.
+  const sizeOut = new Map();    // id -> influence/adaptation out-degree
+  const outDegree = new Map();  // id -> all directional out-degree (hover count)
+  const authored = new Map();   // id -> [ids of works it authored]
+  edges.forEach((e) => {
+    if (!e.directional) return;
+    outDegree.set(e.source, (outDegree.get(e.source) || 0) + 1);
+    if (RELATIONSHIP_TYPES[e.type].propagates) {
+      if (!authored.has(e.source)) authored.set(e.source, []);
+      authored.get(e.source).push(e.target);
+    } else {
+      sizeOut.set(e.source, (sizeOut.get(e.source) || 0) + 1);
+    }
+  });
+  nodes.forEach((n) => {
+    let g = sizeOut.get(n.id) || 0;
+    (authored.get(n.id) || []).forEach((workId) => { g += sizeOut.get(workId) || 0; });
+    n.growth = g;
+    n.outDegree = outDegree.get(n.id) || 0;
   });
 
   return { nodes, links: edges };
@@ -245,27 +281,47 @@ function buildConnections(data) {
 // Source hubs are small; content nodes start at 9 and grow 3px per outgoing
 // directional connection (capped), so influential origins read as larger.
 function nodeRadius(d) {
-  if (d.isSource) return 6;
-  return 9 + Math.min(d.growth || 0, 4) * 3;
+  if (d.isSource) return TUNING.sourceRadius;
+  return TUNING.nodeBase + Math.min(d.growth || 0, 4) * TUNING.growthStep;
+}
+
+// Label font size (world units) for a node.
+function labelFontSize(d) {
+  return d.isSource ? TUNING.sourceFont : TUNING.nodeFont;
 }
 
 // A label is visible if the node is hovered, or its *rendered* radius (data
-// size × current zoom) clears LABEL_SIZE_THRESHOLD (see top of file) — so bigger
+// size × current zoom) clears TUNING.labelThreshold (see top of file) — so bigger
 // hubs stay labelled at any zoom, and small nodes reveal their labels once you
 // zoom in close enough.
 function labelVisible(d) {
-  return d.__hover === true || nodeRadius(d) * currentScale >= LABEL_SIZE_THRESHOLD;
+  return d.__hover === true || nodeRadius(d) * currentScale >= TUNING.labelThreshold;
 }
 function updateLabelVisibility() {
   nodeLayer.selectAll("g.node").select("text")
     .style("opacity", (d) => (labelVisible(d) ? 1 : 0));
 }
 
-// Cut an over-long label to MAX_LABEL_CHARS with an ellipsis. The full name is
-// still available on hover (the tooltip uses the untruncated d.label).
-function truncateLabel(s) {
+// Measure a string's rendered width (world units) at a given font size, using an
+// offscreen canvas with the site's sans stack. Cached context, so it's cheap.
+const _measureCtx = document.createElement("canvas").getContext("2d");
+function measureTextWidth(s, fs) {
+  _measureCtx.font = `${fs}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+  return _measureCtx.measureText(s).width;
+}
+
+// Cut a label to TUNING.maxLabelWidth *pixels* (not characters) with an ellipsis,
+// trimming from the end until it fits. The full name is still available on hover
+// (the tooltip uses the untruncated d.label).
+function truncateLabel(s, fs) {
   s = String(s);
-  return s.length > MAX_LABEL_CHARS ? s.slice(0, MAX_LABEL_CHARS - 1).trimEnd() + "…" : s;
+  const max = TUNING.maxLabelWidth;
+  if (measureTextWidth(s, fs) <= max) return s;
+  let out = s;
+  while (out.length > 1 && measureTextWidth(out + "…", fs) > max) {
+    out = out.slice(0, -1);
+  }
+  return out.trimEnd() + "…";
 }
 
 // The line color for an edge: its relationship type's color, the neutral
@@ -315,7 +371,7 @@ function nodeTooltipHTML(d) {
   let meta = `${n} connection${n === 1 ? "" : "s"}`;
   // Directional links originating here — the node's "children" (things it
   // influenced / adapted / authored). Only shown when there are any.
-  const out = d.growth || 0;
+  const out = d.outDegree || 0;
   if (out) meta += ` · ${out} outgoing →`;
   html += `<span class="tip-degree">${meta}</span>`;
   return html;
@@ -430,10 +486,10 @@ function render(mode) {
   // Label position (x/y/anchor) is set per tick by positionLabels, so it points
   // outward from the graph's centre.
   nodeAll.select("text")
-    .text((d) => truncateLabel(d.label))
+    .text((d) => truncateLabel(d.label, labelFontSize(d)))
     .style("fill", (d) => (d.isSource ? "var(--muted)" : "var(--ink)"))
     .style("font-family", "var(--font-sans)")
-    .style("font-size", (d) => (d.isSource ? "14px" : "16px"));
+    .style("font-size", (d) => labelFontSize(d) + "px");
 
   nodeAll
     .on("mouseenter", (event, d) => { d.__hover = true; updateLabelVisibility(); showTooltip(nodeTooltipHTML(d), event); })
@@ -449,10 +505,11 @@ function render(mode) {
   // and the camera auto-fits to wherever the nodes actually settle.
   if (simulation) simulation.stop();
   simulation = d3.forceSimulation(graph.nodes)
-    .force("link", d3.forceLink(graph.links).id((d) => d.id).distance(90).strength(0.5))
-    .force("charge", d3.forceManyBody().strength(-260))
+    .force("link", d3.forceLink(graph.links).id((d) => d.id).distance(TUNING.linkDistance).strength(0.5))
+    .force("charge", d3.forceManyBody().strength(TUNING.charge))
     .force("center", d3.forceCenter(w / 2, h / 2))
-    .force("collide", d3.forceCollide().radius((d) => nodeRadius(d) + 22))
+    .force("collide", d3.forceCollide().radius((d) => nodeRadius(d) + TUNING.collidePad))
+    .force("labels", forceLabelSeparation())
     .on("tick", () => {
       linkAll
         .attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y)
@@ -497,6 +554,55 @@ function positionLabels(nodes, sel) {
       .attr("text-anchor", ux > 0.25 ? "start" : ux < -0.25 ? "end" : "middle")
       .attr("dominant-baseline", uy > 0.25 ? "hanging" : uy < -0.25 ? "auto" : "middle");
   });
+}
+
+// Basic label collision avoidance. Each visible label gets an approximate
+// bounding box (matching positionLabels' outward geometry); any *other* node
+// sitting inside that box is nudged out of it. Velocity-based and alpha-scaled,
+// so it blends with the layout instead of fighting it and fades out as things
+// settle — keeping always-on hub labels from being covered by a neighbour.
+function forceLabelSeparation() {
+  let nodes = [];
+  function force(alpha) {
+    if (nodes.length < 2) return;
+    let sx = 0, sy = 0;
+    for (const n of nodes) { sx += n.x || 0; sy += n.y || 0; }
+    const cx = sx / nodes.length, cy = sy / nodes.length;
+
+    const boxes = [];
+    for (const L of nodes) {
+      if (!labelVisible(L)) continue;
+      const fs = labelFontSize(L);
+      const w = Math.max(measureTextWidth(truncateLabel(L.label, fs), fs), fs);
+      const h = fs;
+      const gap = nodeRadius(L) + 5;
+      const dx = (L.x || 0) - cx, dy = (L.y || 0) - cy;
+      const len = Math.hypot(dx, dy) || 1;
+      const ux = dx / len, uy = dy / len;
+      const ax = (L.x || 0) + ux * gap, ay = (L.y || 0) + uy * gap;
+      const x0 = ux > 0.25 ? ax : ux < -0.25 ? ax - w : ax - w / 2;
+      const y0 = uy > 0.25 ? ay : uy < -0.25 ? ay - h : ay - h / 2;
+      boxes.push({ node: L, x0, y0, x1: x0 + w, y1: y0 + h, mx: x0 + w / 2, my: y0 + h / 2 });
+    }
+    if (!boxes.length) return;
+
+    const strength = 0.6 * alpha;
+    for (const b of boxes) {
+      for (const n of nodes) {
+        if (n === b.node) continue;
+        const r = nodeRadius(n) + 2;
+        if (n.x > b.x0 - r && n.x < b.x1 + r && n.y > b.y0 - r && n.y < b.y1 + r) {
+          let dx = n.x - b.mx, dy = n.y - b.my;
+          if (dx === 0 && dy === 0) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; }
+          const d = Math.hypot(dx, dy) || 1;
+          n.vx += (dx / d) * strength * 4;
+          n.vy += (dy / d) * strength * 4;
+        }
+      }
+    }
+  }
+  force.initialize = (n) => { nodes = n; };
+  return force;
 }
 
 // forceLink replaces source/target ids with node objects after init, so read
@@ -552,6 +658,16 @@ modeButtons.forEach((btn) => {
   btn.addEventListener("click", () => setMode(btn.dataset.mode));
 });
 
+// Reset button: respawn the map — drop remembered positions so the layout
+// re-seeds and settles fresh, and re-enable auto-fit to reframe it.
+if (resetBtn) {
+  resetBtn.addEventListener("click", () => {
+    posCache.clear();
+    autoFit = true;
+    if (rawData) render(currentMode);
+  });
+}
+
 // Recenter the layout and reframe the camera when the container size changes
 // (window resize, or entering/leaving full screen). Turns auto-fit back on so
 // the graph is reframed to the new viewport.
@@ -579,6 +695,78 @@ if (fsBtn) {
     requestAnimationFrame(relayout);
   });
 }
+
+// --- tuning panel (troubleshooting) ---------------------------------------
+
+// One row per TUNING key: [key, label, min, max, step].
+const TUNING_CONTROLS = [
+  ["labelThreshold", "Label threshold", 0, 40, 1],
+  ["maxLabelWidth", "Max label width", 40, 400, 5],
+  ["nodeBase", "Node base radius", 4, 30, 1],
+  ["growthStep", "Growth step", 0, 10, 0.5],
+  ["sourceRadius", "Source radius", 3, 20, 1],
+  ["nodeFont", "Node font", 8, 40, 1],
+  ["sourceFont", "Source font", 8, 40, 1],
+  ["charge", "Charge (repulsion)", -800, 0, 10],
+  ["linkDistance", "Link distance", 20, 240, 5],
+  ["collidePad", "Collision padding", 0, 80, 1],
+];
+
+// Snapshot of the baked-in defaults, so the Reset button can restore them.
+const TUNING_DEFAULTS = { ...TUNING };
+
+function initTuningPanel() {
+  if (!tuningPanel || !tuningBtn) return;
+
+  const rows = [];  // { key, input, val } for the Reset button
+  TUNING_CONTROLS.forEach(([key, label, min, max, step]) => {
+    const row = document.createElement("label");
+    row.className = "tuning-row";
+    const head = document.createElement("div");
+    head.className = "tuning-head";
+    const name = document.createElement("span");
+    name.className = "tuning-name";
+    name.textContent = label;
+    const val = document.createElement("span");
+    val.className = "tuning-val";
+    val.textContent = TUNING[key];
+    head.append(name, val);
+    const input = document.createElement("input");
+    input.type = "range";
+    input.min = min; input.max = max; input.step = step;
+    input.value = TUNING[key];
+    input.addEventListener("input", () => {
+      TUNING[key] = parseFloat(input.value);
+      val.textContent = TUNING[key];
+      if (rawData) render(currentMode);  // re-render live with the new value
+    });
+    row.append(head, input);
+    tuningPanel.appendChild(row);
+    rows.push({ key, input, val });
+  });
+
+  // Reset every control back to the baked-in defaults.
+  const reset = document.createElement("button");
+  reset.type = "button";
+  reset.className = "tuning-reset";
+  reset.textContent = "Reset to defaults";
+  reset.addEventListener("click", () => {
+    rows.forEach(({ key, input, val }) => {
+      TUNING[key] = TUNING_DEFAULTS[key];
+      input.value = TUNING_DEFAULTS[key];
+      val.textContent = TUNING_DEFAULTS[key];
+    });
+    if (rawData) render(currentMode);
+  });
+  tuningPanel.appendChild(reset);
+
+  tuningBtn.addEventListener("click", () => {
+    const show = tuningPanel.hidden;
+    tuningPanel.hidden = !show;
+    tuningBtn.setAttribute("aria-pressed", show ? "true" : "false");
+  });
+}
+initTuningPanel();
 
 // --- boot -----------------------------------------------------------------
 

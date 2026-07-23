@@ -169,7 +169,7 @@
       "label": "Stranger Than Paradise (1984)",
       "kind": "film",
       "connections": [
-        { "to": "chan-is-missing", "relationship": "thematic" }
+        { "to": "chan-is-missing", "relationship": "thematic", "note": "Black and white indie trailblazer about wandering aimlessly" }
       ]
     },
     {

@@ -47,8 +47,10 @@ function renderTile(post, i) {
       ${draft ? '<span class="draft-badge">DRAFT</span>' : ""}
       <img src="${escapeHTML(post.thumb || post.image)}" alt="${escapeHTML(post.title)}" loading="lazy">
       <div class="tile-overlay">
-        <span class="tile-title">${escapeHTML(post.title)}</span>
-        <span class="tile-date">${escapeHTML(formatDate(post.date))}</span>
+        <span class="tile-caption">
+          <span class="tile-title">${escapeHTML(post.title)}</span>
+          <span class="tile-date">${escapeHTML(formatDate(post.date))}</span>
+        </span>
       </div>
     </a>
   `;

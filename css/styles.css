@@ -525,6 +525,13 @@ main {
 .tile:hover .tile-overlay,
 .tile:focus-visible .tile-overlay { opacity: 1; }
 
+/* Title + date as one group, so the carousel hover can scale both together
+   (see below) rather than each fighting the other's reflow. */
+.tile-caption {
+  display: flex;
+  flex-direction: column;
+}
+
 .tile-title {
   font-weight: 700;
   font-size: var(--text-medium);
@@ -619,17 +626,14 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
   opacity: 1;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0) 60%);
 }
-.grid.is-carousel .tile-title,
-.grid.is-carousel .tile-date {
-  transition: font-size 0.25s ease;
+.grid.is-carousel .tile-caption {
+  transform-origin: left bottom;
+  transition: transform 0.25s ease;
+  will-change: transform;
 }
-.grid.is-carousel .tile:hover .tile-title,
-.grid.is-carousel .tile:focus-visible .tile-title {
-  font-size: var(--text-heading-sm);
-}
-.grid.is-carousel .tile:hover .tile-date,
-.grid.is-carousel .tile:focus-visible .tile-date {
-  font-size: var(--text-base);
+.grid.is-carousel .tile:hover .tile-caption,
+.grid.is-carousel .tile:focus-visible .tile-caption {
+  transform: scale(1.2);
 }
 
 /* Carousel sits close to the footer — drop the tall grid padding beneath it. */
@@ -1367,11 +1371,14 @@ a.post-tag:focus-visible { color: var(--accent); }
 .graph-fs-btn:focus-visible { outline: none; color: var(--ink); }
 
 .graph-legend {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: wrap;
   gap: 16px;
+  margin: 0 0 0.75rem;
   color: var(--muted);
   font-size: var(--text-tiny);
 }
+.graph-legend:empty { display: none; }
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .legend-swatch {
   display: inline-block;
@@ -1390,6 +1397,45 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 .legend-swatch.swatch-node { background: var(--accent); border-color: var(--accent-ink); }
 .legend-swatch.swatch-source { background: var(--bg); border-color: var(--muted); border-style: dashed; }
+
+/* Live tuning panel (troubleshooting) — floats on the right edge so the graph
+   stays visible while you slide. Hidden until toggled. */
+.tuning-panel {
+  position: fixed;
+  top: 76px;
+  right: 12px;
+  z-index: 20;
+  width: 230px;
+  max-height: 82vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
+  font-size: var(--text-small);
+}
+.tuning-panel[hidden] { display: none; }
+.tuning-row { display: flex; flex-direction: column; gap: 4px; }
+.tuning-head { display: flex; justify-content: space-between; gap: 8px; }
+.tuning-name { color: var(--ink); }
+.tuning-val { color: var(--muted); font-variant-numeric: tabular-nums; }
+.tuning-row input[type="range"] { width: 100%; margin: 0; }
+.tuning-reset {
+  margin-top: 2px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  cursor: pointer;
+}
+.tuning-reset:hover { color: var(--ink); }
 
 .graph-wrap {
   position: relative;
