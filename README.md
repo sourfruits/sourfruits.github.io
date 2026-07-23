@@ -135,8 +135,11 @@ from the same data:
 - **Discovery** — every node plus a hub for each `discovered_via.source`
   (friends, classes, platforms…), with an edge from each source to what it led
   you to. Nodes are green here.
-- **Connections** — the nodes wired together by their `connections`, drawn as
-  plain undirected lines. Nodes are yellow here.
+- **Connections** — the nodes wired together by their `connections`. Each
+  connection can carry a `relationship` type, colored per type with a legend;
+  directional types (adaptation, influence, response) draw an arrow from the
+  origin and enlarge the origin node, while non-directional ones (companion,
+  thematic) are plain symmetric lines. Nodes are yellow here.
 
 Its data lives in its own file, **`data/precursors.json`** — completely separate
 from `posts.json`, which it never touches. The file is a single object with one
@@ -151,7 +154,9 @@ node automatically). Each node carries its *own* connections:
       "label": "The Trial",                    // display name on the graph
       "kind": "book",                          // free string: film, book, person, platform…
       "post_ids": ["kafka-the-trial"],         // 0, 1, or many post ids (optional link-out)
-      "connections": ["after-hours"],          // array of connected node ids
+      "connections": [                         // bare id, or { to, relationship }
+        { "to": "after-hours", "relationship": "influence" }
+      ],
       "discovered_via": {                      // optional — how you first met this
         "source": "class-philosophy-denmark",  // {type}-{descriptor}, or another node's id
         "note": "Read for a philosophy class in Denmark."  // optional, shown on hover
@@ -163,7 +168,7 @@ node automatically). Each node carries its *own* connections:
       "kind": "film",
       "post_ids": [],
       "discovered_via": { "source": "white-nights" },   // discovered via another node
-      "connections": ["white-nights", "pickpocket"]      // plain undirected links
+      "connections": ["pickpocket"]                      // bare id = untyped, plain line
     }
   ]
 }
@@ -179,9 +184,18 @@ node automatically). Each node carries its *own* connections:
 - `post_ids` — array of `posts.json` ids this node maps to. Usually empty (a
   graph-only node with no write-up yet); can point to one or several. Hovering a
   node shows the linked post title(s).
-- `connections` — an array of the ids of the other nodes this one connects to
-  (`["white-nights", "pickpocket"]`). Every connection is a plain, symmetric,
-  undirected link, drawn as a simple line.
+- `connections` — an array of the other nodes this one connects to. Each entry is
+  either a **bare node id** (`"pickpocket"`) — an untyped, plain undirected line
+  with no hover label — or an object **`{ "to": "<id>", "relationship": "<type>" }`**
+  where `relationship` is one of the preset types:
+  - **Directional** (arrow points from this node to `to`, and grows this node's
+    size — one step per outgoing directional link): `adaptation`, `influence`,
+    `response`. Write these only on the **origin's** side.
+  - **Non-directional** (symmetric line, no arrow, no size effect): `companion`,
+    `thematic`.
+
+  Each type has its own line color and a legend entry; the type name shows on edge
+  hover. An untyped connection behaves like `thematic` but shows no hover label.
 - `discovered_via` — optional. `source` is either a `{type}-{descriptor}` string
   (`friend-maya`, `class-philosophy-denmark`, `platform-criterion-channel`) **or
   another node's id** (when the discovery came from something already in the graph).
@@ -192,7 +206,11 @@ node automatically). Each node carries its *own* connections:
 Notes:
 - **Write connections on either side — or both.** Listing B under A, A under B, or
   both describes the *same* single edge; it's drawn once either way, so you never
-  have to hunt down the "other" node to keep things in sync.
+  have to hunt down the "other" node to keep things in sync. Non-directional and
+  untyped links can safely appear on both sides. A **directional** type, though,
+  should live only on the origin's side — if the same pair is marked directional
+  from both ends, the origin is ambiguous, so it logs a console warning and falls
+  back to a plain undirected line rather than guessing.
 - Nodes with no connections or discovery at all still render — they just float,
   never filtered out. Partial, in-progress data is fine.
 - New nodes and connections plug into the layout automatically; there's no manual

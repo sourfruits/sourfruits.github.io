@@ -38,6 +38,35 @@ const boundary = zoomLayer.append("rect").attr("class", "graph-boundary");
 const linkLayer = zoomLayer.append("g").attr("class", "links");
 const nodeLayer = zoomLayer.append("g").attr("class", "nodes");
 
+// Preset relationship types for connections. Directional types draw an arrow
+// from the origin (the node the connection is written on) and grow the origin
+// node; non-directional types are symmetric with no arrow. Each has its own
+// line color (a CSS custom property, so it follows the theme) and legend label.
+const RELATIONSHIP_TYPES = {
+  adaptation: { directional: true,  label: "Adaptation", color: "var(--rel-adaptation)" },
+  influence:  { directional: true,  label: "Influence",  color: "var(--rel-influence)" },
+  response:   { directional: true,  label: "Response",   color: "var(--rel-response)" },
+  companion:  { directional: false, label: "Companion",  color: "var(--rel-companion)" },
+  thematic:   { directional: false, label: "Thematic",   color: "var(--rel-thematic)" },
+};
+
+// One arrowhead marker per directional relationship type, coloured to match its
+// line. userSpaceOnUse keeps the arrow a fixed size regardless of stroke width.
+const defs = svg.append("defs");
+Object.entries(RELATIONSHIP_TYPES).forEach(([name, t]) => {
+  if (!t.directional) return;
+  defs.append("marker")
+    .attr("id", `arrow-${name}`)
+    .attr("viewBox", "0 0 10 10")
+    .attr("refX", 10).attr("refY", 5)
+    .attr("markerWidth", 8).attr("markerHeight", 8)
+    .attr("markerUnits", "userSpaceOnUse")
+    .attr("orient", "auto")
+    .append("path")
+    .attr("d", "M0,0 L10,5 L0,10 Z")
+    .style("fill", t.color);
+});
+
 const zoom = d3.zoom().scaleExtent([0.5, 4]).on("zoom", (event) => {
   zoomLayer.attr("transform", event.transform);
 });
@@ -134,34 +163,96 @@ function buildDiscovery(data) {
   return { nodes: nodes.concat([...sources.values()]), links };
 }
 
-// Connections view: content nodes, wired by each node's `connections` array of
-// bare node ids. Every connection is a plain, symmetric, undirected link.
-// Connections are often written on both sides (A lists B and B lists A) — that's
-// the same edge, so we normalize each pair and draw it once.
+// Connections view: content nodes, wired by each node's `connections` array.
+// Each entry is a bare node id (an untyped, plain link) or an object
+// { to, relationship } whose `relationship` is one of the preset types.
+//
+// We gather every entry per node pair, then resolve each pair to one edge:
+//   - untyped / non-directional types  → one symmetric line (dedup, no warning)
+//   - a single directional origin      → an arrow from that origin
+//   - directional on BOTH sides        → can't tell the origin, so warn and fall
+//                                         back to a plain undirected line
+// Directional edges also count toward their origin node's size (out-degree).
 function buildConnections(data) {
-  const nodes = data.nodes.map((n) => ({ ...n, isSource: false }));
+  const nodes = data.nodes.map((n) => ({ ...n, isSource: false, growth: 0 }));
+  const byId = new Map(nodes.map((n) => [n.id, n]));
   const known = new Set(nodes.map((n) => n.id));
-  const edges = new Map();  // normalized "a b" key -> edge (deduped)
+  const pairs = new Map();  // normalized "a b" key -> array of entries
 
   data.nodes.forEach((node) => {
     (node.connections || []).forEach((c) => {
-      const to = typeof c === "string" ? c : c && c.to;   // tolerate old object form
-      if (!to || to === node.id) return;                  // ignore blanks/self-loops
-      if (!known.has(node.id) || !known.has(to)) return;   // skip dangling refs
-      const key = [node.id, to].sort().join(" ");
-      if (!edges.has(key)) {
-        edges.set(key, { source: node.id, target: to, kind: "connection" });
+      const to = typeof c === "string" ? c : c && c.to;
+      if (!to || to === node.id) return;                   // ignore blanks/self-loops
+      if (!known.has(node.id) || !known.has(to)) return;    // skip dangling refs
+      let type = typeof c === "object" && typeof c.relationship === "string"
+        ? c.relationship.trim() : "";
+      if (type && !RELATIONSHIP_TYPES[type]) {
+        console.warn(`precursors: unknown relationship "${type}" on ${node.id} → ${to}; treating as untyped.`);
+        type = "";
       }
+      const key = [node.id, to].sort().join(" ");
+      if (!pairs.has(key)) pairs.set(key, []);
+      pairs.get(key).push({ from: node.id, to, type });
     });
   });
 
-  return { nodes, links: [...edges.values()] };
+  const edges = [];
+  pairs.forEach((entries) => {
+    const directional = entries.filter((e) => e.type && RELATIONSHIP_TYPES[e.type].directional);
+    let edge;
+    if (directional.length === 0) {
+      // Untyped or non-directional: symmetric line. Prefer a typed entry's label.
+      const typed = entries.find((e) => e.type) || entries[0];
+      edge = { source: typed.from, target: typed.to, type: typed.type, directional: false, kind: "connection" };
+    } else {
+      const origins = new Set(directional.map((e) => e.from));
+      if (origins.size > 1) {
+        // Directional written from both ends — don't guess a direction.
+        const [a, b] = [...origins];
+        console.warn(`precursors: directional relationship on both sides of ${a} ↔ ${b}; drawing a plain line instead of guessing the direction.`);
+        edge = { source: directional[0].from, target: directional[0].to, type: "", directional: false, kind: "connection" };
+      } else {
+        const d = directional[0];
+        edge = { source: d.from, target: d.to, type: d.type, directional: true, kind: "connection" };
+        const origin = byId.get(d.from);
+        if (origin) origin.growth += 1;  // out-degree drives node size
+      }
+    }
+    edges.push(edge);
+  });
+
+  return { nodes, links: edges };
 }
 
 // --- rendering ------------------------------------------------------------
 
+// Source hubs are small; content nodes start at 9 and grow 3px per outgoing
+// directional connection (capped), so influential origins read as larger.
 function nodeRadius(d) {
-  return d.isSource ? 6 : 9;
+  if (d.isSource) return 6;
+  return 9 + Math.min(d.growth || 0, 4) * 3;
+}
+
+// The line color for an edge: its relationship type's color, the neutral
+// "thematic" color for an untyped connection, or muted grey for discovery edges.
+function edgeColor(d) {
+  if (d.type && RELATIONSHIP_TYPES[d.type]) return RELATIONSHIP_TYPES[d.type].color;
+  return d.kind === "connection" ? "var(--rel-thematic)" : "var(--muted)";
+}
+
+// The hover label for a typed connection ("" for untyped/discovery edges).
+function edgeLabel(d) {
+  return d.type && RELATIONSHIP_TYPES[d.type] ? RELATIONSHIP_TYPES[d.type].label : "";
+}
+
+// Where a directional line should stop: the target node's centre pulled back by
+// its radius (plus a gap), leaving room for the arrowhead at the node's edge.
+function edgeEnd(d) {
+  const gap = nodeRadius(d.target) + 3;
+  const dx = d.target.x - d.source.x;
+  const dy = d.target.y - d.source.y;
+  const dist = Math.hypot(dx, dy) || 1;
+  return { x: d.target.x - (dx / dist) * gap, y: d.target.y - (dy / dist) * gap };
 }
 
 // Post title(s) behind a node, resolved from post_ids for the hover card.
@@ -230,9 +321,10 @@ function render(mode) {
   const linkEnter = link.enter().append("line").attr("class", "link");
   const linkAll = linkEnter.merge(link)
     .attr("class", "link")
-    .style("stroke", "var(--muted)")
-    .style("stroke-opacity", 0.4)
-    .style("stroke-width", 1.25);
+    .attr("marker-end", (d) => (d.directional ? `url(#arrow-${d.type})` : null))
+    .style("stroke", edgeColor)
+    .style("stroke-opacity", (d) => (d.type ? 0.85 : 0.4))
+    .style("stroke-width", (d) => (d.directional ? 2 : 1.4));
 
   // Transparent, thick hit lines so thin edges are still easy to hover.
   const hit = linkLayer.selectAll("line.link-hit")
@@ -244,12 +336,17 @@ function render(mode) {
     .style("stroke-width", 12)
     .merge(hit);
   hitAll
-    .style("cursor", (d) => (d.note ? "help" : "default"))
+    .style("cursor", (d) => (edgeLabel(d) || d.note ? "help" : "default"))
     .on("mouseenter", (event, d) => {
-      // Only discovery edges can carry a note; plain connection edges have none.
-      if (d.note) showTooltip(`<span class="tip-note">${escapeHTML(d.note)}</span>`, event);
+      let html = "";
+      // Typed connections show their relationship label (coloured to match the
+      // line); untyped ones show nothing. Discovery edges may carry a note.
+      const label = edgeLabel(d);
+      if (label) html += `<span class="tip-rel" style="color:${edgeColor(d)}">${escapeHTML(label)}</span>`;
+      if (d.note) html += `<span class="tip-note">${escapeHTML(d.note)}</span>`;
+      if (html) showTooltip(html, event);
     })
-    .on("mousemove", (event, d) => { if (d.note) moveTooltip(event); })
+    .on("mousemove", (event, d) => { if (edgeLabel(d) || d.note) moveTooltip(event); })
     .on("mouseleave", hideTooltip);
 
   // --- nodes ---
@@ -303,7 +400,10 @@ function render(mode) {
     .on("tick", () => {
       linkAll
         .attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y)
-        .attr("x2", (d) => d.target.x).attr("y2", (d) => d.target.y);
+        // Directional lines stop at the node's edge to make room for the arrow;
+        // plain lines run to the centre (the node circle covers the join).
+        .attr("x2", (d) => (d.directional ? edgeEnd(d).x : d.target.x))
+        .attr("y2", (d) => (d.directional ? edgeEnd(d).y : d.target.y));
       hitAll
         .attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y)
         .attr("x2", (d) => d.target.x).attr("y2", (d) => d.target.y);
@@ -324,14 +424,15 @@ function idOf(endpoint) {
 }
 
 function renderLegend(mode) {
-  // Connections are all plain, undifferentiated links — no legend needed there.
-  // Discovery still distinguishes nodes from source hubs.
+  legend.setAttribute("aria-hidden", "false");
   if (mode === "connections") {
-    legend.innerHTML = "";
-    legend.setAttribute("aria-hidden", "true");
+    // One entry per relationship type, coloured to match its line; directional
+    // types get an arrow glyph.
+    legend.innerHTML = Object.values(RELATIONSHIP_TYPES).map((t) =>
+      `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${t.color}"></span>${t.label}${t.directional ? " →" : ""}</span>`
+    ).join("");
     return;
   }
-  legend.setAttribute("aria-hidden", "false");
   legend.innerHTML =
     `<span class="legend-item"><span class="legend-swatch swatch-node"></span>Post / node</span>` +
     `<span class="legend-item"><span class="legend-swatch swatch-source"></span>Source</span>`;

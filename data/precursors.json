@@ -4,21 +4,23 @@
       "id": "brazil-1985",
       "label": "Brazil (1985)",
       "kind": "film",
-      "post_ids": [],
-      "connections": ["the-trial"]
+      "post_ids": []
     },
     {
       "id": "fear-and-trembling",
       "label": "Fear and Trembling",
       "kind": "book",
-      "post_ids": []
+      "post_ids": [],
+      "connections": ["either-or"]
     },
     {
       "id": "white-nights",
       "label": "White Nights",
       "kind": "book",
       "post_ids": [],
-      "connections": ["four-nights-of-a-dreamer"]
+      "connections": [
+        { "to": "four-nights-of-a-dreamer", "relationship": "adaptation" }
+      ]
     },
     {
       "id": "four-nights-of-a-dreamer",
@@ -26,14 +28,19 @@
       "kind": "film",
       "post_ids": [],
       "discovered_via": { "source": "white-nights" },
-      "connections": ["white-nights", "pickpocket"]
+      "connections": [
+        { "to": "pickpocket", "relationship": "companion" }
+      ]
     },
     {
       "id": "the-trial",
       "label": "The Trial",
       "kind": "book",
       "post_ids": ["kafka-the-trial"],
-      "connections": ["after-hours", "brazil-1985"]
+      "connections": [
+        { "to": "after-hours", "relationship": "influence" },
+        { "to": "brazil-1985", "relationship": "influence" }
+      ]
     },
     {
       "id": "pickpocket",
@@ -45,7 +52,10 @@
       "id": "the-stranger",
       "label": "The Stranger",
       "kind": "book",
-      "post_ids": []
+      "post_ids": [],
+      "connections": [
+        { "to": "the-trial", "relationship": "response" }
+      ]
     },
     {
       "id": "mahjong-1996",
@@ -64,14 +74,18 @@
       "label": "Either/Or",
       "kind": "book",
       "post_ids": [],
-      "connections": ["melancholia-2011"]
+      "connections": [
+        { "to": "melancholia-2011", "relationship": "thematic" }
+      ]
     },
     {
       "id": "melancholia-2011",
       "label": "Melancholia (2011)",
       "kind": "film",
       "post_ids": [],
-      "connections": ["either-or"]
+      "connections": [
+        { "to": "either-or", "relationship": "thematic" }
+      ]
     }
   ]
 }
