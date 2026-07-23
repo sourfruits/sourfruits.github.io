@@ -24,6 +24,7 @@ sourfruits-blog/
 ├── tag.html          Posts filtered by one tag (reads ?tag= from the URL)
 ├── tags.html         All tags used across posts, with post counts
 ├── search.html       Search results (reads ?q= from the URL)
+├── precursors.html   Force-directed graph of discoveries and connections
 ├── about.html        About page (static placeholder text to replace)
 ├── css/
 │   └── styles.css    All styling, shared by every page
@@ -37,9 +38,11 @@ sourfruits-blog/
 │   ├── tag.js        Tag page — filters posts by tag, reuses the grid
 │   ├── tags.js       Tags page — tallies tags across posts, renders pills
 │   ├── search.js     Search page — matches title/tags/text, renders cards
+│   ├── precursors.js Precursors page — builds the D3 graph from precursors.json
 │   └── about.js      About page — footer year + back button
 ├── data/
-│   └── posts.json    ← Your content lives here. Add posts here.
+│   ├── posts.json    ← Your content lives here. Add posts here.
+│   └── precursors.json  ← The Precursors graph: nodes + connections.
 ├── images/           Post images (see images/README.md)
 └── README.md
 ```
@@ -121,6 +124,84 @@ Notes:
 Drop your photos into the `images/` folder and point `thumb`/`image` at them, e.g.
 `"image": "images/morning-lemons.jpg"`. See `images/README.md` for the naming
 convention and sizing tips.
+
+## The Precursors graph
+
+`precursors.html` is a companion to the photo grid: a force-directed graph
+(rendered with D3) of *where* things were discovered and *how* you personally
+connect them. It has two views, toggled at the top of the page and both computed
+from the same data:
+
+- **Discovery** — every node plus a hub for each `discovered_via.source`
+  (friends, classes, platforms…), with an edge from each source to what it led
+  you to.
+- **Connections** — the nodes wired together by the `connections` array. Edges
+  you mark `causal` are drawn in red; the rest are quiet grey "thematic" lines.
+
+Its data lives in its own file, **`data/precursors.json`** — completely separate
+from `posts.json`, which it never touches. The file is a single object with two
+arrays, `nodes` and `connections`:
+
+```json
+{
+  "nodes": [
+    {
+      "id": "heidegger",                       // stable, unique, hand-picked slug
+      "label": "Heidegger",                    // display name on the graph
+      "kind": "philosopher",                   // free string: film, book, person, platform…
+      "post_ids": ["stranger-than-paradise-heidegger"],  // 0, 1, or many post ids
+      "discovered_via": {                      // optional — how you first met this
+        "source": "class-philosophy-denmark",  // {type}-{descriptor}, lowercase, hyphenated
+        "note": "Read for a philosophy class in Denmark."  // optional, shown on hover
+      }
+    }
+  ],
+  "connections": [
+    {
+      "from": "stranger-than-paradise",        // node id
+      "to": "heidegger",                       // node id
+      "causal": false,                         // true = asserted influence (drawn red)
+      "note": "Same sitting-with-boredom territory."  // optional, shown on edge hover
+    }
+  ]
+}
+```
+
+**Node fields:**
+- `id` — stable, unique, hand-picked (not auto-generated). It's what `connections`
+  and `post_ids` are matched against, so once you use one for something real, keep
+  it forever — never re-slug it.
+- `label` — the display name shown next to the node.
+- `kind` — an open string, not a fixed list (`film`, `philosopher`, `book`,
+  `person`, `platform`, `class`, `podcast`, …). New kinds need no code change.
+- `post_ids` — array of `posts.json` ids this node maps to. Can be empty (a
+  graph-only node with no write-up), have one, or list several. Hovering a node
+  shows the linked post title(s).
+- `discovered_via` — optional. `source` is a `{type}-{descriptor}` string
+  (`friend-maya`, `class-philosophy-denmark`, `platform-criterion-channel`); the
+  same real-world source must always use the *exact same* string, or it splits
+  into duplicate hubs. `note` is optional free text shown on hover. In Discovery
+  view each distinct `source` becomes its own hollow hub node.
+
+**Connection fields:**
+- `from` / `to` — node `id`s (always node-to-node; sources never appear here, only
+  in `discovered_via.source`).
+- `causal` — `true` only when asserting a real influence, not just a resonance.
+  Causal edges render distinct (red) from the default quiet thematic line. Most
+  connections are thematic (`false`).
+- `note` — optional but encouraged; it's shown when you hover the edge.
+
+Notes:
+- Nodes with no edges at all still render — they just float, never filtered out.
+  A useful graph grows from a handful of entries, so partial data is fine.
+- New nodes and connections plug into the layout automatically; there's no manual
+  positioning. Pan by dragging the background, zoom with the scroll wheel, and drag
+  a node to reposition it.
+- Privacy: use first names only for real people (`friend-maya`), or an initial/handle
+  (`friend-m`) for anyone who'd rather not be named — the graph only needs the id to
+  stay consistent.
+- The graph reads the site's theme colors, so it follows the light/dark toggle
+  automatically.
 
 ## Adding a new page
 

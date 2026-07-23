@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Precursors — Sourfruits</title>
+  <meta name="description" content="A web of where things were discovered and how they connect.">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Header markup is injected by js/header.js -->
+  <header class="site-header"></header>
+
+  <main>
+    <a class="back-link" href="index.html">← All posts</a>
+
+    <h1 class="tag-heading">Precursors</h1>
+    <p class="precursors-intro">Not what I've consumed, but where each thing came from and what I connect it to.</p>
+
+    <div class="graph-toolbar">
+      <div class="mode-toggle" role="group" aria-label="Graph mode">
+        <button type="button" class="mode-btn" data-mode="discovery" aria-pressed="true">Discovery</button>
+        <button type="button" class="mode-btn" data-mode="connections" aria-pressed="false">Connections</button>
+      </div>
+      <div class="graph-legend" id="graph-legend" aria-hidden="true"></div>
+    </div>
+
+    <div class="graph-wrap" id="graph-wrap">
+      <svg id="graph" aria-label="Force-directed graph of precursors"></svg>
+      <div class="graph-tooltip" id="graph-tooltip" hidden></div>
+    </div>
+    <p id="status" class="status">Loading graph…</p>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <span id="year"></span> Sourfruits</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/header.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/precursors.js"></script>
+</body>
+</html>

@@ -9,6 +9,7 @@
   --header-line: #e2dfdd;  /* divider under the navbar, a touch darker */
   --accent: #67b35d;       /* medium green */
   --accent-ink: #4a5400;   /* dark text/icons sitting on top of --accent */
+  --causal: #c0503c;       /* muted red — asserted (causal) edges on the graph */
   --radius: 14px;
   --radius-pill: 6px;      /* was a full pill (999px); now a soft 6px on all controls */
   --maxw: 1040px;
@@ -53,6 +54,7 @@
   --ink: #e8e4dc;
   --muted: #9a9288;
   --line: #2a2520;
+  --causal: #d9705c;       /* slightly lighter red so it reads on the dark bg */
 }
 
 * { box-sizing: border-box; }
@@ -1255,3 +1257,127 @@ a.post-tag:focus-visible { color: var(--accent); }
     transform: none;
   }
 }
+
+/* ---------- Precursors (force-directed graph) ---------- */
+.precursors-intro {
+  color: var(--muted);
+  font-size: var(--text-medium);
+  margin: -0.25rem 0 1.25rem;
+}
+
+.graph-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 0.75rem;
+}
+
+/* Segmented Discovery / Connections switch. */
+.mode-toggle {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.mode-btn {
+  padding: 6px 14px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  cursor: pointer;
+}
+.mode-btn + .mode-btn { border-left: 1px solid var(--line); }
+.mode-btn:hover { color: var(--ink); }
+.mode-btn.is-active {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+.mode-btn:focus-visible { outline: none; color: var(--ink); }
+
+.graph-legend {
+  display: inline-flex;
+  gap: 16px;
+  color: var(--muted);
+  font-size: var(--text-tiny);
+}
+.legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 0;
+  border-top-width: 2px;
+  border-top-style: solid;
+}
+.legend-swatch.swatch-causal { border-top-color: var(--causal); }
+.legend-swatch.swatch-thematic { border-top-color: var(--muted); }
+.legend-swatch.swatch-node,
+.legend-swatch.swatch-source {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid;
+  border-radius: 50%;
+  border-top-width: 1.5px;
+}
+.legend-swatch.swatch-node { background: var(--accent); border-color: var(--accent-ink); }
+.legend-swatch.swatch-source { background: var(--bg); border-color: var(--muted); border-style: dashed; }
+
+.graph-wrap {
+  position: relative;
+  width: 100%;
+  height: 70vh;
+  min-height: 420px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+#graph {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: grab;
+}
+#graph:active { cursor: grabbing; }
+.node { cursor: pointer; }
+.node text {
+  paint-order: stroke;
+  pointer-events: none;
+  user-select: none;
+}
+
+.graph-tooltip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 260px;
+  padding: 8px 10px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  color: var(--ink);
+  font-size: var(--text-small);
+  line-height: 1.35;
+  pointer-events: none;
+  z-index: 5;
+}
+.graph-tooltip[hidden] { display: none; }
+.graph-tooltip .tip-kind {
+  display: block;
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+.graph-tooltip .tip-posts {
+  display: block;
+  color: var(--accent-ink);
+  margin-top: 6px;
+}
+[data-theme="dark"] .graph-tooltip .tip-posts { color: var(--accent); }
+.graph-tooltip .tip-note { display: block; }
