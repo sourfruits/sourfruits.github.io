@@ -134,69 +134,70 @@ from the same data:
 
 - **Discovery** — every node plus a hub for each `discovered_via.source`
   (friends, classes, platforms…), with an edge from each source to what it led
-  you to.
-- **Connections** — the nodes wired together by the `connections` array. Edges
-  you mark `causal` are drawn in red; the rest are quiet grey "thematic" lines.
+  you to. Nodes are green here.
+- **Connections** — the nodes wired together by their `connections`, drawn as
+  plain undirected lines. Nodes are yellow here.
 
 Its data lives in its own file, **`data/precursors.json`** — completely separate
-from `posts.json`, which it never touches. The file is a single object with two
-arrays, `nodes` and `connections`:
+from `posts.json`, which it never touches. The file is a single object with one
+`nodes` array; every node is added by hand (nothing from `posts.json` becomes a
+node automatically). Each node carries its *own* connections:
 
 ```json
 {
   "nodes": [
     {
-      "id": "heidegger",                       // stable, unique, hand-picked slug
-      "label": "Heidegger",                    // display name on the graph
-      "kind": "philosopher",                   // free string: film, book, person, platform…
-      "post_ids": ["stranger-than-paradise-heidegger"],  // 0, 1, or many post ids
+      "id": "the-trial",                       // stable, unique, hand-picked slug
+      "label": "The Trial",                    // display name on the graph
+      "kind": "book",                          // free string: film, book, person, platform…
+      "post_ids": ["kafka-the-trial"],         // 0, 1, or many post ids (optional link-out)
+      "connections": ["after-hours"],          // array of connected node ids
       "discovered_via": {                      // optional — how you first met this
-        "source": "class-philosophy-denmark",  // {type}-{descriptor}, lowercase, hyphenated
+        "source": "class-philosophy-denmark",  // {type}-{descriptor}, or another node's id
         "note": "Read for a philosophy class in Denmark."  // optional, shown on hover
       }
-    }
-  ],
-  "connections": [
+    },
     {
-      "from": "stranger-than-paradise",        // node id
-      "to": "heidegger",                       // node id
-      "causal": false,                         // true = asserted influence (drawn red)
-      "note": "Same sitting-with-boredom territory."  // optional, shown on edge hover
+      "id": "four-nights-of-a-dreamer",
+      "label": "Four Nights of a Dreamer (1971)",
+      "kind": "film",
+      "post_ids": [],
+      "discovered_via": { "source": "white-nights" },   // discovered via another node
+      "connections": ["white-nights", "pickpocket"]      // plain undirected links
     }
   ]
 }
 ```
 
 **Node fields:**
-- `id` — stable, unique, hand-picked (not auto-generated). It's what `connections`
-  and `post_ids` are matched against, so once you use one for something real, keep
-  it forever — never re-slug it.
+- `id` — stable, unique, hand-picked (not auto-generated). It's what `connections`,
+  `discovered_via.source`, and `post_ids` are matched against, so once you use one
+  for something real, keep it forever — never re-slug it.
 - `label` — the display name shown next to the node.
-- `kind` — an open string, not a fixed list (`film`, `philosopher`, `book`,
+- `kind` — an open string, not a fixed list (`film`, `book`, `philosopher`,
   `person`, `platform`, `class`, `podcast`, …). New kinds need no code change.
-- `post_ids` — array of `posts.json` ids this node maps to. Can be empty (a
-  graph-only node with no write-up), have one, or list several. Hovering a node
-  shows the linked post title(s).
-- `discovered_via` — optional. `source` is a `{type}-{descriptor}` string
-  (`friend-maya`, `class-philosophy-denmark`, `platform-criterion-channel`); the
-  same real-world source must always use the *exact same* string, or it splits
-  into duplicate hubs. `note` is optional free text shown on hover. In Discovery
-  view each distinct `source` becomes its own hollow hub node.
-
-**Connection fields:**
-- `from` / `to` — node `id`s (always node-to-node; sources never appear here, only
-  in `discovered_via.source`).
-- `causal` — `true` only when asserting a real influence, not just a resonance.
-  Causal edges render distinct (red) from the default quiet thematic line. Most
-  connections are thematic (`false`).
-- `note` — optional but encouraged; it's shown when you hover the edge.
+- `post_ids` — array of `posts.json` ids this node maps to. Usually empty (a
+  graph-only node with no write-up yet); can point to one or several. Hovering a
+  node shows the linked post title(s).
+- `connections` — an array of the ids of the other nodes this one connects to
+  (`["white-nights", "pickpocket"]`). Every connection is a plain, symmetric,
+  undirected link, drawn as a simple line.
+- `discovered_via` — optional. `source` is either a `{type}-{descriptor}` string
+  (`friend-maya`, `class-philosophy-denmark`, `platform-criterion-channel`) **or
+  another node's id** (when the discovery came from something already in the graph).
+  A source that isn't a node id auto-creates one shared hollow hub node the first
+  time it's used, so reuse the *exact same* string every time or it splits into
+  duplicate hubs. `note` is optional free text shown on hover.
 
 Notes:
-- Nodes with no edges at all still render — they just float, never filtered out.
-  A useful graph grows from a handful of entries, so partial data is fine.
+- **Write connections on either side — or both.** Listing B under A, A under B, or
+  both describes the *same* single edge; it's drawn once either way, so you never
+  have to hunt down the "other" node to keep things in sync.
+- Nodes with no connections or discovery at all still render — they just float,
+  never filtered out. Partial, in-progress data is fine.
 - New nodes and connections plug into the layout automatically; there's no manual
-  positioning. Pan by dragging the background, zoom with the scroll wheel, and drag
-  a node to reposition it.
+  positioning, and nodes are kept inside the canvas. Pan by dragging the background,
+  zoom with the scroll wheel, and drag a node to reposition it.
 - Privacy: use first names only for real people (`friend-maya`), or an initial/handle
   (`friend-m`) for anyone who'd rather not be named — the graph only needs the id to
   stay consistent.

@@ -10,7 +10,6 @@
   --accent: #67b35d;       /* medium green */
   --accent-ink: var(--accent);  /* TEMP TEST: identical to --accent for now */
   --accent2: #e8c840;      /* logo yellow (the lower-right dot in the mark) */
-  --causal: #c0503c;       /* muted red — asserted (causal) edges on the graph */
   --radius: 14px;
   --radius-pill: 6px;      /* was a full pill (999px); now a soft 6px on all controls */
   --maxw: 1040px;
@@ -55,7 +54,6 @@
   --ink: #e8e4dc;
   --muted: #9a9288;
   --line: #2a2520;
-  --causal: #d9705c;       /* slightly lighter red so it reads on the dark bg */
 }
 
 * { box-sizing: border-box; }
@@ -1329,6 +1327,25 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 .mode-btn:focus-visible { outline: none; color: var(--ink); }
 
+.graph-toolbar-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+}
+.graph-fs-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.graph-fs-btn:hover { color: var(--ink); }
+.graph-fs-btn:focus-visible { outline: none; color: var(--ink); }
+
 .graph-legend {
   display: inline-flex;
   gap: 16px;
@@ -1343,8 +1360,6 @@ a.post-tag:focus-visible { color: var(--accent); }
   border-top-width: 2px;
   border-top-style: solid;
 }
-.legend-swatch.swatch-causal { border-top-color: var(--causal); }
-.legend-swatch.swatch-thematic { border-top-color: var(--muted); }
 .legend-swatch.swatch-node,
 .legend-swatch.swatch-source {
   width: 12px;
@@ -1353,7 +1368,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   border-radius: 50%;
   border-top-width: 1.5px;
 }
-.legend-swatch.swatch-node { background: var(--accent2); border-color: var(--accent2); }
+.legend-swatch.swatch-node { background: var(--accent); border-color: var(--accent-ink); }
 .legend-swatch.swatch-source { background: var(--bg); border-color: var(--muted); border-style: dashed; }
 
 .graph-wrap {
@@ -1366,6 +1381,15 @@ a.post-tag:focus-visible { color: var(--accent); }
   background: var(--surface);
   overflow: hidden;
 }
+/* In full screen the wrap fills the viewport (no rounded corners), keeping the
+   surface background so it doesn't fall back to black. */
+.graph-wrap:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  border: none;
+  border-radius: 0;
+  background: var(--surface);
+}
 #graph {
   display: block;
   width: 100%;
@@ -1373,6 +1397,16 @@ a.post-tag:focus-visible { color: var(--accent); }
   cursor: grab;
 }
 #graph:active { cursor: grabbing; }
+
+/* Thin dashed frame showing the pan/zoom boundary (the world edges). */
+.graph-boundary {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.4;
+  pointer-events: none;
+}
 .node { cursor: pointer; }
 .node text {
   paint-order: stroke;

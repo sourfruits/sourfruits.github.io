@@ -1,93 +1,77 @@
 {
   "nodes": [
     {
-      "id": "heidegger",
-      "label": "Heidegger",
-      "kind": "philosopher",
-      "post_ids": ["stranger-than-paradise-heidegger"],
-      "discovered_via": {
-        "source": "class-philosophy-denmark",
-        "note": "Read for a philosophy class in Denmark."
-      }
-    },
-    {
-      "id": "kierkegaard",
-      "label": "Kierkegaard",
-      "kind": "philosopher",
-      "post_ids": [],
-      "discovered_via": {
-        "source": "friend-maya",
-        "note": "Maya mentioned him first; the class is what actually got me reading."
-      }
-    },
-    {
-      "id": "stranger-than-paradise",
-      "label": "Stranger Than Paradise",
+      "id": "brazil-1985",
+      "label": "Brazil (1985)",
       "kind": "film",
-      "post_ids": ["stranger-than-paradise-heidegger"],
-      "discovered_via": {
-        "source": "platform-criterion-channel"
-      }
+      "post_ids": [],
+      "connections": ["the-trial"]
     },
     {
-      "id": "kafka-the-trial",
+      "id": "fear-and-trembling",
+      "label": "Fear and Trembling",
+      "kind": "book",
+      "post_ids": []
+    },
+    {
+      "id": "white-nights",
+      "label": "White Nights",
+      "kind": "book",
+      "post_ids": [],
+      "connections": ["four-nights-of-a-dreamer"]
+    },
+    {
+      "id": "four-nights-of-a-dreamer",
+      "label": "Four Nights of a Dreamer (1971)",
+      "kind": "film",
+      "post_ids": [],
+      "discovered_via": { "source": "white-nights" },
+      "connections": ["white-nights", "pickpocket"]
+    },
+    {
+      "id": "the-trial",
       "label": "The Trial",
       "kind": "book",
       "post_ids": ["kafka-the-trial"],
-      "discovered_via": {
-        "source": "class-philosophy-denmark"
-      }
+      "connections": ["after-hours", "brazil-1985"]
+    },
+    {
+      "id": "pickpocket",
+      "label": "Pickpocket (1959)",
+      "kind": "film",
+      "post_ids": []
+    },
+    {
+      "id": "the-stranger",
+      "label": "The Stranger",
+      "kind": "book",
+      "post_ids": []
+    },
+    {
+      "id": "mahjong-1996",
+      "label": "Mahjong (1996)",
+      "kind": "film",
+      "post_ids": []
     },
     {
       "id": "after-hours",
-      "label": "After Hours",
+      "label": "After Hours (1985)",
+      "kind": "film",
+      "post_ids": ["the-trial"]
+    },
+    {
+      "id": "either-or",
+      "label": "Either/Or",
+      "kind": "book",
+      "post_ids": [],
+      "connections": ["melancholia-2011"]
+    },
+    {
+      "id": "melancholia-2011",
+      "label": "Melancholia (2011)",
       "kind": "film",
       "post_ids": [],
-      "discovered_via": {
-        "source": "platform-criterion-channel",
-        "note": "Queued off a Criterion Scorsese binge."
-      }
-    },
-    {
-      "id": "chan-is-missing",
-      "label": "Chan Is Missing",
-      "kind": "film",
-      "post_ids": ["chan-is-missing"],
-      "discovered_via": {
-        "source": "platform-criterion-channel"
-      }
-    },
-    {
-      "id": "enter-the-dragon",
-      "label": "Enter the Dragon",
-      "kind": "film",
-      "post_ids": ["enter-the-dragon"],
-      "discovered_via": {
-        "source": "friend-leo",
-        "note": "Leo's comfort movie; watched it at his place."
-      }
-    },
-    {
-      "id": "from-russia-with-love",
-      "label": "From Russia with Love",
-      "kind": "film",
-      "post_ids": ["from-russia-with-love"],
-      "discovered_via": {
-        "source": "family"
-      }
-    },
-    {
-      "id": "casts-of-a-dreamer",
-      "label": "Casts of a Dreamer",
-      "kind": "podcast",
-      "post_ids": ["casts-of-a-dreamer"]
+      "connections": ["either-or"]
     }
-  ],
-  "connections": [
-    { "from": "stranger-than-paradise", "to": "heidegger", "causal": false, "note": "Same sitting-with-boredom, authentic-living territory." },
-    { "from": "kierkegaard", "to": "heidegger", "causal": true, "note": "Heidegger read and reacted directly to Kierkegaard's account of anxiety and the self." },
-    { "from": "kafka-the-trial", "to": "after-hours", "causal": true, "note": "After Hours runs on The Trial's bureaucratic nightmare logic — an ordinary man ground down by an absurd, impersonal system." },
-    { "from": "chan-is-missing", "to": "stranger-than-paradise", "causal": false, "note": "Two shoestring black-and-white indies drifting through a city on the thinnest thread of a plot." },
-    { "from": "enter-the-dragon", "to": "from-russia-with-love", "causal": false, "note": "Globe-trotting spectacle where the exotic locale is as much the star as the hero." }
   ]
 }
