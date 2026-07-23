@@ -6,7 +6,8 @@
       "kind": "philosopher",
       "post_ids": [],
       "discovered_via": [
-        { "source": "person-danny-h", "date": "2024" }
+        { "strength": "aware", "source": "person-danny-h", "date": "2024" },
+        { "strength": "engaged", "source": "class-philosophy-dis", "date": "2026-03" }
       ],
       "connections": [
         { "to": "either-or", "relationship": "authorship" },
@@ -52,7 +53,7 @@
       "kind": "book",
       "post_ids": ["kafka-the-trial"],
       "discovered_via": [
-        { "date": "2026" }
+        { "source": "the-stranger", "date": "2026-06" }
       ],
       "connections": [
         { "to": "the-trial-film", "relationship": "adaptation" },
@@ -232,7 +233,8 @@
       "label": "Stranger Than Paradise (1984)",
       "kind": "film",
       "discovered_via": [
-        { "source": "class-philosophy-dis", "date": "2026-05", "note": "Assigned/chosen for an essay on boredom; loved it." }
+        { "strength": "aware", "source": "jim-jarmusch" },
+        { "strength": "engaged", "source": "class-philosophy-dis", "date": "2026-05", "note": "Assigned/chosen for an essay on boredom; loved it." }
       ],
       "connections": [
         { "to": "chan-is-missing", "relationship": "thematic", "note": "Influential black and white 1980s indie film about aimless wandering" }

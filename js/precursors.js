@@ -208,7 +208,6 @@ function buildDiscovery(data) {
   const included = new Map();  // graph node id -> node object
   const links = [];
   const ledTo = new Map();     // source graph id -> [{ to, note }]
-  const seenEdge = new Set();  // "sourceId->targetId", so duplicate entries don't double an edge
 
   const includeContent = (id) => {
     if (!included.has(id)) included.set(id, { ...byId.get(id), isSource: false, growth: 0 });
@@ -230,11 +229,12 @@ function buildDiscovery(data) {
       const src = dv.source;
       if (!src || src === n.id) return;  // source-less (or self): no edge, node stays as an orphan
       const note = dv.note || "";
+      // "aware" (just heard of it) vs "engaged" (sat down with it); defaults to
+      // engaged. Aware edges draw dashed. Every entry draws its own edge — a
+      // node can have two (a distinct earlier "aware" and a later "engaged").
+      const strength = dv.strength === "aware" ? "aware" : "engaged";
       const sourceId = byId.has(src) ? includeContent(src).id : includeHub(src).id;
-      const key = `${sourceId}->${n.id}`;
-      if (seenEdge.has(key)) return;
-      seenEdge.add(key);
-      links.push({ source: sourceId, target: n.id, type: "discovery", directional: true, kind: "connection", note });
+      links.push({ source: sourceId, target: n.id, type: "discovery", directional: true, kind: "connection", note, strength });
       if (!ledTo.has(sourceId)) ledTo.set(sourceId, []);
       ledTo.get(sourceId).push({ to: n.id, note });
     });
@@ -400,8 +400,10 @@ function edgeLabel(d) {
   return d.type && RELATIONSHIP_TYPES[d.type] ? RELATIONSHIP_TYPES[d.type].label : "";
 }
 
-// Whether an edge's type is drawn dashed (e.g. authorship).
+// Whether an edge is drawn dashed: authorship connections, and "aware" discovery
+// edges (a weaker, "just heard of it" link) — same dashed style for both.
 function edgeDashed(d) {
+  if (d.strength === "aware") return true;
   return !!(d.type && RELATIONSHIP_TYPES[d.type] && RELATIONSHIP_TYPES[d.type].dashed);
 }
 
@@ -754,7 +756,7 @@ function render(mode) {
 
   // --- links ---
   const link = linkLayer.selectAll("line.link")
-    .data(graph.links, (d) => `${idOf(d.source)}->${idOf(d.target)}`);
+    .data(graph.links, linkKey);
   link.exit().remove();
   const linkEnter = link.enter().append("line").attr("class", "link");
   const linkAll = linkEnter.merge(link)
@@ -767,7 +769,7 @@ function render(mode) {
 
   // Transparent, thick hit lines so thin edges are still easy to hover.
   const hit = linkLayer.selectAll("line.link-hit")
-    .data(graph.links, (d) => `${idOf(d.source)}->${idOf(d.target)}`);
+    .data(graph.links, linkKey);
   hit.exit().remove();
   const hitAll = hit.enter().append("line")
     .attr("class", "link-hit")
@@ -943,6 +945,13 @@ function idOf(endpoint) {
   return typeof endpoint === "object" ? endpoint.id : endpoint;
 }
 
+// Stable data-join key for an edge. Strength is folded in so two edges between
+// the same pair (e.g. an "aware" and an "engaged" discovery of one node) are
+// kept distinct rather than collapsed by the join.
+function linkKey(d) {
+  return `${idOf(d.source)}->${idOf(d.target)}:${d.strength || ""}`;
+}
+
 function renderLegend(mode) {
   legend.setAttribute("aria-hidden", "false");
   if (mode === "connections") {
@@ -953,8 +962,10 @@ function renderLegend(mode) {
     ).join("");
     return;
   }
+  const dc = RELATIONSHIP_TYPES.discovery.color;
   legend.innerHTML =
-    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${RELATIONSHIP_TYPES.discovery.color}"></span>Discovery →</span>` +
+    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>Discovery (engagement) →</span>` +
+    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc};border-top-style:dashed"></span>Aware (weaker) →</span>` +
     `<span class="legend-item"><span class="legend-swatch swatch-node"></span>Discovered</span>` +
     `<span class="legend-item"><span class="legend-swatch swatch-source"></span>Source</span>`;
 }
