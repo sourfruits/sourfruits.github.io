@@ -1,22 +1,12 @@
 [
   {
-  "id": "2",
-  "title": "2",
+  "id": "how-much-land",
+  "title": "How Much Land Does a Man Need? And Other Stories by Tolstoy",
   "subtitle": "xx",
   "date": "2099-07-23",
   "tags": ["blurb", "books"],
-  "thumb": "images/IMG_0725.jpg",
-  "image": "images/IMG_0725.jpg",
-  "content": "yep"
-  },
-  {
-  "id": "1",
-  "title": "1",
-  "subtitle": "xx",
-  "date": "2099-07-23",
-  "tags": ["blurb", "books"],
-  "thumb": "images/IMG_0723.jpg",
-  "image": "images/IMG_0723.jpg",
+  "thumb": "images/how-much-land.jpg",
+  "image": "images/how-much-land.jpg",
   "content": "yep"
   },
   {
