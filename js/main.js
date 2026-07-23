@@ -23,7 +23,7 @@ const CAROUSEL_MAX = 6;        // most-recent posts shown in the carousel strip
 let allPosts = [];
 let allTags = [];              // every tag, ordered by post count (ties alphabetical)
 let selectedTags = new Set();  // the tags currently checked
-let showDrafts = true;         // whether draft posts are revealed (shown by default)
+let showDrafts = false;         // whether draft posts are revealed (shown by default)
 let currentView = "normal";    // compact | normal | carousel
 
 // Selected tags parsed from ?tags= (comma-separated).
