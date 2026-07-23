@@ -1,14 +1,19 @@
 # Sourfruits
 
-A small Instagram-style photo blog as a static website. The homepage is a grid of
-square thumbnails; clicking one opens a post with the full image, optional subtitle,
-date, tags, and text. You can also browse by tag or search across every post. All
-posts live in a single JSON file so adding a new one is a one-block edit.
+A small Instagram-style photo blog as a static website. The homepage shows your
+posts as square thumbnails — either a horizontal carousel of the most recent ones
+(the default) or a full paginated grid, switched with a view toggle. Clicking a
+thumbnail opens a post with the full image, optional subtitle, date, tags, and text.
+You can filter the homepage by one or more tags, browse a dedicated tag page, or
+search across every post. All posts live in a single JSON file so adding a new one
+is a one-block edit.
 
-Extras baked in: a light/dark theme toggle (floating, remembered per browser), an
-inline header search box, gentle load-in fade animations (which respect
-`prefers-reduced-motion`), and — at the bottom of every post — previous/next links
-and a "More like this" row of posts sharing its tags.
+Extras baked in: a multi-select tag filter on the homepage (AND logic, synced to
+the URL via `?tags=`), draft posts that stay hidden until you reveal them, a
+light/dark theme toggle (floating, remembered per browser), an inline header search
+box, gentle load-in fade animations (which respect `prefers-reduced-motion`), and —
+at the bottom of every post — previous/next links and a "More like this" row of
+posts sharing its tags.
 
 ## File structure
 
@@ -85,7 +90,8 @@ Open `data/posts.json` and add an object to the array:
   "tags": ["citrus", "kitchen"],
   "thumb": "images/my-photo-square.jpg",       // square image for the grid
   "image": "images/my-photo-full.jpg",         // full image for the post page
-  "content": "Your text.\n\n## A heading\n\nSome **bold** and *italic* text, plus a list:\n\n- first item\n- second item"
+  "content": "Your text.\n\n## A heading\n\nSome **bold** and *italic* text, plus a list:\n\n- first item\n- second item",
+  "draft": true                                // optional — hides the post until drafts are revealed
 }
 ```
 
@@ -100,19 +106,21 @@ Notes:
   **bold** (`**text**`), *italics* (`*text*`), and lists (`- item`). Blank lines
   still create paragraph breaks. (Write it as one JSON string, using `\n` for line
   breaks and `\n\n` between paragraphs.)
+- `draft` is optional. Set `"draft": true` (or date the post `2099-01-01` or later)
+  to keep it out of the homepage and tag counts. A "Drafts (N)" toggle appears on the
+  homepage whenever drafts exist; clicking it reveals them, each marked with a DRAFT
+  badge. Drafts are hidden by default.
 - Tip: for longer posts, draft in Google Docs and use the "Docs to Markdown"
   add-on to convert your formatting to Markdown, then paste the result into the
   `content` field.
 - `thumb` and `image` can be local paths (e.g. `images/lemon.jpg`) or full URLs.
   If you omit `thumb`, the grid falls back to `image`, and vice versa.
-- The starter posts use placeholder images from picsum.photos — swap in your own.
 
 ## Using your own images
 
 Drop your photos into the `images/` folder and point `thumb`/`image` at them, e.g.
 `"image": "images/morning-lemons.jpg"`. See `images/README.md` for the naming
-convention and sizing tips. The starter posts currently use placeholder URLs from
-picsum.photos — replace those as you add your own.
+convention and sizing tips.
 
 ## Adding a new page
 
