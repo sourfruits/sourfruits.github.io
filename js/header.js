@@ -98,7 +98,7 @@
       });
 
       while (graphSvg.firstChild) graphSvg.removeChild(graphSvg.firstChild);
-      // Lines first so the dots sit on top of the joins.
+      // Connecting lines between the letters (no dots).
       for (let i = 0; i < pts.length - 1; i++) {
         const line = document.createElementNS(SVG_NS, "line");
         line.setAttribute("class", "np-line");
@@ -108,14 +108,6 @@
         line.setAttribute("y2", pts[i + 1].y);
         graphSvg.appendChild(line);
       }
-      pts.forEach((p) => {
-        const dot = document.createElementNS(SVG_NS, "circle");
-        dot.setAttribute("class", "np-dot");
-        dot.setAttribute("cx", p.x);
-        dot.setAttribute("cy", p.y);
-        dot.setAttribute("r", 1.6);
-        graphSvg.appendChild(dot);
-      });
     });
   }
 

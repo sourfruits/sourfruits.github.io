@@ -8,7 +8,7 @@
   --header-bg: #f1eeec;    /* soft warm greige navbar (warm, not yellow) */
   --header-line: #e2dfdd;  /* divider under the navbar, a touch darker */
   --accent: #67b35d;       /* medium green */
-  --accent-ink: var(--accent);  /* TEMP TEST: identical to --accent for now */
+  --accent-ink: #1f4d31;   /* dark green — legible as text on an --accent fill */
   --accent2: #e8c840;      /* logo yellow (the lower-right dot in the mark) */
   /* Connection relationship-type line colors (see js/precursors.js). */
   --rel-adaptation: #3a8a8f;   /* teal */
@@ -60,6 +60,9 @@
   --ink: #e8e4dc;
   --muted: #9a9288;
   --line: #2a2520;
+  /* --accent and --accent-ink are intentionally NOT overridden here — the accent
+     treatment is identical in both modes (accent-ink only ever sits on an
+     accent-green fill, so it needs no dark-background variant). */
   /* Slightly lighter relationship colors so they read on the dark background. */
   --rel-adaptation: #5bb3b8;
   --rel-influence:  #d9705c;
@@ -141,6 +144,7 @@ main {
   letter-spacing: -0.01em;
   color: var(--ink);
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 /* Logo mark: two overlapping dots — green upper-left underneath, yellow
    lower-right on top. */
@@ -149,7 +153,7 @@ main {
 .dot-green { background: #67b35d; top: 0; left: 0; z-index: 0; }
 .dot-yellow { background: #e8c840; top: 4px; left: 4px; z-index: 1; }
 .header-logo:hover,
-.header-logo:focus-visible { color: var(--accent-ink); }
+.header-logo:focus-visible { color: var(--accent); }
 
 .header-actions {
   display: flex;
@@ -223,7 +227,7 @@ main {
   transition: color 0.2s ease;
 }
 .header-search-btn:hover,
-.header-search-btn:focus-visible { color: var(--accent-ink); }
+.header-search-btn:focus-visible { color: var(--accent); }
 .header-search-btn:focus-visible { outline: none; }
 /* Readable grey on the white focused field. */
 .header-search:focus-within .header-search-btn { color: #76766e; }
@@ -253,7 +257,7 @@ main {
 }
 .theme-toggle:hover,
 .theme-toggle:focus-visible {
-  color: var(--accent-ink);
+  color: var(--accent);
   opacity: 1;
 }
 .theme-toggle:focus-visible { outline: none; }
@@ -278,7 +282,7 @@ main {
   transition: color 0.2s ease;
 }
 .nav-link:hover,
-.nav-link:focus-visible { color: var(--accent-ink); }
+.nav-link:focus-visible { color: var(--accent); }
 
 .site-title {
   display: inline-block;
@@ -701,7 +705,7 @@ body:has(.grid.is-carousel) main { padding-bottom: 24px; }
 .carousel-seeall:focus-visible {
   outline: none;
   border-color: var(--accent);
-  color: var(--accent-ink);
+  color: var(--ink);
 }
 .carousel-seeall-inner {
   font-weight: 700;
@@ -1059,7 +1063,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   letter-spacing: var(--heading-letter-spacing);
   margin: 8px 0 28px;
 }
-.tag-heading .tag-name { color: var(--accent-ink); }
+.tag-heading .tag-name { color: var(--ink); }
 /* Single-tag page (tag.html): left-align the heading to the page margin, in
    line with the logo/back-link. (tags.html keeps its own centered treatment.) */
 #tag-heading { text-align: left; }
@@ -1107,7 +1111,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 .tag-index-row:hover .tag-index-count,
 .tag-index-row:focus-visible .tag-index-name,
 .tag-index-row:focus-visible .tag-index-count {
-  color: var(--accent-ink);
+  color: var(--ink);
 }
 
 /* ---------- Search ---------- */
@@ -1122,7 +1126,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   font-weight: var(--heading-weight);
   letter-spacing: var(--heading-letter-spacing);
 }
-.search-heading .query-term { color: var(--accent-ink); }
+.search-heading .query-term { color: var(--ink); }
 
 .search-results {
   list-style: none;
@@ -1663,7 +1667,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 .nav-precursors:hover .np-letter,
 .nav-precursors:focus-visible .np-letter {
   transform: translateY(var(--dy, 0));
-  color: var(--accent-ink);
+  color: var(--accent);   /* header nav → accent, like the other nav links */
   transition-delay: var(--d, 0s);   /* the gentle stagger */
 }
 .np-graph {
@@ -1681,7 +1685,6 @@ a.post-tag:focus-visible { color: var(--accent); }
   transition-delay: 0.15s;          /* fade in shortly after the letters move */
 }
 .np-line { stroke: var(--muted); stroke-width: 1; }
-.np-dot { fill: var(--muted); }
 
 /* Reduced-motion: keep the colour shift + lines, drop the letter movement. */
 @media (prefers-reduced-motion: reduce) {
