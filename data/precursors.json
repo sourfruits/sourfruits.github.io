@@ -1,17 +1,92 @@
 {
   "nodes": [
     {
-      "id": "brazil-1985",
-      "label": "Brazil (1985)",
+      "id": "soren-kierkegaard",
+      "label": "Soren Kierkegaard",
+      "kind": "philosopher",
+      "post_ids": [],
+      "connections": [
+        { "to": "either-or", "relationship": "authorship" },
+        { "to": "the-myth-of-sisyphus", "relationship": "influence" },
+        { "to": "the-stranger", "relationship": "influence" },
+        { "to": "the-moviegoer", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "either-or",
+      "label": "Either/Or",
+      "kind": "book",
+      "post_ids": [],
+      "connections": [
+        { "to": "melancholia", "relationship": "thematic" }
+      ]
+    },
+    {
+      "id": "the-moviegoer",
+      "label": "The Moviegoer",
+      "kind": "book",
+      "post_ids": []
+    },
+    {
+      "id": "melancholia",
+      "label": "Melancholia (2011)",
+      "kind": "film",
+      "post_ids": [],
+      "connections": [
+        { "to": "either-or", "relationship": "thematic" }
+      ]
+    },
+
+    {
+      "id": "the-trial",
+      "label": "The Trial",
+      "kind": "book",
+      "post_ids": ["kafka-the-trial"],
+      "connections": [
+        { "to": "the-stranger", "relationship": "influence" },
+        { "to": "after-hours", "relationship": "influence" },
+        { "to": "brazil", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "after-hours",
+      "label": "After Hours (1985)",
       "kind": "film",
       "post_ids": []
     },
     {
-      "id": "fear-and-trembling",
-      "label": "Fear and Trembling",
+      "id": "brazil",
+      "label": "Brazil (1985)",
+      "kind": "film",
+      "post_ids": []
+    },
+
+    {
+      "id": "the-stranger",
+      "label": "The Stranger",
+      "kind": "book",
+      "post_ids": []
+    },
+    {
+      "id": "the-myth-of-sisyphus",
+      "label": "The Myth of Sisyphus",
       "kind": "book",
       "post_ids": [],
-      "connections": ["either-or"]
+      "connections": [
+        { "to": "the-stranger", "relationship": "thematic" }
+      ]
+    },
+
+    {
+      "id": "fyodor-dostoevsky",
+      "label": "Fyodor Dostoevsky",
+      "kind": "author",
+      "post_ids": [],
+      "connections": [
+        { "to": "notes-from-underground", "relationship": "authorship" },
+        { "to": "white-nights", "relationship": "authorship" },
+        { "to": "crime-and-punishment", "relationship": "authorship" }
+      ]
     },
     {
       "id": "white-nights",
@@ -19,7 +94,41 @@
       "kind": "book",
       "post_ids": [],
       "connections": [
-        { "to": "four-nights-of-a-dreamer", "relationship": "adaptation" }
+        { "to": "four-nights-of-a-dreamer", "relationship": "adaptation" },
+        { "to": "le-notti-bianche", "relationship": "adaptation" }
+      ]
+    },
+    {
+      "id": "notes-from-underground",
+      "label": "Notes From Underground",
+      "kind": "book",
+      "post_ids": [],
+      "connections": [
+        { "to": "the-trial", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "crime-and-punishment",
+      "label": "Crime and Punishment",
+      "kind": "book",
+      "post_ids": [],
+      "connections": [
+        { "to": "pickpocket", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "le-notti-bianche",
+      "label": "Le Notti Bianche (1957)",
+      "kind": "film"
+    },
+    {
+      "id": "robert-bresson",
+      "label": "Robert Bresson",
+      "kind": "director",
+      "post_ids": [],
+      "connections": [
+        { "to": "pickpocket", "relationship": "authorship" },
+        { "to": "four-nights-of-a-dreamer", "relationship": "authorship" }
       ]
     },
     {
@@ -27,20 +136,7 @@
       "label": "Four Nights of a Dreamer (1971)",
       "kind": "film",
       "post_ids": [],
-      "discovered_via": { "source": "white-nights" },
-      "connections": [
-        { "to": "pickpocket", "relationship": "companion" }
-      ]
-    },
-    {
-      "id": "the-trial",
-      "label": "The Trial",
-      "kind": "book",
-      "post_ids": ["kafka-the-trial"],
-      "connections": [
-        { "to": "after-hours", "relationship": "influence" },
-        { "to": "brazil-1985", "relationship": "influence" }
-      ]
+      "discovered_via": { "source": "white-nights" }
     },
     {
       "id": "pickpocket",
@@ -49,43 +145,79 @@
       "post_ids": []
     },
     {
-      "id": "the-stranger",
-      "label": "The Stranger",
-      "kind": "book",
+      "id": "le-samourai",
+      "label": "Le Samouraï (1967)",
+      "kind": "film",
       "post_ids": [],
       "connections": [
-        { "to": "the-trial", "relationship": "response" }
+        { "to": "ghost-dog", "relationship": "influence", "note": "Jarmusch built Ghost Dog on Le Samouraï's lone-hitman code and stillness." },
+        { "to": "pickpocket", "relationship": "thematic" },
+        { "to": "the-conversation", "relationship": "thematic" }
       ]
     },
     {
-      "id": "mahjong-1996",
-      "label": "Mahjong (1996)",
+      "id": "jim-jarmusch",
+      "label": "Jim Jarmusch",
+      "kind": "director",
+      "connections": [
+        { "to": "stranger-than-paradise", "relationship": "authorship" },
+        { "to": "ghost-dog", "relationship": "authorship" }
+      ]
+    },
+    {
+      "id": "stranger-than-paradise",
+      "label": "Stranger Than Paradise (1984)",
+      "kind": "film",
+      "connections": [
+        { "to": "chan-is-missing", "relationship": "thematic" }
+      ]
+    },
+    {
+      "id": "ghost-dog",
+      "label": "Ghost Dog: The Way of the Samurai (1999)",
       "kind": "film",
       "post_ids": []
     },
     {
-      "id": "after-hours",
-      "label": "After Hours (1985)",
+      "id": "chan-is-missing",
+      "label": "Chan Is Missing (1982)",
       "kind": "film",
-      "post_ids": ["the-trial"]
-    },
-    {
-      "id": "either-or",
-      "label": "Either/Or",
-      "kind": "book",
-      "post_ids": [],
       "connections": [
-        { "to": "melancholia-2011", "relationship": "thematic" }
+        {}
       ]
     },
     {
-      "id": "melancholia-2011",
-      "label": "Melancholia (2011)",
+      "id": "blow-up",
+      "label": "Blow-Up (1966)",
       "kind": "film",
       "post_ids": [],
       "connections": [
-        { "to": "either-or", "relationship": "thematic" }
+        { "to": "the-conversation", "relationship": "influence" },
+        { "to": "blow-out", "relationship": "influence" }
       ]
+    },
+    {
+      "id": "the-conversation",
+      "label": "The Conversation (1974)",
+      "kind": "film",
+      "post_ids": [],
+      "connections": [
+        { "to": "the-parallax-view", "relationship": "thematic" }
+      ]
+    },
+    {
+      "id": "blow-out",
+      "label": "Blow Out (1981)",
+      "kind": "film",
+      "post_ids": [],
+      "connections": [
+      ]
+    },
+    {
+      "id": "the-parallax-view",
+      "label": "The Parallax View (1974)",
+      "kind": "film",
+      "post_ids": []
     }
   ]
 }

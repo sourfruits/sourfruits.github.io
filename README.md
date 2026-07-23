@@ -137,9 +137,9 @@ from the same data:
   you to. Nodes are green here.
 - **Connections** — the nodes wired together by their `connections`. Each
   connection can carry a `relationship` type, colored per type with a legend;
-  directional types (adaptation, influence, response) draw an arrow from the
-  origin and enlarge the origin node, while non-directional ones (companion,
-  thematic) are plain symmetric lines. Nodes are yellow here.
+  directional types (adaptation, influence, authorship) draw an arrow from the
+  origin and enlarge the origin node, while the non-directional type (thematic)
+  is a plain symmetric line. Nodes are yellow here.
 
 Its data lives in its own file, **`data/precursors.json`** — completely separate
 from `posts.json`, which it never touches. The file is a single object with one
@@ -186,16 +186,19 @@ node automatically). Each node carries its *own* connections:
   node shows the linked post title(s).
 - `connections` — an array of the other nodes this one connects to. Each entry is
   either a **bare node id** (`"pickpocket"`) — an untyped, plain undirected line
-  with no hover label — or an object **`{ "to": "<id>", "relationship": "<type>" }`**
-  where `relationship` is one of the preset types:
+  with no hover label — or an object
+  **`{ "to": "<id>", "relationship": "<type>", "note": "<optional>" }`** where
+  `relationship` is one of the preset types:
   - **Directional** (arrow points from this node to `to`, and grows this node's
     size — one step per outgoing directional link): `adaptation`, `influence`,
-    `response`. Write these only on the **origin's** side.
-  - **Non-directional** (symmetric line, no arrow, no size effect): `companion`,
-    `thematic`.
+    `authorship` (drawn dashed). Write these only on the **origin's** side.
+  - **Non-directional** (symmetric line, no arrow, no size effect): `thematic`.
 
   Each type has its own line color and a legend entry; the type name shows on edge
-  hover. An untyped connection behaves like `thematic` but shows no hover label.
+  hover. An untyped connection behaves like `thematic` but shows no hover label. The
+  optional `note` is free text shown on edge hover (below the relationship label) —
+  use it to say *how* the two are connected. If a pair is written from both sides
+  and both carry a note, the first (in `nodes` order) is shown.
 - `discovered_via` — optional. `source` is either a `{type}-{descriptor}` string
   (`friend-maya`, `class-philosophy-denmark`, `platform-criterion-channel`) **or
   another node's id** (when the discovery came from something already in the graph).
@@ -214,8 +217,9 @@ Notes:
 - Nodes with no connections or discovery at all still render — they just float,
   never filtered out. Partial, in-progress data is fine.
 - New nodes and connections plug into the layout automatically; there's no manual
-  positioning, and nodes are kept inside the canvas. Pan by dragging the background,
-  zoom with the scroll wheel, and drag a node to reposition it.
+  positioning. The camera auto-fits to frame whatever the graph settles into (node
+  sizes included, so hubs never clip). Pan by dragging the background, zoom with the
+  scroll wheel, and drag a node to reposition it; double-click to reframe.
 - Privacy: use first names only for real people (`friend-maya`), or an initial/handle
   (`friend-m`) for anyone who'd rather not be named — the graph only needs the id to
   stay consistent.

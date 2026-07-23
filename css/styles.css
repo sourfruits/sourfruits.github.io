@@ -13,9 +13,8 @@
   /* Connection relationship-type line colors (see js/precursors.js). */
   --rel-adaptation: #3a8a8f;   /* teal */
   --rel-influence:  #c0503c;   /* red */
-  --rel-response:   #8a5bb0;   /* purple */
-  --rel-companion:  #4a72b0;   /* blue */
   --rel-thematic:   #8f8f86;   /* neutral grey */
+  --rel-authorship: #9c6b3f;   /* ochre / ink brown (dashed) */
   --radius: 14px;
   --radius-pill: 6px;      /* was a full pill (999px); now a soft 6px on all controls */
   --maxw: 1040px;
@@ -63,9 +62,8 @@
   /* Slightly lighter relationship colors so they read on the dark background. */
   --rel-adaptation: #5bb3b8;
   --rel-influence:  #d9705c;
-  --rel-response:   #ab84cf;
-  --rel-companion:  #7098d6;
   --rel-thematic:   #9a9288;
+  --rel-authorship: #c49060;
 }
 
 * { box-sizing: border-box; }
@@ -1296,8 +1294,18 @@ a.post-tag:focus-visible { color: var(--accent); }
 .precursors-intro {
   color: var(--muted);
   font-size: var(--text-medium);
-  margin: -0.25rem 0 1.25rem;
+  margin: -0.25rem 0 0.75rem;
 }
+.precursors-modes {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  color: var(--muted);
+  font-size: var(--text-small);
+  line-height: 1.5;
+}
+.precursors-modes strong { color: var(--ink); font-weight: 700; }
+.precursors-modes-aside { opacity: 0.75; }
 
 .graph-toolbar {
   display: flex;
@@ -1409,21 +1417,12 @@ a.post-tag:focus-visible { color: var(--accent); }
   cursor: grab;
 }
 #graph:active { cursor: grabbing; }
-
-/* Thin dashed frame showing the pan/zoom boundary (the world edges). */
-.graph-boundary {
-  fill: none;
-  stroke: var(--muted);
-  stroke-width: 1;
-  stroke-dasharray: 4 4;
-  opacity: 0.4;
-  pointer-events: none;
-}
 .node { cursor: pointer; }
 .node text {
   paint-order: stroke;
   pointer-events: none;
   user-select: none;
+  transition: opacity 0.15s ease;
 }
 
 .graph-tooltip {
@@ -1457,6 +1456,12 @@ a.post-tag:focus-visible { color: var(--accent); }
   margin-top: 6px;
 }
 [data-theme="dark"] .graph-tooltip .tip-posts { color: var(--accent); }
+.graph-tooltip .tip-degree {
+  display: block;
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  margin-top: 6px;
+}
 .graph-tooltip .tip-note { display: block; }
 .graph-tooltip .tip-rel {
   display: block;
