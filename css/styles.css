@@ -1056,13 +1056,9 @@ a.post-tag:focus-visible { color: var(--accent); }
    shadows, or pills; the dotted leader is the only structural device. Distinct
    from the inline .post-tag treatment used elsewhere. */
 .tag-index {
-  columns: 2;
-  column-gap: 48px;
+  columns: 1;
   max-width: var(--post-width);
   margin: 0 auto;
-}
-@media (max-width: 600px) {
-  .tag-index { columns: 1; }
 }
 .tag-index-row {
   display: flex;
