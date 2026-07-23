@@ -15,6 +15,7 @@
   --rel-influence:  #c0503c;   /* red */
   --rel-thematic:   #8f8f86;   /* neutral grey */
   --rel-authorship: #9c6b3f;   /* ochre / ink brown (dashed) */
+  --rel-discovery:  #4a72b0;   /* steel blue (Discovery view edges) */
   --radius: 14px;
   --radius-pill: 6px;      /* was a full pill (999px); now a soft 6px on all controls */
   --maxw: 1040px;
@@ -64,6 +65,7 @@
   --rel-influence:  #d9705c;
   --rel-thematic:   #9a9288;
   --rel-authorship: #c49060;
+  --rel-discovery:  #6f9bd6;
 }
 
 * { box-sizing: border-box; }
@@ -1470,6 +1472,15 @@ a.post-tag:focus-visible { color: var(--accent); }
   user-select: none;
   transition: opacity 0.15s ease;
 }
+/* The node whose detail card is open scales up a touch. transform-box keeps the
+   growth centred on the circle (d3 sets fill/stroke/r inline, but not transform,
+   so this doesn't fight the render). */
+.node circle {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.15s ease;
+}
+.node.is-selected circle { transform: scale(1.18); }
 
 .graph-tooltip {
   position: absolute;
@@ -1496,12 +1507,11 @@ a.post-tag:focus-visible { color: var(--accent); }
   text-transform: uppercase;
   margin-top: 2px;
 }
-.graph-tooltip .tip-posts {
+.graph-tooltip .tip-by {
   display: block;
-  color: var(--accent-ink);
-  margin-top: 6px;
+  color: var(--muted);
+  margin-top: 3px;
 }
-[data-theme="dark"] .graph-tooltip .tip-posts { color: var(--accent); }
 .graph-tooltip .tip-degree {
   display: block;
   color: var(--muted);
@@ -1515,6 +1525,129 @@ a.post-tag:focus-visible { color: var(--accent); }
   letter-spacing: 0.02em;
 }
 .graph-tooltip .tip-rel + .tip-note { margin-top: 5px; }
+
+/* Click-to-open node detail card. A quiet surface — thin dividers, no shadow —
+   floated in the graph's top-left corner. The header (title / kind / author /
+   discovery) stays put; only the connections list scrolls. */
+.node-detail {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 6;
+  width: 300px;
+  max-width: calc(100% - 28px);
+  max-height: calc(100% - 28px);
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  font-size: var(--text-small);
+  line-height: 1.4;
+  cursor: move;   /* the header is a drag handle; inner regions reset below */
+  animation: detail-pop 0.18s ease both;
+}
+.node-detail[hidden] { display: none; }
+.node-detail.is-dragging { cursor: grabbing; user-select: none; }
+
+/* Gentle pop-in so opening the card (and switching nodes) reads as an action. */
+@keyframes detail-pop {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .node-detail { animation: none; }
+}
+
+.detail-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  padding: 2px 6px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.detail-close:hover { color: var(--ink); }
+
+.detail-title {
+  margin: 0 22px 0 0;   /* clear the close button; title wraps naturally */
+  font-size: var(--text-medium);
+  font-weight: 700;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.detail-kind {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.detail-meta-row { margin-top: 8px; color: var(--ink); }
+.detail-meta-label { color: var(--muted); }
+.detail-meta-note { margin-top: 3px; color: var(--muted); }
+
+/* "Discovered via" list when a node has more than one discovery path. */
+.detail-discovered { margin-top: 8px; }
+.detail-dv-list { list-style: none; margin: 4px 0 0; padding: 0; color: var(--ink); }
+.detail-dv-list li + li { margin-top: 6px; }
+.detail-dv-date { color: var(--muted); font-size: var(--text-tiny); }
+
+/* Connections: a stats label that stays put over the scrolling list. The list
+   is capped to 3 rows in JS; this keeps it bounded even before that runs. */
+.detail-conn-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  cursor: default;
+}
+.detail-connections {
+  box-sizing: border-box;
+  max-height: 34vh;
+  overflow-y: auto;
+}
+.detail-conn { padding: 8px 0; }
+.detail-conn:first-child { padding-top: 0; }
+.detail-conn + .detail-conn { border-top: 1px solid var(--line); }
+.detail-conn-rel {
+  font-size: var(--text-tiny);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.detail-conn-name { display: block; margin-top: 2px; color: var(--ink); }
+.detail-conn-note { margin-top: 3px; color: var(--muted); }
+
+.detail-posts {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  cursor: default;
+}
+.detail-section-label {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.detail-post-list { list-style: none; margin: 0; padding: 0; }
+.detail-post-list li + li { margin-top: 4px; }
+/* Each title truncates by rendered width (ellipsis) past a share of the card. */
+.detail-post-link {
+  display: block;
+  max-width: 85%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--accent-ink);
+  text-decoration: none;
+}
+.detail-post-link:hover { text-decoration: underline; }
+[data-theme="dark"] .detail-post-link { color: var(--accent); }
 
 /* Precursors nav link — hover easter egg. Letters shift out of alignment and
    turn green (staggered), then a faint node-graph of lines + dots fades in

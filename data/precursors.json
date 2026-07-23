@@ -5,6 +5,9 @@
       "label": "Soren Kierkegaard",
       "kind": "philosopher",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "person-danny-h", "date": "2024" }
+      ],
       "connections": [
         { "to": "either-or", "relationship": "authorship" },
         { "to": "the-myth-of-sisyphus", "relationship": "influence" },
@@ -17,6 +20,9 @@
       "label": "Either/Or",
       "kind": "book",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "class-philosophy-dis", "date": "2026-03" }
+      ],
       "connections": [
         { "to": "melancholia", "relationship": "thematic" }
       ]
@@ -32,6 +38,9 @@
       "label": "Melancholia (2011)",
       "kind": "film",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "class-philosophy-dis", "date": "2026-03" }
+      ],
       "connections": [
         { "to": "either-or", "relationship": "thematic" }
       ]
@@ -42,36 +51,61 @@
       "label": "The Trial",
       "kind": "book",
       "post_ids": ["kafka-the-trial"],
+      "discovered_via": [
+        { "date": "2026" }
+      ],
       "connections": [
+        { "to": "the-trial-film", "relationship": "adaptation" },
         { "to": "the-stranger", "relationship": "influence" },
         { "to": "after-hours", "relationship": "influence" },
         { "to": "brazil", "relationship": "influence" }
       ]
     },
     {
+      "id": "the-trial-film",
+      "label": "The Trial (1962)",
+      "kind": "film",
+      "author": "Orson Welles",
+      "discovered_via": [
+        { "source": "the-trial", "date": "2026-06" }
+      ]
+    },
+    {
       "id": "after-hours",
       "label": "After Hours (1985)",
       "kind": "film",
-      "post_ids": []
+      "author": "Martin Scorsese",
+      "discovered_via": [
+        { "date": "2026-03" }
+      ]
     },
     {
       "id": "brazil",
       "label": "Brazil (1985)",
       "kind": "film",
-      "post_ids": []
+      "post_ids": [],
+      "discovered_via": [
+        { "date": "2026-04", "note": "Part of a Denmark movie-binge phase; exact source unclear." }
+      ]
     },
 
     {
       "id": "the-stranger",
       "label": "The Stranger",
       "kind": "book",
-      "post_ids": []
+      "post_ids": [],
+      "discovered_via": [
+        { "source": "class-philosophy-dis", "date": "2026-03", "note": "Borrowed from the DIS library." }
+      ]
     },
     {
       "id": "the-myth-of-sisyphus",
       "label": "The Myth of Sisyphus",
       "kind": "book",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "the-stranger", "date": "2026-04" }
+      ],
       "connections": [
         { "to": "the-stranger", "relationship": "thematic" }
       ]
@@ -82,6 +116,9 @@
       "label": "Fyodor Dostoevsky",
       "kind": "author",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "the-stranger", "date": "2026-05" }
+      ],
       "connections": [
         { "to": "notes-from-underground", "relationship": "authorship" },
         { "to": "white-nights", "relationship": "authorship" },
@@ -93,6 +130,9 @@
       "label": "White Nights",
       "kind": "book",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "fyodor-dostoevsky", "date": "2026-05", "note": "Picked it up in a bookstore in Denmark for the flight home." }
+      ],
       "connections": [
         { "to": "four-nights-of-a-dreamer", "relationship": "adaptation" },
         { "to": "le-notti-bianche", "relationship": "adaptation" }
@@ -103,6 +143,9 @@
       "label": "Notes From Underground",
       "kind": "book",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "fyodor-dostoevsky", "date": "2026-05" }
+      ],
       "connections": [
         { "to": "the-trial", "relationship": "influence" }
       ]
@@ -112,6 +155,9 @@
       "label": "Crime and Punishment",
       "kind": "book",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "fyodor-dostoevsky", "date": "2026-05" }
+      ],
       "connections": [
         { "to": "pickpocket", "relationship": "influence" }
       ]
@@ -119,13 +165,19 @@
     {
       "id": "le-notti-bianche",
       "label": "Le Notti Bianche (1957)",
-      "kind": "film"
+      "kind": "film",
+      "discovered_via": [
+        { "source": "white-nights", "date": "2026-05" }
+      ]
     },
     {
       "id": "robert-bresson",
       "label": "Robert Bresson",
       "kind": "director",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "le-samourai", "date": "2026-05" }
+      ],
       "connections": [
         { "to": "pickpocket", "relationship": "authorship" },
         { "to": "four-nights-of-a-dreamer", "relationship": "authorship" }
@@ -136,29 +188,40 @@
       "label": "Four Nights of a Dreamer (1971)",
       "kind": "film",
       "post_ids": [],
-      "discovered_via": { "source": "white-nights" }
+      "discovered_via": [
+        { "source": "white-nights", "date": "2026-05" }
+      ]
     },
     {
       "id": "pickpocket",
       "label": "Pickpocket (1959)",
       "kind": "film",
-      "post_ids": []
+      "post_ids": [],
+      "discovered_via": [
+        { "source": "robert-bresson", "date": "2026-05" }
+      ]
     },
     {
       "id": "le-samourai",
       "label": "Le Samouraï (1967)",
       "kind": "film",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "the-parallax-view", "date": "2026-03", "note": "Circling the spy/assassin genre around this time." }
+      ],
       "connections": [
         { "to": "ghost-dog", "relationship": "influence", "note": "Jarmusch built Ghost Dog on Le Samouraï's lone-hitman code and stillness." },
         { "to": "pickpocket", "relationship": "thematic" },
-        { "to": "the-conversation", "relationship": "thematic" }
+        { "to": "the-conversation", "relationship": "thematic", "note": "Existentialist studies of lone operators who build their identity around mastery of their craft" }
       ]
     },
     {
       "id": "jim-jarmusch",
       "label": "Jim Jarmusch",
       "kind": "director",
+      "discovered_via": [
+        { "source": "ghost-dog", "date": "2026-04" }
+      ],
       "connections": [
         { "to": "stranger-than-paradise", "relationship": "authorship" },
         { "to": "ghost-dog", "relationship": "authorship" }
@@ -168,29 +231,39 @@
       "id": "stranger-than-paradise",
       "label": "Stranger Than Paradise (1984)",
       "kind": "film",
+      "discovered_via": [
+        { "source": "class-philosophy-dis", "date": "2026-05", "note": "Assigned/chosen for an essay on boredom; loved it." }
+      ],
       "connections": [
-        { "to": "chan-is-missing", "relationship": "thematic", "note": "Black and white indie trailblazer about wandering aimlessly" }
+        { "to": "chan-is-missing", "relationship": "thematic", "note": "Influential black and white 1980s indie film about aimless wandering" }
       ]
     },
     {
       "id": "ghost-dog",
       "label": "Ghost Dog: The Way of the Samurai (1999)",
       "kind": "film",
-      "post_ids": []
+      "post_ids": [],
+      "discovered_via": [
+        { "source": "le-samourai", "date": "2026-04" }
+      ]
     },
     {
       "id": "chan-is-missing",
       "label": "Chan Is Missing (1982)",
       "kind": "film",
-      "connections": [
-        {}
-      ]
+      "discovered_via": [
+        { "source": "platform-letterboxd", "date": "2026-05" }
+      ],
+      "connections": []
     },
     {
       "id": "blow-up",
       "label": "Blow-Up (1966)",
       "kind": "film",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "blow-out", "date": "2026-03" }
+      ],
       "connections": [
         { "to": "the-conversation", "relationship": "influence" },
         { "to": "blow-out", "relationship": "influence" }
@@ -201,6 +274,9 @@
       "label": "The Conversation (1974)",
       "kind": "film",
       "post_ids": [],
+      "discovered_via": [
+        { "source": "the-parallax-view", "date": "2023-04" }
+      ],
       "connections": [
         { "to": "the-parallax-view", "relationship": "thematic" }
       ]
@@ -210,14 +286,18 @@
       "label": "Blow Out (1981)",
       "kind": "film",
       "post_ids": [],
-      "connections": [
-      ]
+      "discovered_via": [
+        { "source": "the-parallax-view", "date": "2023-04" }
+      ],
+      "connections": []
     },
     {
       "id": "the-parallax-view",
       "label": "The Parallax View (1974)",
       "kind": "film",
-      "post_ids": []
+      "discovered_via": [
+        { "date": "2023-04", "note": "General interest in spy/paranoia thrillers around this time; no specific trigger." }
+      ]
     }
   ]
 }

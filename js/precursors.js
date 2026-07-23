@@ -21,19 +21,20 @@ const TUNING = {
   maxLabelWidth: 170,  // label pixel width (world units) before it's cut off with an ellipsis
   nodeBase: 11,        // leaf/content node radius (world units)
   growthStep: 3,       // + radius per outgoing directional link, capped at 4 steps
-  sourceRadius: 7,     // discovery source-hub radius
   nodeFont: 18,        // content label font (px)
   sourceFont: 15,      // source-hub label font (px)
   // Force-simulation knobs:
   charge: -260,        // many-body repulsion (more negative = nodes push apart harder)
   linkDistance: 90,    // preferred edge length
   collidePad: 22,      // extra spacing beyond each node's radius (collision force)
+  linkWidth: 1.4,      // edge stroke width (world units); directional edges draw a touch thicker
 };
 // ─────────────────────────────────────────────────────────────────────────────
 
 const svg = d3.select("#graph");
 const wrap = document.getElementById("graph-wrap");
 const tooltip = document.getElementById("graph-tooltip");
+const detail = document.getElementById("node-detail");
 const legend = document.getElementById("graph-legend");
 const status = document.getElementById("status");
 const modeButtons = document.querySelectorAll(".mode-btn");
@@ -44,8 +45,10 @@ const resetBtn = document.getElementById("graph-reset");
 
 let rawData = null;      // parsed precursors.json
 let postTitles = {};     // post id -> title, for hover labels
+let nodeById = {};        // node id -> raw node, for the detail card's lookups
 let currentMode = "discovery";
 let simulation = null;
+let detailNodeId = null;  // id of the node whose detail card is open, or null
 
 // Remember where each node settled (by id) so switching modes doesn't reshuffle
 // everything — nodes that persist across modes keep roughly their position.
@@ -68,6 +71,10 @@ const RELATIONSHIP_TYPES = {
   // Authorship is directional but doesn't grow the author directly; instead it
   // propagates the authored work's own size (one hop) — see buildConnections.
   authorship: { directional: true,  label: "Authorship", color: "var(--rel-authorship)", dashed: true, propagates: true },
+  // Discovery is the Discovery view's only edge (source → discovered thing). It
+  // reuses the exact directional treatment (arrow, colour, sizing) but is kept
+  // out of the Connections legend via discoveryOnly.
+  discovery:  { directional: true,  label: "Discovery",  color: "var(--rel-discovery)", discoveryOnly: true },
 };
 
 // One arrowhead marker per directional relationship type, coloured to match its
@@ -154,38 +161,95 @@ function sourceType(sourceId) {
   return String(sourceId).split("-")[0] || "source";
 }
 
-// Discovery view: content nodes + a hub per distinct discovered_via.source,
-// with a source → node edge for each. A `source` that matches an existing node
-// id draws the edge straight from that node (the discovery came from another
-// thing in the graph); anything else synthesizes a shared source hub.
+// A node's discovered_via as a normalized array of { source, note?, date? }.
+// Tolerates the old single-object form as well as a missing field. Entries need
+// not carry a source — a source-less entry (date/note only) means the thing
+// entered awareness with no traceable origin; it draws no edge but still counts
+// as a discovery (the node shows as an orphan in Discovery view).
+function discoveredVia(node) {
+  const dv = node.discovered_via;
+  const arr = Array.isArray(dv) ? dv : (dv ? [dv] : []);
+  return arr.filter((d) => d && (d.source || d.note || d.date));
+}
+
+// Display label for a discovery source: another node's real label when the
+// source is a node id, otherwise the prettified source-string label.
+function sourceDisplay(src) {
+  return nodeById[src] ? nodeById[src].label : sourceLabel(src);
+}
+
+// Format a discovery date at whatever precision it was given: "2024" (year),
+// "2026-03" (→ "Mar 2026"), or a full "2026-03-14" (→ "Mar 14, 2026").
+function formatDiscoveryDate(s) {
+  if (!s) return "";
+  const parts = String(s).split("-");
+  if (parts.length === 1) return parts[0];
+  if (parts.length === 2) {
+    const d = new Date(+parts[0], +parts[1] - 1, 1);
+    return isNaN(d) ? String(s) : d.toLocaleDateString(undefined, { year: "numeric", month: "short" });
+  }
+  return formatDate(s);  // full ISO date — shared helper from utils.js
+}
+
+// Discovery view: only the nodes involved in discovery — every unique
+// discovered_via source (deduped) plus every node that has a discovered_via —
+// wired by directional source → discovered-thing edges. A `source` matching an
+// existing node id draws straight from that node; anything else synthesizes a
+// shared source hub.
+//
+// discovered_via is an ARRAY of { source, note?, date? } (a node can be
+// discovered through more than one independent path at once), so we draw one
+// edge per entry. Edges are typed "discovery", so they reuse the Connections
+// view's directional treatment wholesale (arrow marker, colour, width,
+// out-degree sizing). Sources grow with out-degree via the same nodeRadius
+// growth function, and carry the list of what they led to for their detail card.
 function buildDiscovery(data) {
-  const nodes = data.nodes.map((n) => ({ ...n, isSource: false }));
-  const nodeIds = new Set(nodes.map((n) => n.id));
-  const sources = new Map();
+  const byId = new Map(data.nodes.map((n) => [n.id, n]));
+  const included = new Map();  // graph node id -> node object
   const links = [];
+  const ledTo = new Map();     // source graph id -> [{ to, note }]
+  const seenEdge = new Set();  // "sourceId->targetId", so duplicate entries don't double an edge
+
+  const includeContent = (id) => {
+    if (!included.has(id)) included.set(id, { ...byId.get(id), isSource: false, growth: 0 });
+    return included.get(id);
+  };
+  const includeHub = (src) => {
+    const id = `source:${src}`;
+    if (!included.has(id)) {
+      included.set(id, { id, label: sourceLabel(src), kind: sourceType(src), isSource: true, post_ids: [], growth: 0 });
+    }
+    return included.get(id);
+  };
 
   data.nodes.forEach((n) => {
-    const dv = n.discovered_via;
-    const src = dv && dv.source;
-    if (!src) return;
-    const note = dv.note || "";
-    if (nodeIds.has(src)) {
-      links.push({ source: src, target: n.id, kind: "discovery", note });
-    } else {
-      if (!sources.has(src)) {
-        sources.set(src, {
-          id: `source:${src}`,
-          label: sourceLabel(src),
-          kind: sourceType(src),
-          isSource: true,
-          post_ids: [],
-        });
-      }
-      links.push({ source: `source:${src}`, target: n.id, kind: "discovery", note });
-    }
+    const entries = discoveredVia(n);
+    if (!entries.length) return;
+    includeContent(n.id);  // every node with a discovered_via appears — orphan if all its entries are source-less
+    entries.forEach((dv) => {
+      const src = dv.source;
+      if (!src || src === n.id) return;  // source-less (or self): no edge, node stays as an orphan
+      const note = dv.note || "";
+      const sourceId = byId.has(src) ? includeContent(src).id : includeHub(src).id;
+      const key = `${sourceId}->${n.id}`;
+      if (seenEdge.has(key)) return;
+      seenEdge.add(key);
+      links.push({ source: sourceId, target: n.id, type: "discovery", directional: true, kind: "connection", note });
+      if (!ledTo.has(sourceId)) ledTo.set(sourceId, []);
+      ledTo.get(sourceId).push({ to: n.id, note });
+    });
   });
 
-  return { nodes: nodes.concat([...sources.values()]), links };
+  // A source grows with how many things it led to (same growth → radius as a
+  // Connections hub) and carries that list for its "Led to" card section.
+  ledTo.forEach((list, sourceId) => {
+    const node = included.get(sourceId);
+    node.growth = list.length;
+    node.outDegree = list.length;
+    node.discoveryOut = list;
+  });
+
+  return { nodes: [...included.values()], links };
 }
 
 // Connections view: content nodes, wired by each node's `connections` array.
@@ -278,10 +342,10 @@ function buildConnections(data) {
 
 // --- rendering ------------------------------------------------------------
 
-// Source hubs are small; content nodes start at 9 and grow 3px per outgoing
-// directional connection (capped), so influential origins read as larger.
+// Every node — content or discovery source hub — sizes the same way: a base
+// radius plus growth per outgoing directional link (capped), so influential
+// origins and prolific sources read as larger.
 function nodeRadius(d) {
-  if (d.isSource) return TUNING.sourceRadius;
   return TUNING.nodeBase + Math.min(d.growth || 0, 4) * TUNING.growthStep;
 }
 
@@ -351,22 +415,13 @@ function edgeEnd(d) {
   return { x: d.target.x - (dx / dist) * gap, y: d.target.y - (dy / dist) * gap };
 }
 
-// Post title(s) behind a node, resolved from post_ids for the hover card.
-function postTitlesFor(d) {
-  return (d.post_ids || [])
-    .map((id) => postTitles[id])
-    .filter(Boolean);
-}
-
+// Hover card: just title, kind, and the connection counts — a quick glance.
+// Posts and the full connection list live in the click-to-open detail card.
 function nodeTooltipHTML(d) {
   let html = `<strong>${escapeHTML(d.label)}</strong>`;
   if (d.kind) html += `<span class="tip-kind">${escapeHTML(d.kind)}</span>`;
-  if (!d.isSource) {
-    const titles = postTitlesFor(d);
-    if (titles.length) {
-      html += `<span class="tip-posts">${titles.map(escapeHTML).join("<br>")}</span>`;
-    }
-  }
+  const author = authorInfo(d);
+  if (author) html += `<span class="tip-by">by ${escapeHTML(author.name)}</span>`;
   const n = d.degree || 0;
   let meta = `${n} connection${n === 1 ? "" : "s"}`;
   // Directional links originating here — the node's "children" (things it
@@ -383,22 +438,295 @@ function showTooltip(html, event) {
   moveTooltip(event);
 }
 
+// Place a floating element (tooltip or detail card) just off the cursor, on the
+// same side of it as the cursor sits in the frame: cursor in the left half →
+// card to its left, right half → to its right (likewise top/bottom). Flip to the
+// other side only when that side would run past the wall. A final clamp keeps it
+// fully inside the frame.
+function placeNearCursor(el, event, gap, pad) {
+  const p = wrap.getBoundingClientRect();
+  const w = el.offsetWidth, h = el.offsetHeight;
+  const cx = event.clientX - p.left, cy = event.clientY - p.top;
+
+  let left;
+  if (cx < p.width / 2) {
+    left = cx - gap - w;                                   // same side: left
+    if (left < pad) left = cx + gap;                       // no room → flip right
+  } else {
+    left = cx + gap;                                       // same side: right
+    if (left + w > p.width - pad) left = cx - gap - w;     // no room → flip left
+  }
+
+  let top;
+  if (cy < p.height / 2) {
+    top = cy - gap - h;                                    // same side: above
+    if (top < pad) top = cy + gap;                         // no room → flip below
+  } else {
+    top = cy + gap;                                        // same side: below
+    if (top + h > p.height - pad) top = cy - gap - h;      // no room → flip above
+  }
+
+  left = Math.max(pad, Math.min(left, p.width - w - pad));
+  top = Math.max(pad, Math.min(top, p.height - h - pad));
+  el.style.left = left + "px";
+  el.style.top = top + "px";
+}
+
 function moveTooltip(event) {
-  const rect = wrap.getBoundingClientRect();
-  const x = event.clientX - rect.left;
-  const y = event.clientY - rect.top;
-  // Nudge up/right of the cursor, clamped so it never spills out of the frame.
-  const tw = tooltip.offsetWidth;
-  const th = tooltip.offsetHeight;
-  tooltip.style.left = Math.min(Math.max(8, x + 14), rect.width - tw - 8) + "px";
-  tooltip.style.top = Math.min(Math.max(8, y - th - 12), rect.height - th - 8) + "px";
+  placeNearCursor(tooltip, event, 14, 8);
 }
 
 function hideTooltip() {
   tooltip.hidden = true;
 }
 
+// --- node detail card ------------------------------------------------------
+// Click a node to open a persistent card with its full details. It's a plain
+// surface floated in the graph's corner (quiet style: thin dividers, no shadow)
+// and doesn't capture events over the rest of the graph, so the graph stays
+// pannable/hoverable around it. Escape or the × dismisses it; clicking the same
+// node toggles it shut.
+
+// The authoring node (author/director) whose authorship connection points at
+// this node, or null. Authorship is written on the author, aimed at the work.
+function authorOf(node) {
+  for (const n of rawData.nodes) {
+    for (const c of n.connections || []) {
+      const to = typeof c === "string" ? c : c && c.to;
+      if (to === node.id && typeof c === "object" && c.relationship === "authorship") return n;
+    }
+  }
+  return null;
+}
+
+// The author/director for a node: a real node linked by an authorship
+// connection if there is one (role from that node's kind), else the node's own
+// plain `author` string (role from this node's kind — Director for a film,
+// Author otherwise). Returns { name, role } or null. Shared by the hover and card.
+function authorInfo(node) {
+  const authorNode = authorOf(node);
+  if (authorNode) {
+    return { name: authorNode.label, role: authorNode.kind === "director" ? "Director" : "Author" };
+  }
+  if (typeof node.author === "string" && node.author.trim()) {
+    return { name: node.author.trim(), role: node.kind === "film" ? "Director" : "Author" };
+  }
+  return null;
+}
+
+// Every connection touching this node, gathered from both ends of the dataset:
+// the ones written on it (outgoing) and the ones on other nodes aimed at it
+// (incoming). Incoming authorship is left out — it's shown as the author line.
+// Dangling refs and unknown relationship types are dropped/neutralised.
+function connectionsFor(node) {
+  const out = [];
+  const push = (otherId, rel, note, dir) => {
+    const other = nodeById[otherId];
+    if (!other) return;
+    out.push({ other, rel: rel && RELATIONSHIP_TYPES[rel] ? rel : "", note: note || "", dir });
+  };
+  (node.connections || []).forEach((c) => {
+    const to = typeof c === "string" ? c : c && c.to;
+    if (!to || to === node.id) return;
+    const rel = typeof c === "object" && c.relationship ? c.relationship : "";
+    const note = typeof c === "object" && c.note ? c.note : "";
+    push(to, rel, note, "out");
+  });
+  rawData.nodes.forEach((n) => {
+    if (n.id === node.id) return;
+    (n.connections || []).forEach((c) => {
+      const to = typeof c === "string" ? c : c && c.to;
+      if (to !== node.id) return;
+      const rel = typeof c === "object" && c.relationship ? c.relationship : "";
+      if (rel === "authorship") return;  // shown as the author/director line
+      const note = typeof c === "object" && c.note ? c.note : "";
+      push(n.id, rel, note, "in");
+    });
+  });
+  return out;
+}
+
+// One connection row: relationship label (coloured to match its edge) with a
+// direction glyph for directional types, the other node's name, and any note.
+function connectionRowHTML(c) {
+  const t = c.rel && RELATIONSHIP_TYPES[c.rel];
+  const relLabel = t ? t.label : "Connection";
+  const relColor = t ? t.color : "var(--rel-thematic)";
+  const glyph = t && t.directional ? (c.dir === "out" ? " →" : " ←") : "";
+  let html = `<div class="detail-conn">`;
+  html += `<span class="detail-conn-rel" style="color:${relColor}">${escapeHTML(relLabel)}${glyph}</span>`;
+  html += `<span class="detail-conn-name">${escapeHTML(c.other.label)}</span>`;
+  if (c.note) html += `<div class="detail-conn-note">${escapeHTML(c.note)}</div>`;
+  html += `</div>`;
+  return html;
+}
+
+// The card's list section, which differs by mode. In Discovery it's "Led to"
+// (the node's outgoing discovery edges); in Connections it's the connection
+// relationships with the total/outgoing stats. Returns { rows, label } — rows
+// are connectionRowHTML-shaped so the same component renders both.
+function cardConnections(node) {
+  if (currentMode === "discovery") {
+    const rows = (node.discoveryOut || [])
+      .map((d) => ({ other: nodeById[d.to], rel: "discovery", note: d.note || "", dir: "out" }))
+      .filter((r) => r.other);
+    return { rows, label: `Led to (${rows.length})` };
+  }
+  const rows = connectionsFor(node);
+  const outCount = rows.filter((c) =>
+    c.dir === "out" && c.rel && RELATIONSHIP_TYPES[c.rel] && RELATIONSHIP_TYPES[c.rel].directional).length;
+  let label = `Connections (${rows.length})`;
+  if (outCount) label += ` · ${outCount} outgoing →`;
+  return { rows, label };
+}
+
+function openDetail(node, event) {
+  detailNodeId = node.id;
+
+  // Header — always visible; the connections list below it scrolls, not this.
+  let html = `<button type="button" class="detail-close" aria-label="Close detail">×</button>`;
+  html += `<h2 class="detail-title">${escapeHTML(node.label)}</h2>`;
+  if (node.kind) html += `<div class="detail-kind">${escapeHTML(node.kind)}</div>`;
+
+  // Author/director line (see authorInfo for how it's resolved).
+  const author = authorInfo(node);
+  if (author) {
+    html += `<div class="detail-meta-row"><span class="detail-meta-label">${author.role}</span> ${escapeHTML(author.name)}</div>`;
+  }
+
+  // "Discovered via" is a Discovery-mode section — omitted in Connections. One
+  // entry reads as a single line; more than one becomes a small list (same
+  // pattern as Posts). A source-less entry shows an em-dash; its note still
+  // explains the untraceable origin.
+  const dvs = discoveredVia(node);
+  const dvLabel = (d) => (d.source ? escapeHTML(sourceDisplay(d.source)) : "—");
+  const dvDate = (d) => (d.date ? ` <span class="detail-dv-date">· ${escapeHTML(formatDiscoveryDate(d.date))}</span>` : "");
+  if (currentMode === "discovery" && dvs.length === 1) {
+    const d = dvs[0];
+    html += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvDate(d)}</div>`;
+    if (d.note) html += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
+  } else if (currentMode === "discovery" && dvs.length > 1) {
+    const items = dvs.map((d) => {
+      let li = `<li>${dvLabel(d)}${dvDate(d)}`;
+      if (d.note) li += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
+      return li + `</li>`;
+    }).join("");
+    html += `<div class="detail-discovered"><div class="detail-section-label">Discovered via (${dvs.length})</div>` +
+            `<ul class="detail-dv-list">${items}</ul></div>`;
+  }
+
+  // List section — "Led to" in Discovery, "Connections" in Connections (see
+  // cardConnections). The label stays put; the list is capped to 3 rows and
+  // scrolls internally.
+  const { rows: conns, label: connLabel } = cardConnections(node);
+  if (conns.length) {
+    html += `<div class="detail-conn-section">` +
+            `<div class="detail-section-label">${connLabel}</div>` +
+            `<div class="detail-connections">${conns.map(connectionRowHTML).join("")}</div>` +
+            `</div>`;
+  }
+
+  // Posts — always a labelled list when present (even a single one); each title
+  // its own link, truncated by rendered width via CSS ellipsis.
+  const postIds = node.post_ids || [];
+  if (postIds.length) {
+    const items = postIds.map((id) => {
+      const title = postTitles[id] || id;
+      return `<li><a class="detail-post-link" href="post.html?id=${encodeURIComponent(id)}" title="${escapeHTML(title)}">${escapeHTML(title)}</a></li>`;
+    }).join("");
+    html += `<div class="detail-posts"><div class="detail-section-label">Posts (${postIds.length})</div>` +
+            `<ul class="detail-post-list">${items}</ul></div>`;
+  }
+
+  detail.innerHTML = html;
+  detail.hidden = false;
+
+  // Restart the pop-in animation on every open — including node-to-node, where
+  // the card never leaves the DOM (toggling `hidden` alone wouldn't replay it).
+  detail.style.animation = "none";
+  void detail.offsetWidth;  // force reflow so the animation retriggers
+  detail.style.animation = "";
+
+  // Cap the connections list at 3 rows, then let the rest scroll. Measured from
+  // the rendered rows (not a fixed height) so notes are counted too.
+  const connEl = detail.querySelector(".detail-connections");
+  if (connEl) {
+    connEl.style.maxHeight = "";
+    const rows = connEl.querySelectorAll(".detail-conn");
+    if (rows.length > 3) {
+      const top = connEl.getBoundingClientRect().top;
+      const cut = rows[2].getBoundingClientRect().bottom;
+      connEl.style.maxHeight = Math.ceil(cut - top) + "px";
+    }
+  }
+
+  // Open just off the cursor, toward the roomier side (see placeNearCursor).
+  // Measured after layout so it uses the card's real size. Falls back to the CSS
+  // corner when there's no click position.
+  if (event) placeNearCursor(detail, event, 14, 12);
+
+  detail.querySelector(".detail-close").addEventListener("click", closeDetail);
+  updateNodeSelection();
+}
+
+function closeDetail() {
+  if (!detail) return;
+  detail.hidden = true;
+  detailNodeId = null;
+  updateNodeSelection();
+}
+
+// Highlight the node whose card is open (a gentle scale-up — see CSS), and clear
+// it from every other node.
+function updateNodeSelection() {
+  nodeLayer.selectAll("g.node").classed("is-selected", (d) => d.id === detailNodeId);
+}
+
+// Click a node to open its card near the cursor; clicking it again dismisses it.
+function toggleDetail(node, event) {
+  if (detailNodeId === node.id) closeDetail();
+  else openDetail(node, event);
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && detail && !detail.hidden) closeDetail();
+});
+
+// Drag the card by its header to move it out of the way — dragging over the
+// scrollable lists or a link/button does its normal thing instead. Position is
+// kept in the graph-wrap's own coordinates and clamped to stay inside it.
+if (detail) {
+  let cardDrag = null;
+  detail.addEventListener("pointerdown", (e) => {
+    if (e.button !== 0) return;
+    if (e.target.closest(".detail-connections, .detail-posts, a, button")) return;
+    const rect = detail.getBoundingClientRect();
+    cardDrag = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
+    detail.classList.add("is-dragging");
+    detail.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  detail.addEventListener("pointermove", (e) => {
+    if (!cardDrag) return;
+    const p = wrap.getBoundingClientRect();
+    const left = Math.max(0, Math.min(e.clientX - p.left - cardDrag.dx, p.width - detail.offsetWidth));
+    const top = Math.max(0, Math.min(e.clientY - p.top - cardDrag.dy, p.height - detail.offsetHeight));
+    detail.style.left = left + "px";
+    detail.style.top = top + "px";
+  });
+  const endCardDrag = (e) => {
+    if (!cardDrag) return;
+    cardDrag = null;
+    detail.classList.remove("is-dragging");
+    if (detail.hasPointerCapture && detail.hasPointerCapture(e.pointerId)) detail.releasePointerCapture(e.pointerId);
+  };
+  detail.addEventListener("pointerup", endCardDrag);
+  detail.addEventListener("pointercancel", endCardDrag);
+}
+
 function render(mode) {
+  closeDetail();  // node objects are rebuilt here; drop any stale open card
+
   const graph = mode === "connections"
     ? buildConnections(rawData)
     : buildDiscovery(rawData);
@@ -434,7 +762,7 @@ function render(mode) {
     .attr("marker-end", (d) => (d.directional ? `url(#arrow-${d.type})` : null))
     .style("stroke", edgeColor)
     .style("stroke-opacity", (d) => (d.type ? 0.85 : 0.4))
-    .style("stroke-width", (d) => (d.directional ? 2 : 1.4))
+    .style("stroke-width", (d) => (d.directional ? TUNING.linkWidth + 0.6 : TUNING.linkWidth))
     .style("stroke-dasharray", (d) => (edgeDashed(d) ? "5 4" : null));
 
   // Transparent, thick hit lines so thin edges are still easy to hover.
@@ -495,7 +823,11 @@ function render(mode) {
     .on("mouseenter", (event, d) => { d.__hover = true; updateLabelVisibility(); showTooltip(nodeTooltipHTML(d), event); })
     .on("mousemove", moveTooltip)
     .on("mouseleave", (event, d) => { d.__hover = false; updateLabelVisibility(); hideTooltip(); })
+    .on("click", (event, d) => { event.stopPropagation(); hideTooltip(); toggleDetail(d, event); })
+    // clickDistance lets a tiny pointer jitter still register as a click (open the
+    // card) rather than being swallowed as a drag gesture.
     .call(d3.drag()
+      .clickDistance(6)
       .on("start", dragStart)
       .on("drag", dragMove)
       .on("end", dragEnd));
@@ -614,15 +946,16 @@ function idOf(endpoint) {
 function renderLegend(mode) {
   legend.setAttribute("aria-hidden", "false");
   if (mode === "connections") {
-    // One entry per relationship type, coloured to match its line; directional
-    // types get an arrow glyph.
-    legend.innerHTML = Object.values(RELATIONSHIP_TYPES).map((t) =>
+    // One entry per relationship type (discovery excluded — it's not used here),
+    // coloured to match its line; directional types get an arrow glyph.
+    legend.innerHTML = Object.values(RELATIONSHIP_TYPES).filter((t) => !t.discoveryOnly).map((t) =>
       `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${t.color}${t.dashed ? ";border-top-style:dashed" : ""}"></span>${t.label}${t.directional ? " →" : ""}</span>`
     ).join("");
     return;
   }
   legend.innerHTML =
-    `<span class="legend-item"><span class="legend-swatch swatch-node"></span>Post / node</span>` +
+    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${RELATIONSHIP_TYPES.discovery.color}"></span>Discovery →</span>` +
+    `<span class="legend-item"><span class="legend-swatch swatch-node"></span>Discovered</span>` +
     `<span class="legend-item"><span class="legend-swatch swatch-source"></span>Source</span>`;
 }
 
@@ -704,12 +1037,12 @@ const TUNING_CONTROLS = [
   ["maxLabelWidth", "Max label width", 40, 400, 5],
   ["nodeBase", "Node base radius", 4, 30, 1],
   ["growthStep", "Growth step", 0, 10, 0.5],
-  ["sourceRadius", "Source radius", 3, 20, 1],
   ["nodeFont", "Node font", 8, 40, 1],
   ["sourceFont", "Source font", 8, 40, 1],
   ["charge", "Charge (repulsion)", -800, 0, 10],
   ["linkDistance", "Link distance", 20, 240, 5],
   ["collidePad", "Collision padding", 0, 80, 1],
+  ["linkWidth", "Line thickness", 0.5, 6, 0.1],
 ];
 
 // Snapshot of the baked-in defaults, so the Reset button can restore them.
@@ -782,6 +1115,7 @@ Promise.all([
   .then(([graph, posts]) => {
     rawData = graph;
     posts.forEach((p) => { postTitles[p.id] = p.title; });
+    graph.nodes.forEach((n) => { nodeById[n.id] = n; });
     status.textContent = "";
     setMode(currentMode);
   })
