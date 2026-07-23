@@ -16,8 +16,6 @@ It turns out obsessively collecting and sorting my interests across Google Docs,
 Check back to find out what I’m reading/watching/listening to, as well as my short-form *\[blurb\]* and occasional long-form *\[writeup\]* thoughts.
 `;
 
-initBackButton();
-
 // Render the Markdown to HTML with marked, then sanitize before it hits the DOM.
 document.getElementById("about-body").innerHTML =
   DOMPurify.sanitize(marked.parse(ABOUT_CONTENT));

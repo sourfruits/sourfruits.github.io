@@ -4,11 +4,11 @@
   --surface: #ffffff;
   --ink: #1c1c1a;
   --muted: #76766e;
-  --line: #e8e8e2;
+  --line: #d8d7ce;
   --header-bg: #f1eeec;    /* soft warm greige navbar (warm, not yellow) */
-  --header-line: #e2dfdd;  /* divider under the navbar, a touch darker */
   --accent: #67b35d;       /* medium green */
-  --accent-ink: #1f4d31;   /* dark green — legible as text on an --accent fill */
+  --accent-ink: #163a25;   /* dark green — legible as text on an --accent fill */
+  --contrast-ink: #ffffff; /* light in day mode, dark in dark mode (overridden below) */
   --accent2: #e8c840;      /* logo yellow (the lower-right dot in the mark) */
   /* Connection relationship-type line colors (see js/precursors.js). */
   --rel-adaptation: #3a8a8f;   /* teal */
@@ -17,7 +17,7 @@
   --rel-authorship: #9c6b3f;   /* ochre / ink brown (dashed) */
   --rel-discovery:  #4a72b0;   /* steel blue (Discovery view edges) */
   --radius: 14px;
-  --radius-pill: 6px;      /* was a full pill (999px); now a soft 6px on all controls */
+  --radius-pill: 5px;      /* was a full pill (999px); now a soft 5px on all controls */
   --maxw: 1040px;
   --post-width: 700px;     /* reading column for post/search/tag content */
 
@@ -36,6 +36,14 @@
   --heading-size: var(--text-heading-sm);
   --heading-weight: 800;
   --heading-letter-spacing: -0.01em;
+
+  /* Header rhythm. --nav-pad-y sets the navbar band height. Two gap sizes from
+     the navbar down to a page's first content: --header-gap for the main pages
+     (homepage hero + Precursors title), and the tighter --header-gap-sub for the
+     smaller pages (About, Tags, and any page whose first element is a back link). */
+  --nav-pad-y: 13px;
+  --header-gap: 20px;
+  --header-gap-sub: var(--header-gap);   /* unified to 20px; give it its own value to differentiate */
 
   /* Type scale */
   --text-tiny: 0.85rem;
@@ -56,10 +64,10 @@
   --bg-top: #1a1814;       /* same as --bg — gradient hidden in dark mode for now */
   --surface: #141210;
   --header-bg: #141210;
-  --header-line: #2a2520;
   --ink: #e8e4dc;
   --muted: #9a9288;
-  --line: #2a2520;
+  --line: #37312a;
+  --contrast-ink: var(--accent-ink);  /* dark green in dark mode, matching accent-ink */
   /* --accent and --accent-ink are intentionally NOT overridden here — the accent
      treatment is identical in both modes (accent-ink only ever sits on an
      accent-green fill, so it needs no dark-background variant). */
@@ -77,6 +85,11 @@ html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
+  /* Full-height flex column so the footer sits at the bottom of the viewport
+     even on short pages (main grows to fill the slack — see below). */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   /* Subtle top-of-page gradient: --bg-top fading into --bg by ~40% of the
      viewport height, then flat --bg for the rest. */
   background-color: var(--bg);
@@ -107,20 +120,24 @@ body::after {
 
 main {
   max-width: var(--maxw);
+  /* Grow to fill leftover height so the footer is pushed to the bottom on short
+     pages; auto side margins keep the content column centered. */
+  flex: 1 0 auto;
+  width: 100%;
   margin: 0 auto;
   padding: 0 20px 64px;
 }
 
 /* ---------- Header ---------- */
 .site-header {
-  padding: 0 0 10px;
+  padding: 0;
 }
 
 /* Full-width navbar: a slightly darker band stretching edge to edge, with the
    content itself centered inside via .header-bar-inner. */
 .header-bar {
   background: var(--header-bg);
-  border-bottom: 1px solid var(--header-line);
+  border-bottom: 1px solid var(--line);
 }
 
 /* Top row content: logo on the left, About + Tags links + search icon on the
@@ -132,7 +149,7 @@ main {
   gap: 20px;
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 13px 20px;
+  padding: var(--nav-pad-y) 20px;
 }
 
 /* Small logo / site name, top left. */
@@ -161,10 +178,12 @@ main {
   gap: 20px;
 }
 
-/* Centered site title + tagline below the top row. */
+/* Centered site title + tagline below the top row. Sits --header-gap below the
+   navbar; the 10px bottom keeps the old breathing room above the grid (this used
+   to come from .site-header's bottom padding). */
 .site-intro {
   text-align: center;
-  padding: 20px 10px 0;
+  padding: var(--header-gap) 10px 10px;
 }
 
 /* Inline search bar: a compact 150x30 bar sitting by the tag-filter button,
@@ -564,7 +583,7 @@ main {
   font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.1em;
-  border-radius: 4px;
+  border-radius: var(--radius-pill);
   background: var(--ink);
   color: var(--bg);
 }
@@ -785,7 +804,7 @@ a.page-link:focus-visible {
 /* ---------- Post view ---------- */
 .back-link {
   display: inline-block;
-  margin: 8px 0 24px;
+  margin: var(--header-gap-sub) 0 24px;
   color: var(--muted);
   text-decoration: none;
   font-size: var(--text-base);
@@ -965,7 +984,17 @@ a.page-link:focus-visible {
   font-size: var(--text-heading-lg);
   font-weight: var(--heading-weight);
   letter-spacing: var(--heading-letter-spacing);
-  margin: 8px 0 32px;
+  margin: var(--header-gap-sub) 0 32px;
+}
+/* Green accent bar beneath the title, matching the homepage and Precursors. */
+.page-heading::after {
+  content: "";
+  display: block;
+  width: 44px;
+  height: 5px;
+  margin: 10px 0 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
 }
 
 /* Optional post subtitle: a smaller italic line under the title. */
@@ -1061,18 +1090,31 @@ a.post-tag:focus-visible { color: var(--accent); }
   font-size: var(--heading-size);
   font-weight: var(--heading-weight);
   letter-spacing: var(--heading-letter-spacing);
-  margin: 8px 0 28px;
+  /* Top 0: on tag.html the back link's bottom margin owns the gap above; on
+     tags.html .tags-heading sets its own top. Bottom owns the gap to content. */
+  margin: 0 0 28px;
 }
 .tag-heading .tag-name { color: var(--ink); }
-/* Single-tag page (tag.html): left-align the heading to the page margin, in
-   line with the logo/back-link. (tags.html keeps its own centered treatment.) */
-#tag-heading { text-align: left; }
+.tag-heading .tag-count { color: var(--ink); }
+/* Single-tag page (tag.html): center the heading. */
+#tag-heading { text-align: center; }
 /* On the tags-list page, keep the heading within (and left-aligned to) the
    centered index column, not the full page width. */
 .tags-heading {
   max-width: var(--post-width);
   margin-left: auto;
   margin-right: auto;
+  margin-top: var(--header-gap-sub);   /* first element on tags.html */
+  margin-bottom: 14px;   /* equal gap to the subtitle below */
+}
+/* Summary count line ("N tags across M posts") — a small subtitle directly
+   under the title, above the index, with equal spacing on both sides. */
+.status.tags-summary {
+  max-width: var(--post-width);   /* align the divider with the index column */
+  margin: 0 auto 14px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--text-small);
 }
 
 /* The full tag list (tags.html): an editorial index — tag name, dotted leader,
@@ -1118,10 +1160,10 @@ a.post-tag:focus-visible { color: var(--accent); }
 /* Heading with a thin divider under it, aligned to the results column. */
 .search-heading {
   max-width: var(--post-width);
-  margin: 8px 0 0;   /* left-aligned to the page margin (logo/back-link edge) */
+  margin: 0 auto;   /* back link's bottom margin owns the gap above */
   padding-bottom: 16px;
   border-bottom: 1px solid var(--line);
-  text-align: left;
+  text-align: center;
   font-size: var(--heading-size);
   font-weight: var(--heading-weight);
   letter-spacing: var(--heading-letter-spacing);
@@ -1229,6 +1271,9 @@ a.post-tag:focus-visible { color: var(--accent); }
   padding: 16px 20px 48px;
   border-top: 1px solid var(--line);
   margin-top: 16px;
+  /* Same as the page background for now; opaque so the gradient behind it stops
+     at the footer rather than showing through. */
+  background: var(--bg);
 }
 
 /* ---------- Load-in animations ---------- */
@@ -1289,7 +1334,22 @@ a.post-tag:focus-visible { color: var(--accent); }
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ink);
-  margin: 8px 0 14px;
+  /* Sits --header-gap below the navbar, matching the homepage hero and every
+     other page's first content. 10px bottom = the gap down to the green line. */
+  margin: var(--header-gap) 0 10px;
+}
+.beta-tag {
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 10px;
+  padding: 2px 7px;             /* matches the draft badge's spacing */
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--contrast-ink);   /* white in light mode, dark in dark mode */
+  font-size: var(--text-tiny);
+  font-weight: 600;
+  letter-spacing: 0.1em;   /* badge spacing */
+  text-transform: uppercase;
 }
 .precursors-title::after {
   content: "";
@@ -1304,26 +1364,94 @@ a.post-tag:focus-visible { color: var(--accent); }
 .precursors-intro {
   color: var(--muted);
   font-size: var(--text-medium);
-  margin: -0.25rem 0 0.75rem;
+  margin: 0 0 0.4rem;   /* gap above comes from the title's 10px bottom margin */
 }
-.precursors-modes {
-  list-style: none;
-  margin: 0 0 1.25rem;
-  padding: 0;
+/* "Learn more" disclosure under the tagline, collapsed by default. */
+.precursors-learn { margin: 0 0 1.4rem; }
+.precursors-learn-toggle {
+  display: inline-block;
+  cursor: pointer;
   color: var(--muted);
   font-size: var(--text-small);
-  line-height: 1.5;
+  list-style: none;                 /* drop the default ▸ marker */
 }
-.precursors-modes strong { color: var(--ink); font-weight: 700; }
-.precursors-modes-aside { opacity: 0.75; }
+.precursors-learn-toggle::-webkit-details-marker { display: none; }
+.precursors-learn-toggle::before {
+  content: "\25B8";                 /* ▸ — rotates to point down when open */
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 1.2em;
+  line-height: 1;
+  vertical-align: -0.05em;
+  transition: transform 0.15s ease;
+}
+.precursors-learn[open] .precursors-learn-toggle::before { transform: rotate(90deg); }
+.precursors-learn-toggle:hover { color: var(--ink); }
 
-.graph-toolbar {
+/* Two side-by-side quiet cards (thin border, no shadow), stacking on narrow
+   screens. */
+.precursors-learn-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 0.75rem 0 0;   /* matches the subtitle/toolbar gaps around the toggle */
+}
+@media (max-width: 640px) {
+  .precursors-learn-cards { grid-template-columns: 1fr; }
+}
+.precursors-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  padding: 16px 18px;
+}
+/* Callout variant (the "Why precursors" aside): warm tint + green left accent,
+   so it reads as distinct from the plain "How it works" card. */
+.precursors-card--callout {
+  border-left: 3px solid var(--accent);
+}
+.precursors-card-label {
+  margin-bottom: 8px;
+  color: var(--ink);
+  font-size: var(--text-tiny);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* Serif body, matching the reading feel of post pages. */
+.precursors-card p {
+  margin: 0 0 0.8em;
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  line-height: 1.7;
+  color: var(--ink);
+}
+.precursors-card p:last-child { margin-bottom: 0; }
+/* Small dot before a mode line, in the mode-toggle colors (green = Discovery,
+   yellow = Connections), tying the copy back to the real UI. */
+.mode-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 8px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+.mode-dot--discovery { background: var(--accent); }
+.mode-dot--connections { background: var(--accent2); }
+
+/* Control clusters floating in the graph canvas corners (Option 1 layout).
+   top-left = mode toggle, top-right = utilities + full screen. */
+.graph-controls {
+  position: absolute;
+  z-index: 2;
+}
+.graph-controls--tl { top: 12px; left: 12px; }
+.graph-controls--tr {
+  top: 12px;
+  right: 12px;
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 0.75rem;
+  gap: 8px;
 }
 
 /* Segmented Discovery / Connections switch. */
@@ -1331,6 +1459,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   display: inline-flex;
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
+  background: var(--surface);   /* solid, so it stays legible over the graph */
   overflow: hidden;
 }
 .mode-btn {
@@ -1357,16 +1486,11 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 .mode-btn:focus-visible { outline: none; color: var(--ink); }
 
-.graph-toolbar-right {
-  display: inline-flex;
-  align-items: center;
-  gap: 16px;
-}
 .graph-fs-btn {
   padding: 6px 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
-  background: none;
+  background: var(--surface);   /* solid, so it stays legible over the graph */
   color: var(--muted);
   font-family: var(--font-sans);
   font-size: var(--text-small);
@@ -1376,13 +1500,72 @@ a.post-tag:focus-visible { color: var(--accent); }
 .graph-fs-btn:hover { color: var(--ink); }
 .graph-fs-btn:focus-visible { outline: none; color: var(--ink); }
 
-.graph-legend {
+/* Full-screen toggle: an icon button pinned to the graph's bottom-right. */
+.graph-fs-icon {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.graph-fs-icon:hover { color: var(--ink); }
+.graph-fs-icon:focus-visible { outline: none; color: var(--ink); }
+.graph-fs-icon .fs-icon { display: block; }
+/* Show the "expand" icon normally, the "collapse" icon only in full screen. */
+.graph-fs-icon .fs-collapse { display: none; }
+.graph-wrap:fullscreen .graph-fs-icon .fs-expand { display: none; }
+.graph-wrap:fullscreen .graph-fs-icon .fs-collapse { display: block; }
+
+/* Legend: a collapsible card pinned to the graph's bottom-left. Muted, with a
+   solid background so it reads over the graph. */
+.graph-legend-card {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  z-index: 2;
+  /* column-reverse keeps the summary pinned at the bottom-left corner; the
+     items expand *upward* from it, so toggling never moves the label/chevron. */
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin: 0 0 0.75rem;
+  flex-direction: column-reverse;
+  gap: 8px;
+  padding: 8px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
   color: var(--muted);
   font-size: var(--text-tiny);
+}
+.graph-legend-summary {
+  cursor: pointer;
+  list-style: none;   /* drop the default ▸ marker */
+  font-weight: 600;
+  color: var(--muted);
+}
+.graph-legend-summary::-webkit-details-marker { display: none; }
+.graph-legend-summary::before {
+  content: "\25B8";   /* ▸ — rotates in place to point down when open */
+  display: inline-block;
+  width: 1em;         /* fixed box so the label doesn't shift on rotate */
+  margin-right: 4px;
+  transition: transform 0.15s ease;
+}
+.graph-legend-card[open] .graph-legend-summary::before { transform: rotate(90deg); }
+.graph-legend-summary:hover { color: var(--ink); }
+.graph-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .graph-legend:empty { display: none; }
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
@@ -1404,24 +1587,22 @@ a.post-tag:focus-visible { color: var(--accent); }
 .legend-swatch.swatch-node { background: var(--accent); border-color: var(--accent-ink); }
 .legend-swatch.swatch-source { background: var(--bg); border-color: var(--muted); border-style: dashed; }
 
-/* Live tuning panel (troubleshooting) — floats on the right edge so the graph
-   stays visible while you slide. Hidden until toggled. */
+/* Live tuning panel (troubleshooting) — positioned into the right margin beside
+   the graph, so it never shrinks the graph. Shown only when toggled. */
 .tuning-panel {
-  position: fixed;
-  top: 76px;
-  right: 12px;
-  z-index: 20;
-  width: 230px;
-  max-height: 82vh;
+  position: absolute;
+  top: 0;
+  left: calc(100% + 12px);   /* just past the graph's right edge, into the gutter */
+  width: 260px;
+  max-height: 70vh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 14px 16px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-pill);
   background: var(--surface);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.14);
   font-size: var(--text-small);
 }
 .tuning-panel[hidden] { display: none; }
@@ -1443,13 +1624,18 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 .tuning-reset:hover { color: var(--ink); }
 
+/* The graph stays full-width; the tuning panel is positioned into the right
+   margin beside it (see .tuning-panel), so opening it never shrinks the graph. */
+.graph-area {
+  position: relative;
+}
 .graph-wrap {
   position: relative;
   width: 100%;
   height: 70vh;
   min-height: 420px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-pill);
   background: var(--surface);
   overflow: hidden;
 }
@@ -1623,6 +1809,12 @@ a.post-tag:focus-visible { color: var(--accent); }
   letter-spacing: 0.02em;
 }
 .detail-conn-name { display: block; margin-top: 2px; color: var(--ink); }
+/* Compact "+N" tag: how much this outgoing target influenced on its own. */
+.detail-conn-onward {
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  font-weight: 600;
+}
 .detail-conn-note { margin-top: 3px; color: var(--muted); }
 
 .detail-posts {

@@ -56,34 +56,16 @@ function renderTile(post, i) {
   `;
 }
 
-// Pick the back-link label based on the page the user came from.
-function backLabel() {
-  const ref = document.referrer;
-  if (ref.includes("search.html")) return "← Search results";
-  if (ref.includes("tag.html")) return "← Back to tag";
-  if (ref.includes("index.html")) return "← All posts";
-  // A same-origin root URL (e.g. "https://host/" or ".../blog/") is the homepage.
-  try {
-    const url = new URL(ref);
-    if (url.origin === window.location.origin && url.pathname.endsWith("/")) {
-      return "← All posts";
-    }
-  } catch (err) {
-    // No/malformed referrer — fall through to the generic label.
-  }
-  return "← Back";
-}
-
-// Wire up the back link (class="back-link"): label it with wherever the user
-// came from, and return there via history.back() when they arrived from within
-// the site. Otherwise the plain href (index.html) handles the fallback. Call
-// this from a page's own script; pages without a back link (the homepage) just
-// don't call it. Safe to call when no .back-link is present — it's a no-op.
+// Wire up the back link (class="back-link"): always labeled "← Back", and
+// return via history.back() when the user arrived from within the site.
+// Otherwise the plain href (index.html) handles the fallback. Call this from a
+// page's own script; pages without a back link (the homepage) just don't call
+// it. Safe to call when no .back-link is present — it's a no-op.
 function initBackButton() {
   const backLink = document.querySelector(".back-link");
   if (!backLink) return;
 
-  backLink.textContent = backLabel();
+  backLink.textContent = "← Back";
 
   backLink.addEventListener("click", (e) => {
     const cameFromSite = window.history.length > 1 &&

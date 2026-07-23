@@ -12,38 +12,56 @@
   <header class="site-header"></header>
 
   <main>
-    <a class="back-link" href="index.html">← All posts</a>
-
-    <h1 class="precursors-title">Precursors</h1>
+    <h1 class="precursors-title">Precursors<span class="beta-tag">beta</span></h1>
     <p class="precursors-intro">Not what I've consumed, but where each thing came from and what I connect it to.</p>
-    <ul class="precursors-modes">
-      <li><strong>Discovery</strong> — how I found what I'm interested in, and how my taste evolves</li>
-      <li><strong>Connections</strong> — how what I'm interested in relates to each other <span class="precursors-modes-aside">[personal noticed connection, not factual Wikipedia categorization]</span></li>
-    </ul>
+    <details class="precursors-learn">
+      <summary class="precursors-learn-toggle">Learn more</summary>
+      <!-- Cards populated from LEARN_MORE_CARDS in js/precursors.js -->
+      <div class="precursors-learn-cards" id="learn-more-cards"></div>
+    </details>
 
-    <div class="graph-toolbar">
-      <div class="mode-toggle" role="group" aria-label="Graph mode">
-        <button type="button" class="mode-btn" data-mode="discovery" aria-pressed="true">Discovery</button>
-        <button type="button" class="mode-btn" data-mode="connections" aria-pressed="false">Connections</button>
+    <div class="graph-area">
+    <div class="graph-wrap" id="graph-wrap">
+      <!-- Corner overlays: top-left mode toggle, top-right utilities,
+           bottom-left legend, bottom-right full-screen. -->
+      <div class="graph-controls graph-controls--tl">
+        <div class="mode-toggle" role="group" aria-label="Graph mode">
+          <button type="button" class="mode-btn" data-mode="discovery" aria-pressed="true">Discovery</button>
+          <button type="button" class="mode-btn" data-mode="connections" aria-pressed="false">Connections</button>
+        </div>
       </div>
-      <div class="graph-toolbar-right">
+      <div class="graph-controls graph-controls--tr">
         <button type="button" class="graph-fs-btn" id="graph-reset">Reset</button>
         <button type="button" class="graph-fs-btn" id="graph-tuning-btn" aria-pressed="false">Tuning</button>
-        <button type="button" class="graph-fs-btn" id="graph-fs" aria-pressed="false">Full screen</button>
       </div>
-    </div>
-
-    <div class="graph-legend" id="graph-legend" aria-hidden="true"></div>
-
-    <!-- Live tuning controls (troubleshooting); populated by js/precursors.js -->
-    <div class="tuning-panel" id="tuning-panel" hidden></div>
-
-    <div class="graph-wrap" id="graph-wrap">
+      <button type="button" class="graph-fs-icon" id="graph-fs" aria-pressed="false" aria-label="Full screen" title="Full screen">
+        <svg class="fs-icon fs-expand" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <polyline points="9 21 3 21 3 15"></polyline>
+          <line x1="21" y1="3" x2="14" y2="10"></line>
+          <line x1="3" y1="21" x2="10" y2="14"></line>
+        </svg>
+        <svg class="fs-icon fs-collapse" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="4 14 10 14 10 20"></polyline>
+          <polyline points="20 10 14 10 14 4"></polyline>
+          <line x1="14" y1="10" x2="21" y2="3"></line>
+          <line x1="3" y1="21" x2="10" y2="14"></line>
+        </svg>
+      </button>
+      <details class="graph-legend-card" open>
+        <summary class="graph-legend-summary">Legend</summary>
+        <div class="graph-legend" id="graph-legend" aria-hidden="true"></div>
+      </details>
       <svg id="graph" aria-label="Force-directed graph of precursors"></svg>
       <div class="graph-tooltip" id="graph-tooltip" hidden></div>
       <!-- Click-to-open node detail card; populated by js/precursors.js -->
       <div class="node-detail" id="node-detail" hidden></div>
     </div>
+
+    <!-- Live tuning controls (troubleshooting); populated by js/precursors.js -->
+    <div class="tuning-panel" id="tuning-panel" hidden></div>
+    </div>
+
     <p id="status" class="status">Loading graph…</p>
   </main>
 

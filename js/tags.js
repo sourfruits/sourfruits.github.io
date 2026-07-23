@@ -4,8 +4,6 @@
 const list = document.getElementById("tag-list");
 const status = document.getElementById("status");
 
-initBackButton();
-
 fetchPosts()
   .then((posts) => {
     // Tally how many posts carry each tag.

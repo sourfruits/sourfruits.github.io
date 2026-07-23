@@ -12,6 +12,25 @@
 // --line, --accent, --surface), so the graph follows the light/dark theme toggle
 // automatically — no hardcoded hex values here.
 
+// ── "Learn more" cards ──────────────────────────────────────────────────────
+// Copy for the two cards revealed by the "Learn more" toggle under the tagline.
+// Edit the wording here directly — one entry per card: a short label (rendered
+// as the green uppercase heading) and the serif body text. Leave a blank line
+// between paragraphs and each becomes its own <p>.
+const LEARN_MORE_CARDS = [
+  {
+    label: "Why “precursors”",
+    callout: true,   // warm tint + green left-border, so it reads as a distinct aside
+    body: `Lorem ipsum placeholder — the quick brown fox jumped over the lazy dog. Replace this with the real Borges "Kafka and His Precursors" explanation later.`,
+  },
+  {
+    label: "How it works",
+    body: `Discovery — how I found what I'm interested in, and how my taste evolves.
+
+Connections — how what I'm interested in relates to each other (personal noticed connections, not factual Wikipedia categorization).`,
+  },
+];
+
 // ── Tunable ────────────────────────────────────────────────────────────────
 // Label density and node/label sizing. Edit these defaults, or adjust them live
 // via the "Tuning" panel on the page (toggle button in the toolbar) — handy for
@@ -20,7 +39,7 @@ const TUNING = {
   labelThreshold: 5,   // on-screen node radius (size × zoom, px) to show a label by default
   maxLabelWidth: 170,  // label pixel width (world units) before it's cut off with an ellipsis
   nodeBase: 11,        // leaf/content node radius (world units)
-  growthStep: 3,       // + radius per outgoing directional link, capped at 4 steps
+  growthStep: 3,       // + radius per point of downstream influence (uncapped)
   nodeFont: 18,        // content label font (px)
   sourceFont: 15,      // source-hub label font (px)
   // Force-simulation knobs:
@@ -43,9 +62,35 @@ const tuningBtn = document.getElementById("graph-tuning-btn");
 const tuningPanel = document.getElementById("tuning-panel");
 const resetBtn = document.getElementById("graph-reset");
 
+// Fill the "Learn more" cards from LEARN_MORE_CARDS (see top of file). Each
+// card is a green uppercase label plus serif paragraphs split on blank lines.
+(function renderLearnMore() {
+  const host = document.getElementById("learn-more-cards");
+  if (!host) return;
+  host.innerHTML = LEARN_MORE_CARDS.map((card) => {
+    const paras = card.body.trim().split(/\n\s*\n/).map((p) => {
+      const text = p.trim();
+      // Colored dot before a mode line, matching the mode-toggle colors: green
+      // for Discovery, yellow for Connections. Keyed off the leading word, so
+      // only those lines get a dot.
+      let dot = "";
+      if (/^Discovery\b/.test(text)) dot = `<span class="mode-dot mode-dot--discovery" aria-hidden="true"></span>`;
+      else if (/^Connections\b/.test(text)) dot = `<span class="mode-dot mode-dot--connections" aria-hidden="true"></span>`;
+      return `<p>${dot}${escapeHTML(text)}</p>`;
+    }).join("");
+    const cls = card.callout ? "precursors-card precursors-card--callout" : "precursors-card";
+    return `<article class="${cls}">` +
+      `<div class="precursors-card-label">${escapeHTML(card.label)}</div>` +
+      paras +
+    `</article>`;
+  }).join("");
+})();
+
 let rawData = null;      // parsed precursors.json
 let postTitles = {};     // post id -> title, for hover labels
 let nodeById = {};        // node id -> raw node, for the detail card's lookups
+let growthById = {};      // node id -> growth in the current view (nodeById holds
+                          // raw nodes, which never carry the computed growth)
 let currentMode = "discovery";
 let simulation = null;
 let detailNodeId = null;  // id of the node whose detail card is open, or null
@@ -245,7 +290,6 @@ function buildDiscovery(data) {
   ledTo.forEach((list, sourceId) => {
     const node = included.get(sourceId);
     node.growth = list.length;
-    node.outDegree = list.length;
     node.discoveryOut = list;
   });
 
@@ -312,17 +356,16 @@ function buildConnections(data) {
   });
 
   // --- node size (growth) ---
-  // Base size = a node's own outgoing size-directional out-degree (influence /
-  // adaptation). Authorship doesn't count directly; instead, for each work a
-  // node authored, that work's OWN base out-degree is added — exactly one hop,
-  // so a work's downstream (third-level) activity never cascades back.
-  // outDegree (all directional out, authorship included) is kept for the hover.
+  // growth = a node's downstream influence, and it drives both node size and the
+  // hover/card "outgoing" count. It counts the node's own outgoing influence /
+  // adaptation edges; authorship links themselves DON'T count, but instead each
+  // authored work's OWN influence/adaptation reach is added — exactly one hop, so
+  // a work's downstream (third-level) activity never cascades back. So if work1
+  // influenced derivative1, that's +1 outgoing for work1 AND for work1's author.
   const sizeOut = new Map();    // id -> influence/adaptation out-degree
-  const outDegree = new Map();  // id -> all directional out-degree (hover count)
   const authored = new Map();   // id -> [ids of works it authored]
   edges.forEach((e) => {
     if (!e.directional) return;
-    outDegree.set(e.source, (outDegree.get(e.source) || 0) + 1);
     if (RELATIONSHIP_TYPES[e.type].propagates) {
       if (!authored.has(e.source)) authored.set(e.source, []);
       authored.get(e.source).push(e.target);
@@ -334,7 +377,6 @@ function buildConnections(data) {
     let g = sizeOut.get(n.id) || 0;
     (authored.get(n.id) || []).forEach((workId) => { g += sizeOut.get(workId) || 0; });
     n.growth = g;
-    n.outDegree = outDegree.get(n.id) || 0;
   });
 
   return { nodes, links: edges };
@@ -343,10 +385,10 @@ function buildConnections(data) {
 // --- rendering ------------------------------------------------------------
 
 // Every node — content or discovery source hub — sizes the same way: a base
-// radius plus growth per outgoing directional link (capped), so influential
+// radius plus growth per point of downstream influence (uncapped), so influential
 // origins and prolific sources read as larger.
 function nodeRadius(d) {
-  return TUNING.nodeBase + Math.min(d.growth || 0, 4) * TUNING.growthStep;
+  return TUNING.nodeBase + (d.growth || 0) * TUNING.growthStep;
 }
 
 // Label font size (world units) for a node.
@@ -426,9 +468,10 @@ function nodeTooltipHTML(d) {
   if (author) html += `<span class="tip-by">by ${escapeHTML(author.name)}</span>`;
   const n = d.degree || 0;
   let meta = `${n} connection${n === 1 ? "" : "s"}`;
-  // Directional links originating here — the node's "children" (things it
-  // influenced / adapted / authored). Only shown when there are any.
-  const out = d.outDegree || 0;
+  // Downstream influence originating here — things it influenced / adapted, plus
+  // (via authorship, one hop) what its authored works influenced. Same number
+  // that drives node size. Only shown when there is any.
+  const out = d.growth || 0;
   if (out) meta += ` · ${out} outgoing →`;
   html += `<span class="tip-degree">${meta}</span>`;
   return html;
@@ -555,8 +598,15 @@ function connectionRowHTML(c) {
   const relLabel = t ? t.label : "Connection";
   const relColor = t ? t.color : "var(--rel-thematic)";
   const glyph = t && t.directional ? (c.dir === "out" ? " →" : " ←") : "";
+  // For outgoing links, show how much the target influenced on its own — this is
+  // the same downstream count that rolls up into this node's "outgoing" total
+  // (e.g. an authored work's own influence), so the number is explained without
+  // listing every derivative. Shown on the relationship row.
+  const onward = c.dir === "out" ? (growthById[c.other.id] || 0) : 0;
   let html = `<div class="detail-conn">`;
-  html += `<span class="detail-conn-rel" style="color:${relColor}">${escapeHTML(relLabel)}${glyph}</span>`;
+  html += `<span class="detail-conn-rel" style="color:${relColor}">${escapeHTML(relLabel)}${glyph}`;
+  if (onward) html += ` <span class="detail-conn-onward" title="${onward} downstream influence${onward === 1 ? "" : "s"}">+${onward}</span>`;
+  html += `</span>`;
   html += `<span class="detail-conn-name">${escapeHTML(c.other.label)}</span>`;
   if (c.note) html += `<div class="detail-conn-note">${escapeHTML(c.note)}</div>`;
   html += `</div>`;
@@ -575,10 +625,10 @@ function cardConnections(node) {
     return { rows, label: `Led to (${rows.length})` };
   }
   const rows = connectionsFor(node);
-  const outCount = rows.filter((c) =>
-    c.dir === "out" && c.rel && RELATIONSHIP_TYPES[c.rel] && RELATIONSHIP_TYPES[c.rel].directional).length;
   let label = `Connections (${rows.length})`;
-  if (outCount) label += ` · ${outCount} outgoing →`;
+  // Same downstream-influence count as node size / the hover card.
+  const out = growthById[node.id] || node.growth || 0;
+  if (out) label += ` · ${out} outgoing →`;
   return { rows, label };
 }
 
@@ -746,6 +796,11 @@ function render(mode) {
   });
   graph.nodes.forEach((n) => { n.degree = degree.get(n.id) || 0; });
 
+  // Expose this view's growth by id so the detail card (whose rows resolve
+  // through nodeById → raw nodes) can show each target's own downstream count.
+  growthById = {};
+  graph.nodes.forEach((n) => { growthById[n.id] = n.growth || 0; });
+
   // Seed positions from the cache (or the center) so the layout doesn't jump
   // when toggling modes.
   graph.nodes.forEach((n) => {
@@ -869,18 +924,23 @@ function render(mode) {
   updateLabelVisibility();
 }
 
-// Place each node's label on the outward side — the direction from the graph's
-// centroid to the node — so labels fan away from the middle instead of all
-// sitting on the right. Runs each tick as positions shift.
+// Place each node's label toward its most open side — the direction away from
+// the surrounding crowd of nearby nodes/labels — rather than always fanning out
+// from the centre. The open-space direction (d.__ldx/__ldy) is computed once per
+// tick by forceLabelSeparation, reusing that scan; here we just read it. Falls
+// back to the outward-from-centroid direction before the first scan has run.
 function positionLabels(nodes, sel) {
   if (!nodes.length) return;
   let sx = 0, sy = 0;
   for (const n of nodes) { sx += n.x || 0; sy += n.y || 0; }
   const cx = sx / nodes.length, cy = sy / nodes.length;
   sel.select("text").each(function (d) {
-    const dx = (d.x || 0) - cx, dy = (d.y || 0) - cy;
-    const len = Math.hypot(dx, dy) || 1;
-    const ux = dx / len, uy = dy / len;
+    let ux = d.__ldx, uy = d.__ldy;
+    if (ux === undefined) {
+      const dx = (d.x || 0) - cx, dy = (d.y || 0) - cy;
+      const len = Math.hypot(dx, dy) || 1;
+      ux = dx / len; uy = dy / len;
+    }
     const gap = nodeRadius(d) + 5;
     d3.select(this)
       .attr("x", ux * gap)
@@ -890,11 +950,17 @@ function positionLabels(nodes, sel) {
   });
 }
 
-// Basic label collision avoidance. Each visible label gets an approximate
-// bounding box (matching positionLabels' outward geometry); any *other* node
-// sitting inside that box is nudged out of it. Velocity-based and alpha-scaled,
-// so it blends with the layout instead of fighting it and fades out as things
-// settle — keeping always-on hub labels from being covered by a neighbour.
+// Two jobs, folded into one per-tick label×node scan:
+//   1. Separation — each visible label gets an approximate bounding box; any
+//      *other* node sitting inside it is nudged out (velocity-based, alpha-scaled,
+//      so it blends with the layout and fades as things settle).
+//   2. Open-space placement — while scanning, accumulate each label's "crowd
+//      vector" (the weighted pull toward nearby nodes/labels) and store the
+//      opposite direction on the node as d.__ldx/__ldy. positionLabels reads it
+//      so the label opens toward the emptiest side, not just outward.
+// Boxes are built from the direction chosen on the previous tick; positions move
+// slowly, so that one-tick lag is invisible and we avoid a second scan.
+const LABEL_CROWD_RANGE = 100;   // world units: neighbours nearer than this crowd
 function forceLabelSeparation() {
   let nodes = [];
   function force(alpha) {
@@ -910,9 +976,13 @@ function forceLabelSeparation() {
       const w = Math.max(measureTextWidth(truncateLabel(L.label, fs), fs), fs);
       const h = fs;
       const gap = nodeRadius(L) + 5;
-      const dx = (L.x || 0) - cx, dy = (L.y || 0) - cy;
-      const len = Math.hypot(dx, dy) || 1;
-      const ux = dx / len, uy = dy / len;
+      // Direction chosen last tick (or outward-from-centroid until one exists).
+      let ux = L.__ldx, uy = L.__ldy;
+      if (ux === undefined) {
+        const dx = (L.x || 0) - cx, dy = (L.y || 0) - cy;
+        const len = Math.hypot(dx, dy) || 1;
+        ux = dx / len; uy = dy / len;
+      }
       const ax = (L.x || 0) + ux * gap, ay = (L.y || 0) + uy * gap;
       const x0 = ux > 0.25 ? ax : ux < -0.25 ? ax - w : ax - w / 2;
       const y0 = uy > 0.25 ? ay : uy < -0.25 ? ay - h : ay - h / 2;
@@ -921,9 +991,23 @@ function forceLabelSeparation() {
     if (!boxes.length) return;
 
     const strength = 0.6 * alpha;
+    const R2 = LABEL_CROWD_RANGE * LABEL_CROWD_RANGE;
     for (const b of boxes) {
+      const L = b.node;
+      let crx = 0, cry = 0;  // crowd vector: weighted sum pointing toward neighbours
       for (const n of nodes) {
-        if (n === b.node) continue;
+        if (n === L) continue;
+        // (2) Open-space: accumulate this neighbour's contribution to L's crowd.
+        const ndx = (n.x || 0) - (L.x || 0), ndy = (n.y || 0) - (L.y || 0);
+        const nd2 = ndx * ndx + ndy * ndy;
+        if (nd2 > 0 && nd2 < R2) {
+          const nd = Math.sqrt(nd2);
+          // Nearer neighbours weigh more; visible labels occupy space, so weigh extra.
+          const wgt = (1 - nd / LABEL_CROWD_RANGE) * (labelVisible(n) ? 1.6 : 1);
+          crx += (ndx / nd) * wgt;
+          cry += (ndy / nd) * wgt;
+        }
+        // (1) Separation: nudge any node sitting inside this label's box.
         const r = nodeRadius(n) + 2;
         if (n.x > b.x0 - r && n.x < b.x1 + r && n.y > b.y0 - r && n.y < b.y1 + r) {
           let dx = n.x - b.mx, dy = n.y - b.my;
@@ -932,6 +1016,16 @@ function forceLabelSeparation() {
           n.vx += (dx / d) * strength * 4;
           n.vy += (dy / d) * strength * 4;
         }
+      }
+      // Open side = opposite the crowd; fall back to outward-from-centroid when
+      // there's no nearby crowd to push against.
+      const clen = Math.hypot(crx, cry);
+      if (clen > 1e-3) {
+        L.__ldx = -crx / clen; L.__ldy = -cry / clen;
+      } else {
+        const dx = (L.x || 0) - cx, dy = (L.y || 0) - cy;
+        const len = Math.hypot(dx, dy) || 1;
+        L.__ldx = dx / len; L.__ldy = dy / len;
       }
     }
   }
@@ -1033,7 +1127,9 @@ if (fsBtn) {
   });
   document.addEventListener("fullscreenchange", () => {
     const on = document.fullscreenElement === wrap;
-    fsBtn.textContent = on ? "Exit full screen" : "Full screen";
+    const label = on ? "Exit full screen" : "Full screen";
+    fsBtn.setAttribute("aria-label", label);
+    fsBtn.setAttribute("title", label);
     fsBtn.setAttribute("aria-pressed", on ? "true" : "false");
     // Let the browser apply the new element size, then re-fit the layout.
     requestAnimationFrame(relayout);
@@ -1135,5 +1231,3 @@ Promise.all([
     status.classList.add("error");
     console.error(err);
   });
-
-initBackButton();

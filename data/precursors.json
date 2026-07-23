@@ -123,7 +123,8 @@
       "connections": [
         { "to": "notes-from-underground", "relationship": "authorship" },
         { "to": "white-nights", "relationship": "authorship" },
-        { "to": "crime-and-punishment", "relationship": "authorship" }
+        { "to": "crime-and-punishment", "relationship": "authorship" },
+        { "to": "the-myth-of-sisyphus", "relationship": "influence", "note" : "Camus directly cites Dostoevsky in the Myth of Sisyphus." }
       ]
     },
     {
@@ -148,7 +149,7 @@
         { "source": "fyodor-dostoevsky", "date": "2026-05" }
       ],
       "connections": [
-        { "to": "the-trial", "relationship": "influence" }
+        { "to": "the-stranger", "relationship": "influence"}
       ]
     },
     {
