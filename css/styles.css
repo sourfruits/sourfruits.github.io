@@ -10,12 +10,13 @@
   --accent-ink: #163a25;   /* dark green — legible as text on an --accent fill */
   --contrast-ink: #ffffff; /* light in day mode, dark in dark mode (overridden below) */
   --accent2: #e8c840;      /* logo yellow (the lower-right dot in the mark) */
+  --accent2-ink: #8a6d15;  /* dark amber — legible outline/text on an --accent2 fill */
   /* Connection relationship-type line colors (see js/precursors.js). */
-  --rel-adaptation: #4e8f8a;   /* muted teal */
-  --rel-influence:  #5b6fa8;   /* slate blue — complements the yellow nodes */
-  --rel-thematic:   #9b9488;   /* warm taupe grey */
-  --rel-authorship: #b06a45;   /* sienna (dashed) */
-  --rel-discovery:  #4a72b0;   /* steel blue (Discovery view edges) */
+  --rel-adaptation: #86c06a;      /* light green */
+  --rel-influence:  #2f6d43;      /* darker green */
+  --rel-thematic:   #6f5340;      /* brown */
+  --rel-authorship: var(--muted); /* muted line (dashed) */
+  --rel-discovery:  #4a72b0;      /* steel blue (Discovery view edges) */
   --radius: 14px;
   --radius-pill: 5px;      /* was a full pill (999px); now a soft 5px on all controls */
   --maxw: 1040px;
@@ -71,11 +72,11 @@
   /* --accent and --accent-ink are intentionally NOT overridden here — the accent
      treatment is identical in both modes (accent-ink only ever sits on an
      accent-green fill, so it needs no dark-background variant). */
-  /* Slightly lighter relationship colors so they read on the dark background. */
-  --rel-adaptation: #6fb0aa;
-  --rel-influence:  #8296c8;
-  --rel-thematic:   #b0a798;
-  --rel-authorship: #cb8560;
+  /* Slightly lighter relationship colors so they read on the dark background.
+     --rel-authorship follows --muted automatically. */
+  --rel-adaptation: #9fd487;      /* light green */
+  --rel-influence:  #4f9c66;      /* darker green (kept visible on dark bg) */
+  --rel-thematic:   #b3906b;      /* lighter brown for dark bg */
   --rel-discovery:  #6f9bd6;
 }
 

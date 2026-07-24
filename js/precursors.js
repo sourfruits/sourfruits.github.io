@@ -437,6 +437,36 @@ function updateLabelVisibility() {
     .style("opacity", (d) => (labelVisible(d) ? 1 : 0));
 }
 
+// Re-apply label text/size/width/position in place (no simulation restart), so
+// font/width/threshold tuning updates the labels without moving the layout.
+function refreshLabels() {
+  const sel = labelLayer.selectAll("text.node-label");
+  sel.text((d) => truncateLabel(graphLabel(d), labelFontSize(d), labelMaxWidth(d)))
+     .style("font-size", (d) => labelFontSize(d) + "px")
+     .style("font-weight", (d) => (isHub(d) ? "700" : "400"));
+  positionLabels(sel.data(), sel);
+  updateLabelVisibility();
+}
+
+// Re-apply node/link/label appearance in place, without rebuilding the graph or
+// restarting the force simulation — so tuning visual knobs never shifts the
+// layout. Only the true force knobs (see LAYOUT_KEYS) trigger a re-layout.
+function refreshVisuals() {
+  const contentFill = currentMode === "connections" ? "var(--accent2)" : "var(--accent)";
+  const contentStroke = currentMode === "connections" ? "var(--accent2-ink)" : "var(--accent-ink)";
+  nodeLayer.selectAll("g.node")
+    .attr("class", (d) => `node${isHub(d) ? " is-hub" : ""}`)
+    .select("circle")
+      .attr("r", nodeRadius)
+      .style("fill", (d) => (isHub(d) ? "var(--bg)" : contentFill))
+      .style("stroke", (d) => (isHub(d) ? "var(--muted)" : contentStroke))
+      .style("stroke-width", (d) => (isHub(d) ? 1.5 : 1))
+      .style("stroke-dasharray", (d) => (isHub(d) ? "3 2" : null));
+  linkLayer.selectAll("line.link")
+    .style("stroke-width", (d) => (d.directional ? TUNING.linkWidth + 0.6 : TUNING.linkWidth));
+  refreshLabels();
+}
+
 // Measure a string's rendered width (world units) at a given font size, using an
 // offscreen canvas with the site's sans stack. Cached context, so it's cheap.
 const _measureCtx = document.createElement("canvas").getContext("2d");
@@ -924,7 +954,7 @@ function render(mode) {
   // now includes discovery source nodes). Hubs read as hollow with a dashed
   // outline, in both modes. (The stroke follows the fill for leaves.)
   const contentFill = mode === "connections" ? "var(--accent2)" : "var(--accent)";
-  const contentStroke = mode === "connections" ? "var(--accent2)" : "var(--accent-ink)";
+  const contentStroke = mode === "connections" ? "var(--accent2-ink)" : "var(--accent-ink)";
   nodeAll.select("circle")
     .attr("r", nodeRadius)
     .style("fill", (d) => (isHub(d) ? "var(--bg)" : contentFill))
@@ -941,7 +971,8 @@ function render(mode) {
     .text((d) => truncateLabel(graphLabel(d), labelFontSize(d), labelMaxWidth(d)))
     .style("fill", "var(--ink)")
     .style("font-family", "var(--font-sans)")
-    .style("font-size", (d) => labelFontSize(d) + "px");
+    .style("font-size", (d) => labelFontSize(d) + "px")
+    .style("font-weight", (d) => (isHub(d) ? "700" : "400"));
 
   nodeAll
     // Hover shows the small tooltip card; clicking a node opens the expanded
@@ -1232,27 +1263,34 @@ if (fsBtn) {
 // Controls grouped into titled sections. Tier-specific groups render in the left
 // panel; the shared group renders in the right panel. Each row: [key, label, min,
 // max, step].
+// Each row: [key, label, min, max, step, description]. The description shows as a
+// hover tooltip on the row.
 const TUNING_GROUPS = [
   { side: "left", title: "Shared", controls: [
-    ["charge", "Charge (repulsion)", -800, 0, 10],
-    ["linkDistance", "Link distance", 20, 240, 5],
-    ["collidePad", "Collision padding", 0, 80, 1],
-    ["linkWidth", "Line thickness", 0.5, 6, 0.1],
+    ["charge", "Charge (repulsion)", -800, 0, 10, "How hard nodes push apart — more negative spreads the graph out."],
+    ["linkDistance", "Link distance", 20, 240, 5, "Preferred length of each connection line."],
+    ["collidePad", "Collision padding", 0, 80, 1, "Extra empty space kept around every node so they don't overlap."],
+    ["linkWidth", "Line thickness", 0.5, 6, 0.1, "Stroke width of the connection lines (arrowheads scale with it)."],
   ] },
   { side: "right", title: "Hub", controls: [
-    ["hubThreshold", "Hub threshold", 0, 20, 1],
-    ["growthStep", "Hub growth step", 0, 10, 0.5],
-    ["hubFont", "Hub font", 8, 40, 1],
-    ["hubMaxLabelWidth", "Hub max label width", 40, 400, 5],
-    ["hubLabelThreshold", "Hub label threshold", 0, 40, 1],
+    ["hubThreshold", "Hub threshold", 0, 20, 1, "Outgoing connections a node needs to count as a hub (bigger, always labelled, hollow/dashed)."],
+    ["growthStep", "Hub growth step", 0, 10, 0.5, "How much a hub's radius grows per outgoing connection."],
+    ["hubFont", "Hub font", 8, 40, 1, "Font size of hub labels."],
+    ["hubMaxLabelWidth", "Hub max label width", 40, 400, 5, "Pixel width before a hub label is trimmed with an ellipsis."],
+    ["hubLabelThreshold", "Hub label threshold", 0, 40, 1, "On-screen size a hub must reach before its label shows (0 = always shown)."],
   ] },
   { side: "right", title: "Leaf", controls: [
-    ["nodeBase", "Leaf base radius", 4, 30, 1],
-    ["leafFont", "Leaf font", 8, 40, 1],
-    ["leafMaxLabelWidth", "Leaf max label width", 40, 400, 5],
-    ["leafLabelThreshold", "Leaf label threshold", 0, 40, 1],
+    ["nodeBase", "Leaf base radius", 4, 30, 1, "Base radius of every node; leaves stay this size, hubs grow from it."],
+    ["leafFont", "Leaf font", 8, 40, 1, "Font size of leaf labels (shown on hover / zoom)."],
+    ["leafMaxLabelWidth", "Leaf max label width", 40, 400, 5, "Pixel width before a leaf label is trimmed with an ellipsis."],
+    ["leafLabelThreshold", "Leaf label threshold", 0, 40, 1, "On-screen size a leaf must reach before its label appears as you zoom in."],
   ] },
 ];
+
+// Only these knobs feed the force simulation, so only they re-lay-out the graph.
+// Everything else is visual (sizes/labels/colours) and updates in place — the
+// layout stays frozen so you can compare settings without it drifting.
+const LAYOUT_KEYS = new Set(["charge", "linkDistance", "collidePad"]);
 
 // Snapshot of the baked-in defaults, so the Reset button can restore them.
 const TUNING_DEFAULTS = { ...TUNING };
@@ -1263,9 +1301,10 @@ function initTuningPanel() {
   tuningPanelLeft.innerHTML = "";
 
   const rows = [];  // { key, input, val } for the Reset button
-  const buildRow = (parent, [key, label, min, max, step]) => {
+  const buildRow = (parent, [key, label, min, max, step, desc]) => {
     const row = document.createElement("label");
     row.className = "tuning-row";
+    if (desc) row.title = desc;   // brief explanation on hover
     const head = document.createElement("div");
     head.className = "tuning-head";
     const name = document.createElement("span");
@@ -1282,7 +1321,10 @@ function initTuningPanel() {
     input.addEventListener("input", () => {
       TUNING[key] = parseFloat(input.value);
       val.textContent = TUNING[key];
-      if (rawData) render(currentMode);  // re-render live with the new value
+      if (!rawData) return;
+      // Force knobs re-lay-out; visual knobs update in place (layout stays put).
+      if (LAYOUT_KEYS.has(key)) render(currentMode);
+      else refreshVisuals();
     });
     row.append(head, input);
     parent.appendChild(row);
