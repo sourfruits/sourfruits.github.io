@@ -192,7 +192,7 @@
         dotWrap.classList.add("is-squeezing");
         spawnCount(landedSqueezes);
         lemonSave({ count: landedSqueezes });
-        if (!finaled && landedSqueezes >= 10) finale();   // TESTING: milestone lowered (was 50)
+        if (!finaled && landedSqueezes >= 50) finale();   // milestone: the dots fall away
         return;
       }
       // Building: swell a step and shudder (like it's working loose) each click,
@@ -225,10 +225,18 @@
       }
     });
 
-    // Rebuild this tab's saved state on load, so the lemon carries across page
-    // navigations and refreshes within the tab; it's gone once the tab is closed
-    // (or in a new tab), since sessionStorage is per-tab.
+    // State carries across page *navigations* within the tab, but a refresh
+    // resets it, and it's gone in a new/closed tab (sessionStorage is per-tab).
+    // A reload and a navigation both load the page; the Performance API tells
+    // them apart.
     (function restore() {
+      try { localStorage.removeItem(LEMON_KEY); } catch (e) {}   // clear any orphan from earlier testing
+      const nav = performance.getEntriesByType("navigation")[0];
+      const isReload = nav
+        ? nav.type === "reload"
+        : (performance.navigation && performance.navigation.type === 1);
+      if (isReload) { try { sessionStorage.removeItem(LEMON_KEY); } catch (e) {} return; }
+
       const s = lemonLoad();
       if (s.stage !== "rested" && s.stage !== "fallen") return;
       if (s.grow) dotWrap.style.setProperty("--grow", s.grow);

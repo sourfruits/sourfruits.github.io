@@ -25,7 +25,9 @@ const LEARN_MORE_CARDS = [
   },
   {
     label: "How it works",
-    body: `Discovery — how I found what I'm interested in, and how my taste evolves.
+    body: `Discovery — how I found what I'm interested in, and how my taste evolves. It tracks the moment something genuinely registered in your mind, and what caused that moment.
+
+What made you go look for that? If I found it by chance, THEN it can be a person or platform.
 
 Connections — how what I'm interested in relates to each other (personal noticed connections, not factual Wikipedia categorization).`,
   },
@@ -1080,8 +1082,8 @@ function renderLegend(mode) {
   }
   const dc = RELATIONSHIP_TYPES.discovery.color;
   legend.innerHTML =
-    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>Discovery (engagement) →</span>` +
-    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc};border-top-style:dashed"></span>Aware (weaker) →</span>` +
+    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>CONSCIOUSNESS →</span>` +
+    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc};border-top-style:dashed"></span>AWARENESS →</span>` +
     `<span class="legend-item"><span class="legend-swatch swatch-node"></span>Discovered</span>` +
     `<span class="legend-item"><span class="legend-swatch swatch-source"></span>Source</span>`;
 }
