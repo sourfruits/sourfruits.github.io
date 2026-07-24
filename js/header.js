@@ -341,7 +341,11 @@
     const q = new URLSearchParams(window.location.search).get("q");
     if (q) searchInput.value = q;
     searchForm.addEventListener("submit", (e) => {
-      if (!searchInput.value.trim()) {
+      // When the field is visible (desktop) and empty, don't navigate — just
+      // focus it. On mobile the field is collapsed (display:none), so let the
+      // tap fall through to the search page instead of focusing a hidden input.
+      const visible = getComputedStyle(searchInput).display !== "none";
+      if (visible && !searchInput.value.trim()) {
         e.preventDefault();
         searchInput.focus();
       }

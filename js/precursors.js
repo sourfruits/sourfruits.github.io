@@ -203,6 +203,19 @@ svg.call(zoom);
 svg.on("dblclick.zoom", null);
 svg.on("dblclick", () => { autoFit = true; fitView(true); });
 
+// Click empty graph space to dismiss an open detail card. Node clicks
+// stopPropagation, so this only fires for background clicks; a small movement
+// guard means panning the canvas doesn't count as a click.
+(function () {
+  const svgEl = svg.node();
+  let downXY = null;
+  svgEl.addEventListener("pointerdown", (e) => { downXY = [e.clientX, e.clientY]; });
+  svgEl.addEventListener("click", (e) => {
+    if (detailNodeId === null || !downXY) return;
+    if (Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]) <= 4) closeDetail();
+  });
+})();
+
 function size() {
   const rect = wrap.getBoundingClientRect();
   return { w: rect.width, h: rect.height };
@@ -1277,19 +1290,37 @@ window.addEventListener("resize", relayout);
 
 // Full-screen toggle for the graph canvas.
 if (fsBtn) {
-  fsBtn.addEventListener("click", () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else if (wrap.requestFullscreen) wrap.requestFullscreen();
-  });
-  document.addEventListener("fullscreenchange", () => {
-    const on = document.fullscreenElement === wrap;
+  // iOS Safari has no element Fullscreen API, so fall back to a fixed overlay
+  // that fills the viewport (see .is-faux-fullscreen in the CSS). webkit-prefixed
+  // methods cover older WebKit.
+  const reqFs = wrap.requestFullscreen || wrap.webkitRequestFullscreen;
+  const exitFs = document.exitFullscreen || document.webkitExitFullscreen;
+  const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
+
+  function setFsUI(on) {
     const label = on ? "Exit full screen" : "Full screen";
     fsBtn.setAttribute("aria-label", label);
     fsBtn.setAttribute("title", label);
     fsBtn.setAttribute("aria-pressed", on ? "true" : "false");
     // Let the browser apply the new element size, then re-fit the layout.
     requestAnimationFrame(relayout);
+  }
+
+  fsBtn.addEventListener("click", () => {
+    if (reqFs) {
+      if (fsEl()) exitFs.call(document);
+      else reqFs.call(wrap);
+    } else {
+      // No Fullscreen API (iOS): toggle the CSS overlay ourselves.
+      const on = wrap.classList.toggle("is-faux-fullscreen");
+      document.body.classList.toggle("is-graph-faux-fs", on);
+      setFsUI(on);
+    }
   });
+
+  const onFsChange = () => setFsUI(fsEl() === wrap);
+  document.addEventListener("fullscreenchange", onFsChange);
+  document.addEventListener("webkitfullscreenchange", onFsChange);
 }
 
 // --- tuning panel (troubleshooting) ---------------------------------------

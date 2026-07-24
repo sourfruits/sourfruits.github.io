@@ -362,11 +362,6 @@ main {
 /* Readable grey on the white focused field. */
 .header-search:focus-within .header-search-btn { color: #76766e; }
 
-/* Mobile: a shorter, fixed-width search bar (no focus expansion). */
-@media (max-width: 520px) {
-  .header-search { width: 120px; }
-}
-
 /* ---------- Mobile nav ---------- */
 /* Hamburger + stacked panel. Both are hidden on desktop; the media query below
    swaps the inline nav links for the hamburger under a breakpoint. The .nav-open
@@ -421,6 +416,20 @@ main {
   /* Swap the inline links for the hamburger. */
   .site-nav { display: none; }
   .nav-toggle { display: inline-flex; }
+
+  /* Collapse the search bar to just its magnifier icon (the input hides; the
+     button submits straight to the search page — see header.js). */
+  .header-search {
+    width: auto;
+    padding: 0;
+    background: none;
+    border-color: transparent;
+  }
+  .header-search:focus-within {
+    background: none;
+    box-shadow: none;
+  }
+  .header-search-input { display: none; }
 
   .mobile-nav {
     display: flex;
@@ -1825,8 +1834,10 @@ a.post-tag:focus-visible { color: var(--accent); }
 .graph-fs-icon .fs-icon { display: block; }
 /* Show the "expand" icon normally, the "collapse" icon only in full screen. */
 .graph-fs-icon .fs-collapse { display: none; }
-.graph-wrap:fullscreen .graph-fs-icon .fs-expand { display: none; }
-.graph-wrap:fullscreen .graph-fs-icon .fs-collapse { display: block; }
+.graph-wrap:fullscreen .graph-fs-icon .fs-expand,
+.graph-wrap.is-faux-fullscreen .graph-fs-icon .fs-expand { display: none; }
+.graph-wrap:fullscreen .graph-fs-icon .fs-collapse,
+.graph-wrap.is-faux-fullscreen .graph-fs-icon .fs-collapse { display: block; }
 
 /* Legend: a collapsible card pinned to the graph's bottom-left. Muted, with a
    solid background so it reads over the graph. */
@@ -1959,14 +1970,24 @@ a.post-tag:focus-visible { color: var(--accent); }
   overflow: hidden;
 }
 /* In full screen the wrap fills the viewport (no rounded corners), keeping the
-   surface background so it doesn't fall back to black. */
-.graph-wrap:fullscreen {
+   surface background so it doesn't fall back to black. The .is-faux-fullscreen
+   fallback (iOS, which lacks element fullscreen) fixes the wrap over the whole
+   viewport itself. */
+.graph-wrap:fullscreen,
+.graph-wrap.is-faux-fullscreen {
   width: 100vw;
   height: 100vh;
   border: none;
   border-radius: 0;
   background: var(--surface);
 }
+.graph-wrap.is-faux-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 60;   /* above the theme toggle (10) and any falling-dot (50) */
+  height: 100dvh;   /* fill the visual viewport on mobile, accounting for browser chrome */
+}
+body.is-graph-faux-fs { overflow: hidden; }
 #graph {
   display: block;
   width: 100%;
