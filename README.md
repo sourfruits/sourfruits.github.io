@@ -134,9 +134,9 @@ convention and sizing tips.
 connect them. It has two views, toggled at the top of the page and both computed
 from the same data:
 
-- **Discovery** — every node that records a `discovered_via`, plus a synthesized
-  node for each discovery `source` (friends, classes, platforms…), with an edge
-  from each source to what it led you to. An "engaged" discovery (you really sat with it) draws a
+- **Discovery** — every node that records a `discovered_via`, plus the nodes
+  named as each discovery `source` (friends, classes, platforms — all ordinary
+  nodes), with an edge from each source to what it led you to. An "engaged" discovery (you really sat with it) draws a
   solid edge, labelled *Consciousness* on hover; a lighter "aware" one (you'd just
   heard of it) draws dashed, labelled *Awareness*. Nodes are green here.
 - **Connections** — the nodes wired together by their `connections`. Each
@@ -172,7 +172,7 @@ node automatically). Each node carries its *own* connections:
       ],
       "discovered_via": [                      // optional — an ARRAY of discovery events
         {
-          "source": "class-philosophy-dis",   // {type}-{descriptor}, or another node's id
+          "source": "class-dis-philosophy",   // another node's id (sources are ordinary nodes)
           "strength": "engaged",              // "engaged" (default) or "aware"
           "date": "2026-03",                  // optional — year / year-month / full date
           "note": "Read for a philosophy class."  // optional, shown on hover + card
@@ -197,7 +197,11 @@ node automatically). Each node carries its *own* connections:
 - `id` — stable, unique, hand-picked (not auto-generated). It's what `connections`,
   `discovered_via.source`, and `post_ids` are matched against, so once you use one
   for something real, keep it forever — never re-slug it.
-- `label` — the display name shown next to the node.
+- `label` — the display name shown next to the node. Optional: if omitted, it's
+  derived from the id by dropping the leading `{type}-` segment and title-casing
+  the rest (`class-dis-philosophy` → "Dis Philosophy"), so it stays coupled to
+  the id. Set it explicitly when the id doesn't humanize cleanly (most content
+  nodes do this — `soren-kierkegaard` → "Soren Kierkegaard").
 - `kind` — an open string, not a fixed list (`film`, `book`, `philosopher`,
   `person`, `platform`, `class`, `podcast`, …). New kinds need no code change.
 - `author` — optional string. Shown on hover and in the detail card as the
@@ -224,13 +228,14 @@ node automatically). Each node carries its *own* connections:
   and both carry a note, the first (in `nodes` order) is shown.
 - `discovered_via` — optional. An **array** of discovery events (a thing can be
   discovered more than once, by different routes), each an object with:
-  - `source` — where it came from: either a `{type}-{descriptor}` string
-    (`friend-maya`, `class-philosophy-dis`, `platform-criterion-channel`) **or
-    another node's id** (when the discovery came from something already in the
-    graph). A string source auto-creates one shared hub node the first time it's
-    used, so reuse the *exact same* string every time or it splits into duplicate
-    hubs. Omit `source` for a discovery with no traceable origin — the node still
-    counts as discovered (it just draws no edge).
+  - `source` — **another node's id**: where it came from. Sources are ordinary
+    nodes, so friends, classes, and platforms are just nodes too (id convention
+    `{type}-{descriptor}`, e.g. `person-danny-h`, `class-dis-philosophy`,
+    `platform-letterboxd` — the `{type}-{descriptor}` id humanizes into a label on
+    its own, so they usually need only an `id` and `kind`). The id must exist as a
+    node — an unknown source draws no edge (and logs a warning). Omit `source`
+    for a discovery with no traceable origin — the node still counts as discovered
+    (it just draws no edge).
   - `strength` — `"engaged"` (default; a solid edge, *Consciousness*) or `"aware"`
     (a dashed edge, *Awareness*, for something you'd only heard of).
   - `mechanism` — optional. The platform/means you actually found it through, as a

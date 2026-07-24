@@ -7,7 +7,7 @@
       "post_ids": [],
       "discovered_via": [
         { "strength": "aware", "source": "person-danny-h", "date": "2024" },
-        { "strength": "engaged", "source": "class-philosophy-dis", "date": "2026-03" }
+        { "strength": "engaged", "source": "class-dis-philosophy", "date": "2026-03" }
       ],
       "connections": [
         { "to": "either-or", "relationship": "authorship" },
@@ -22,7 +22,7 @@
       "kind": "book",
       "post_ids": [],
       "discovered_via": [
-        { "source": "class-philosophy-dis", "date": "2026-03", "note": "Read excerpt: The Unhappiest One" }
+        { "source": "class-dis-philosophy", "date": "2026-03", "note": "Read excerpt: The Unhappiest One" }
       ],
       "connections": [
         { "to": "melancholia", "relationship": "thematic" }
@@ -43,7 +43,7 @@
       "kind": "film",
       "post_ids": [],
       "discovered_via": [
-        { "source": "class-philosophy-dis", "date": "2026-03" }
+        { "source": "class-dis-philosophy", "date": "2026-03" }
       ],
       "connections": [
         { "to": "either-or", "relationship": "thematic" }
@@ -97,7 +97,7 @@
       "kind": "book",
       "post_ids": [],
       "discovered_via": [
-        { "source": "class-philosophy-dis", "date": "2026-03", "note": "Borrowed from the DIS library." }
+        { "source": "class-dis-philosophy", "date": "2026-03", "note": "Borrowed from the DIS library." }
       ]
     },
     {
@@ -235,7 +235,7 @@
       "kind": "film",
       "discovered_via": [
         { "strength": "aware", "source": "jim-jarmusch" },
-        { "strength": "engaged", "source": "class-philosophy-dis", "date": "2026-05", "note": "Assigned/chosen for an essay on boredom; loved it." }
+        { "strength": "engaged", "source": "class-dis-philosophy", "date": "2026-05", "note": "Assigned/chosen for an essay on boredom; loved it." }
       ],
       "connections": [
         { "to": "chan-is-missing", "relationship": "thematic", "note": "Influential black and white 1980s indie film about aimless wandering" }
@@ -337,6 +337,21 @@
       "discovered_via": [
         { "source": "le-samourai", "date": "2026-05", "note": "Looking for lone operator movies" }
       ]
+    },
+    {
+      "id": "person-danny-h",
+      "kind": "person",
+      "post_ids": []
+    },
+    {
+      "id": "class-dis-philosophy",
+      "kind": "class",
+      "post_ids": []
+    },
+    {
+      "id": "platform-letterboxd",
+      "kind": "platform",
+      "post_ids": []
     }
   ]
 }

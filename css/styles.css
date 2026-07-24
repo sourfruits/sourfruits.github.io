@@ -497,6 +497,9 @@ main {
     opacity: 1;
     border-bottom: 1px solid var(--line);
   }
+  /* While the dropdown is open, drop the navbar's own divider so the panel
+     reads as one continuous surface (the panel carries the bottom border). */
+  .site-header.nav-open .header-bar { border-bottom-color: transparent; }
   .mobile-nav .nav-link {
     padding: 12px 20px;
   }
@@ -2161,6 +2164,26 @@ body.is-graph-faux-fs { overflow: hidden; }
   letter-spacing: 0.02em;
 }
 .detail-conn-name { display: block; margin-top: 2px; color: var(--ink); }
+/* Clickable connection name that opens the other node's card: neutral at rest,
+   accent on hover/focus, no underline. Stays a block (its own line, below the
+   relationship label) — inheriting .detail-conn-name's display. */
+.detail-link {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.detail-link:hover,
+.detail-link:focus-visible { color: var(--accent); outline: none; }
+
+/* Discovery source link (inline): the accent colour itself is the affordance,
+   so it stays coloured with no hover/underline change. */
+.detail-source-link {
+  cursor: pointer;
+  color: var(--accent);
+  text-decoration: none;
+  outline: none;
+}
 /* Compact "+N" tag: how much this outgoing target influenced on its own. */
 .detail-conn-onward {
   color: var(--muted);

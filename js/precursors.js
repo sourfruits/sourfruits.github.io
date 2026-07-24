@@ -3,8 +3,8 @@
 // hover labels, data/posts.json (to resolve post_ids to real post titles).
 //
 // Two views are computed from the *same* dataset at render time:
-//   Discovery   — every node that has a discovered_via, plus synthesized "source"
-//                 hubs pulled from discovered_via.source, with source → node edges.
+//   Discovery   — every node that has a discovered_via, plus the nodes named as
+//                 their discovered_via.source, with source → node edges.
 //   Connections — nodes wired by their connections array; each connection is a
 //                 bare id (plain line) or { to, relationship } (typed, possibly
 //                 directional). In either view, nodes with no edges are omitted.
@@ -188,7 +188,10 @@ svg.append("rect")
 // double-click turn it back on.
 let autoFit = true;
 let currentScale = 1;  // live zoom scale, drives size-based label visibility
-const zoom = d3.zoom().scaleExtent([0.1, 4]).on("zoom", (event) => {
+// interpolate(d3.interpolate): plain linear camera transitions instead of d3's
+// default fly-over (interpolateZoom), which arcs out-then-in on long pans even
+// when the zoom level doesn't change.
+const zoom = d3.zoom().scaleExtent([0.1, 4]).interpolate(d3.interpolate).on("zoom", (event) => {
   zoomLayer.attr("transform", event.transform);
   // Pan/scale the dot grid with the graph so the backdrop moves with the content.
   gridPattern.attr("patternTransform",
@@ -269,20 +272,40 @@ function fitView(animate) {
   (animate ? svg.transition().duration(400) : svg).call(zoom.transform, t);
 }
 
-// --- graph builders -------------------------------------------------------
-
-// A prettier fallback label for a synthesized source hub, e.g.
-// "class-philosophy-denmark" -> "Philosophy Denmark", "friend-maya" -> "Maya".
-function sourceLabel(sourceId) {
-  const parts = String(sourceId).split("-");
-  const rest = parts.slice(1).length ? parts.slice(1) : parts;
-  return rest.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+// A node's current on-screen position within the graph wrap (its world x/y run
+// through the live zoom transform; the svg fills the wrap, so these are also
+// wrap-relative pixels).
+function nodeScreenXY(node) {
+  const t = d3.zoomTransform(svg.node());
+  return { x: t.applyX(node.x), y: t.applyY(node.y) };
 }
 
-// The leading {type} of a source id ("friend-maya" -> "friend"), used as the
-// source hub's kind so it reads sensibly on hover.
-function sourceType(sourceId) {
-  return String(sourceId).split("-")[0] || "source";
+// Whether a node sits comfortably inside the viewport (with a small margin).
+function nodeInView(node, margin) {
+  if (node.x == null || node.y == null) return false;
+  const { w, h } = size();
+  const s = nodeScreenXY(node);
+  return s.x >= margin && s.x <= w - margin && s.y >= margin && s.y <= h - margin;
+}
+
+// Pan (keeping the current zoom) so a node ends up centred in the viewport.
+function panToNode(node, animate) {
+  const { w, h } = size();
+  const k = d3.zoomTransform(svg.node()).k;
+  const t = d3.zoomIdentity.translate(w / 2 - k * node.x, h / 2 - k * node.y).scale(k);
+  (animate ? svg.transition().duration(400) : svg).call(zoom.transform, t);
+  autoFit = false;  // the user drove the camera here; don't auto-reframe over it
+}
+
+// --- graph builders -------------------------------------------------------
+
+// Prettify an id/slug for display, dropping a leading {type} segment, e.g.
+// "platform-letterboxd" -> "Letterboxd". Used for the discovered_via mechanism
+// (a platform/method, not a node), and as a fallback label.
+function humanizeId(id) {
+  const parts = String(id).split("-");
+  const rest = parts.slice(1).length ? parts.slice(1) : parts;
+  return rest.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
 }
 
 // A node's discovered_via as a normalized array of { source, note?, date? }.
@@ -294,12 +317,6 @@ function discoveredVia(node) {
   const dv = node.discovered_via;
   const arr = Array.isArray(dv) ? dv : (dv ? [dv] : []);
   return arr.filter((d) => d && (d.source || d.note || d.date || d.mechanism));
-}
-
-// Display label for a discovery source: another node's real label when the
-// source is a node id, otherwise the prettified source-string label.
-function sourceDisplay(src) {
-  return nodeById[src] ? nodeById[src].label : sourceLabel(src);
 }
 
 // Format a discovery date at whatever precision it was given: "2024" (year),
@@ -315,11 +332,11 @@ function formatDiscoveryDate(s) {
   return formatDate(s);  // full ISO date — shared helper from utils.js
 }
 
-// Discovery view: only the nodes involved in discovery — every unique
-// discovered_via source (deduped) plus every node that has a discovered_via —
-// wired by directional source → discovered-thing edges. A `source` matching an
-// existing node id draws straight from that node; anything else synthesizes a
-// shared source hub.
+// Discovery view: only the nodes involved in discovery — every node that has a
+// discovered_via, plus every node named as a discovered_via source — wired by
+// directional source → discovered-thing edges. Sources are ordinary nodes now:
+// a `source` is just another node id, so it must exist in the data (an unknown
+// id draws no edge).
 //
 // discovered_via is an ARRAY of { source, note?, date? } (a node can be
 // discovered through more than one independent path at once), so we draw one
@@ -331,45 +348,58 @@ function buildDiscovery(data) {
   const byId = new Map(data.nodes.map((n) => [n.id, n]));
   const included = new Map();  // graph node id -> node object
   const links = [];
-  const ledTo = new Map();     // source graph id -> [{ to, note }]
+  const ledTo = new Map();     // source node id -> [{ to, note }]
 
-  const includeContent = (id) => {
+  const include = (id) => {
     if (!included.has(id)) included.set(id, { ...byId.get(id), growth: 0 });
     return included.get(id);
   };
-  const includeHub = (src) => {
-    const id = `source:${src}`;
-    if (!included.has(id)) {
-      included.set(id, { id, label: sourceLabel(src), kind: sourceType(src), post_ids: [], growth: 0 });
-    }
-    return included.get(id);
-  };
+
+  const consciousnessOut = new Map();  // node id -> # direct "consciousness" (engaged) discovery children
 
   data.nodes.forEach((n) => {
     const entries = discoveredVia(n);
     if (!entries.length) return;
-    includeContent(n.id);  // every node with a discovered_via appears — orphan if all its entries are source-less
+    include(n.id);  // every node with a discovered_via appears — orphan if all its entries are source-less
     entries.forEach((dv) => {
       const src = dv.source;
       if (!src || src === n.id) return;  // source-less (or self): no edge, node stays as an orphan
+      if (!byId.has(src)) {              // source isn't a defined node: skip (no magic hub)
+        console.warn(`precursors: discovered_via source "${src}" on "${n.id}" is not a node; no edge drawn.`);
+        return;
+      }
       const note = dv.note || "";
       // "aware" (just heard of it) vs "engaged" (sat down with it); defaults to
       // engaged. Aware edges draw dashed. Every entry draws its own edge — a
       // node can have two (a distinct earlier "aware" and a later "engaged").
       const strength = dv.strength === "aware" ? "aware" : "engaged";
-      const sourceId = byId.has(src) ? includeContent(src).id : includeHub(src).id;
-      links.push({ source: sourceId, target: n.id, type: "discovery", directional: true, note, strength });
-      if (!ledTo.has(sourceId)) ledTo.set(sourceId, []);
-      ledTo.get(sourceId).push({ to: n.id, note });
+      include(src);
+      links.push({ source: src, target: n.id, type: "discovery", directional: true, note, strength });
+      if (!ledTo.has(src)) ledTo.set(src, []);
+      ledTo.get(src).push({ to: n.id, note });
+      // Only "consciousness" (engaged) discoveries count toward size.
+      if (strength === "engaged") consciousnessOut.set(src, (consciousnessOut.get(src) || 0) + 1);
     });
   });
 
-  // A source grows with how many things it led to (same growth → radius as a
-  // Connections hub) and carries that list for its "Led to" card section.
-  ledTo.forEach((list, sourceId) => {
-    const node = included.get(sourceId);
-    node.growth = list.length;
-    node.discoveryOut = list;
+  // Each source carries its direct "led to" list for the card's "Led to" section.
+  ledTo.forEach((list, sourceId) => { included.get(sourceId).discoveryOut = list; });
+
+  // growth mirrors the Connections rule, in discovery terms: a node's own direct
+  // consciousness out-degree, plus (one hop, via authorship) the consciousness
+  // out-degree of each work it authored. Drives node size and the row "+N" badge.
+  const authored = new Map();   // author id -> [authored work ids]
+  data.nodes.forEach((n) => {
+    (n.connections || []).forEach((c) => {
+      if (typeof c !== "object" || c.relationship !== "authorship" || !c.to) return;
+      if (!authored.has(n.id)) authored.set(n.id, []);
+      authored.get(n.id).push(c.to);
+    });
+  });
+  included.forEach((node, id) => {
+    let g = consciousnessOut.get(id) || 0;
+    (authored.get(id) || []).forEach((workId) => { g += consciousnessOut.get(workId) || 0; });
+    node.growth = g;
   });
 
   return { nodes: [...included.values()], links };
@@ -667,6 +697,17 @@ function placeNearCursor(el, event, gap, pad) {
   el.style.top = top + "px";
 }
 
+// Nudge an already-positioned card back fully inside the graph — so when its
+// content changes height (following a link), a taller card that would spill off
+// the bottom is shifted up instead of staying pinned by its top edge.
+function clampCardIntoView(el, pad) {
+  const left = parseFloat(el.style.left), top = parseFloat(el.style.top);
+  if (isNaN(left) || isNaN(top)) return;   // no explicit position yet (CSS corner)
+  const p = wrap.getBoundingClientRect();
+  el.style.left = Math.max(pad, Math.min(left, p.width - el.offsetWidth - pad)) + "px";
+  el.style.top = Math.max(pad, Math.min(top, p.height - el.offsetHeight - pad)) + "px";
+}
+
 function moveTooltip(event) {
   placeNearCursor(tooltip, event, 14, 8);
 }
@@ -753,11 +794,19 @@ function connectionRowHTML(c) {
   // (e.g. an authored work's own influence), so the number is explained without
   // listing every derivative. Shown on the relationship row.
   const onward = c.dir === "out" ? (growthById[c.other.id] || 0) : 0;
+  // Downstream reach of the target (direct out-degree + authorship hop):
+  // influence in Connections, consciousness in Discovery.
+  const onwardTitle = currentMode === "discovery"
+    ? `${onward} downstream consciousness`
+    : `${onward} downstream influence${onward === 1 ? "" : "s"}`;
   let html = `<div class="detail-conn">`;
   html += `<span class="detail-conn-rel" style="color:${relColor}">${escapeHTML(relLabel)}${glyph}`;
-  if (onward) html += ` <span class="detail-conn-onward" title="${onward} downstream influence${onward === 1 ? "" : "s"}">+${onward}</span>`;
+  if (onward) html += ` <span class="detail-conn-onward" title="${escapeHTML(onwardTitle)}">+${onward}</span>`;
   html += `</span>`;
-  html += `<span class="detail-conn-name">${escapeHTML(c.other.label)}</span>`;
+  // Only the name is the link — it opens the other node's card (always a real
+  // node in the current view; see connectionsFor / cardConnections). The rel
+  // label and note stay inert.
+  html += `<span class="detail-conn-name detail-link" data-node-id="${escapeHTML(c.other.id)}" role="button" tabindex="0" title="Open ${escapeHTML(c.other.label)}">${escapeHTML(c.other.label)}</span>`;
   if (c.note) html += `<div class="detail-conn-note">${escapeHTML(c.note)}</div>`;
   html += `</div>`;
   return html;
@@ -767,14 +816,24 @@ function connectionRowHTML(c) {
 // (the node's outgoing discovery edges); in Connections it's the connection
 // relationships with the total/outgoing stats. Returns { rows, label } — rows
 // are connectionRowHTML-shaped so the same component renders both.
+// The "+N" shown on a row = the other node's own downstream reach (only for
+// outgoing rows): influence in Connections, consciousness in Discovery. The list
+// is ordered by it, most-downstream first.
+function onwardOf(c) {
+  return c.dir === "out" ? (growthById[c.other.id] || 0) : 0;
+}
+function byOnwardDesc(a, b) {
+  return onwardOf(b) - onwardOf(a);
+}
 function cardConnections(node) {
   if (currentMode === "discovery") {
     const rows = (node.discoveryOut || [])
       .map((d) => ({ other: nodeById[d.to], rel: "discovery", note: d.note || "", dir: "out" }))
-      .filter((r) => r.other);
+      .filter((r) => r.other)
+      .sort(byOnwardDesc);
     return { rows, label: `Led to (${rows.length})` };
   }
-  const rows = connectionsFor(node);
+  const rows = connectionsFor(node).sort(byOnwardDesc);
   let label = `Connections (${rows.length})`;
   // Same downstream-influence count as node size / the hover card.
   const out = growthById[node.id] || node.growth || 0;
@@ -801,13 +860,21 @@ function openDetail(node, event) {
   // pattern as Posts). A source-less entry shows an em-dash; its note still
   // explains the untraceable origin.
   const dvs = discoveredVia(node);
-  const dvLabel = (d) => (d.source ? escapeHTML(sourceDisplay(d.source)) : "—");
-  // Optional mechanism metadata: "platform-letterboxd" → "· found on Letterboxd".
+  // A discovery source is just a node: when it resolves to one, its label
+  // becomes a button that opens its card; an unknown id stays plain text.
+  const dvLabel = (d) => {
+    if (!d.source) return "—";
+    const other = nodeById[d.source];
+    if (!other) return escapeHTML(humanizeId(d.source));
+    const label = escapeHTML(other.label);
+    return `<span class="detail-source-link" data-node-id="${escapeHTML(d.source)}" role="button" tabindex="0" title="Open ${label}">${label}</span>`;
+  };
+  // Optional mechanism metadata (a platform/method, not a node):
+  // "platform-letterboxd" → "· found on Letterboxd".
   const dvMech = (d) => {
     if (!d.mechanism) return "";
-    const phrase = sourceType(d.mechanism) === "platform"
-      ? `found on ${sourceLabel(d.mechanism)}`
-      : sourceLabel(d.mechanism);
+    const name = humanizeId(d.mechanism);
+    const phrase = String(d.mechanism).startsWith("platform-") ? `found on ${name}` : name;
     return ` <span class="detail-dv-mech">· ${escapeHTML(phrase)}</span>`;
   };
   const dvDate = (d) => (d.date ? ` <span class="detail-dv-date">· ${escapeHTML(formatDiscoveryDate(d.date))}</span>` : "");
@@ -871,10 +938,17 @@ function openDetail(node, event) {
     }
   }
 
-  // Open just off the cursor, toward the roomier side (see placeNearCursor).
-  // Measured after layout so it uses the card's real size. Falls back to the CSS
-  // corner when there's no click position.
-  if (event) placeNearCursor(detail, event, 14, 12);
+  // Position the card. Measured after layout so it uses the card's real size.
+  //  - From a node click: open just off the cursor, toward the roomier side.
+  //  - From a card link (no cursor): keep it roughly where it is, but re-clamp so
+  //    a taller card isn't left pinned by its top with its bottom off-screen.
+  //    Also pan an off-screen target node into view.
+  if (event) {
+    placeNearCursor(detail, event, 14, 12);
+  } else {
+    clampCardIntoView(detail, 12);
+    if (node.x != null && node.y != null && !nodeInView(node, 40)) panToNode(node, true);
+  }
 
   detail.querySelector(".detail-close").addEventListener("click", closeDetail);
   updateNodeSelection();
@@ -929,7 +1003,7 @@ if (detail) {
   let cardDrag = null;
   detail.addEventListener("pointerdown", (e) => {
     if (e.button !== 0) return;
-    if (e.target.closest(".detail-connections, .detail-posts, a, button")) return;
+    if (e.target.closest(".detail-connections, .detail-posts, a, button, [data-node-id]")) return;
     const rect = detail.getBoundingClientRect();
     cardDrag = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
     detail.classList.add("is-dragging");
@@ -952,6 +1026,26 @@ if (detail) {
   };
   detail.addEventListener("pointerup", endCardDrag);
   detail.addEventListener("pointercancel", endCardDrag);
+
+  // Clicking a connection row (or a linked discovery source) opens that node's
+  // card in place. Delegated once here since the card's innerHTML is rebuilt on
+  // every open. Enter/Space activate keyboard focus too.
+  const openLinked = (el) => {
+    const id = el.getAttribute("data-node-id");
+    // Resolve the built view node (it carries growth / discoveryOut that the raw
+    // node from nodeById doesn't), so the opened card renders in full.
+    const other = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
+    if (other) openDetail(other);   // no event → keep the card where it is
+  };
+  detail.addEventListener("click", (e) => {
+    const link = e.target.closest("[data-node-id]");
+    if (link && detail.contains(link)) openLinked(link);
+  });
+  detail.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const link = e.target.closest("[data-node-id]");
+    if (link && detail.contains(link)) { e.preventDefault(); openLinked(link); }
+  });
 }
 
 function render(mode) {
@@ -1488,6 +1582,9 @@ Promise.all([
 ])
   .then(([graph, posts]) => {
     rawData = graph;
+    // A node may omit `label`; derive it from the id so the label stays coupled
+    // to the id (e.g. "class-dis-philosophy" → "Dis Philosophy").
+    graph.nodes.forEach((n) => { if (!n.label) n.label = humanizeId(n.id); });
     posts.forEach((p) => { postTitles[p.id] = p.title; });
     graph.nodes.forEach((n) => { nodeById[n.id] = n; });
     status.textContent = "";
