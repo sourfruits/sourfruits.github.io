@@ -788,25 +788,29 @@ function connectionRowHTML(c) {
   const t = c.rel && RELATIONSHIP_TYPES[c.rel];
   const relLabel = t ? t.label : "Connection";
   const relColor = t ? t.color : "var(--rel-thematic)";
-  const glyph = t && t.directional ? (c.dir === "out" ? " →" : " ←") : "";
+  // Directional types get an arrow; a typed non-directional one (thematic) gets
+  // a dash to mark the symmetric link, mirroring the arrow's slot.
+  const glyph = t ? (t.directional ? (c.dir === "out" ? " →" : " ←") : " —") : "";
   // For outgoing links, show how much the target influenced on its own — this is
   // the same downstream count that rolls up into this node's "outgoing" total
   // (e.g. an authored work's own influence), so the number is explained without
   // listing every derivative. Shown on the relationship row.
   const onward = c.dir === "out" ? (growthById[c.other.id] || 0) : 0;
-  // Downstream reach of the target (direct out-degree + authorship hop):
-  // influence in Connections, consciousness in Discovery.
+  // After the title: the target's own downstream count. Connections prefixes it
+  // with "+" (influence added); Discovery prefixes it with an arrow (leads
+  // onward to that many more discoveries).
+  const onwardText = currentMode === "discovery" ? `→ ${onward}` : `+ ${onward}`;
   const onwardTitle = currentMode === "discovery"
-    ? `${onward} downstream consciousness`
+    ? `leads to ${onward} more discover${onward === 1 ? "y" : "ies"} downstream`
     : `${onward} downstream influence${onward === 1 ? "" : "s"}`;
   let html = `<div class="detail-conn">`;
-  html += `<span class="detail-conn-rel" style="color:${relColor}">${escapeHTML(relLabel)}${glyph}`;
-  if (onward) html += ` <span class="detail-conn-onward" title="${escapeHTML(onwardTitle)}">+${onward}</span>`;
-  html += `</span>`;
+  html += `<span class="detail-conn-rel" style="color:${relColor}">${escapeHTML(relLabel)}${glyph}</span>`;
   // Only the name is the link — it opens the other node's card (always a real
   // node in the current view; see connectionsFor / cardConnections). The rel
   // label and note stay inert.
   html += `<span class="detail-conn-name detail-link" data-node-id="${escapeHTML(c.other.id)}" role="button" tabindex="0" title="Open ${escapeHTML(c.other.label)}">${escapeHTML(c.other.label)}</span>`;
+  // The onward marker sits after the title.
+  if (onward) html += ` <span class="detail-conn-onward" title="${escapeHTML(onwardTitle)}">${onwardText}</span>`;
   if (c.note) html += `<div class="detail-conn-note">${escapeHTML(c.note)}</div>`;
   html += `</div>`;
   return html;
@@ -909,7 +913,7 @@ function openDetail(node, event) {
   if (postIds.length) {
     const items = postIds.map((id) => {
       const title = postTitles[id] || id;
-      return `<li><a class="detail-post-link" href="post.html?id=${encodeURIComponent(id)}" title="${escapeHTML(title)}">${escapeHTML(title)}</a></li>`;
+      return `<li><a class="detail-post-link" href="post.html?id=${encodeURIComponent(id)}" target="_blank" rel="noopener" title="${escapeHTML(title)}">${escapeHTML(title)}</a></li>`;
     }).join("");
     html += `<div class="detail-posts"><div class="detail-section-label">Posts (${postIds.length})</div>` +
             `<ul class="detail-post-list">${items}</ul></div>`;

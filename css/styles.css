@@ -2163,27 +2163,26 @@ body.is-graph-faux-fs { overflow: hidden; }
   font-weight: 600;
   letter-spacing: 0.02em;
 }
-.detail-conn-name { display: block; margin-top: 2px; color: var(--ink); }
-/* Clickable connection name that opens the other node's card: neutral at rest,
-   accent on hover/focus, no underline. Stays a block (its own line, below the
-   relationship label) — inheriting .detail-conn-name's display. */
+/* The node name sits inline, right after the relationship label ("Discovery →
+   The Stranger"), not on its own line. Only the name is the link. */
+.detail-conn-name { display: inline; margin-left: 6px; color: var(--ink); }
+/* Row-name link (the title): stays ink so it doesn't fight the relationship
+   colours; only underlines on hover/focus. Just the title is clickable. */
 .detail-link {
   cursor: pointer;
-  color: inherit;
+  color: var(--ink);
   text-decoration: none;
-  transition: color 0.2s ease;
 }
-.detail-link:hover,
-.detail-link:focus-visible { color: var(--accent); outline: none; }
-
-/* Discovery source link (inline): the accent colour itself is the affordance,
-   so it stays coloured with no hover/underline change. */
+/* The inline discovery source ("Discovered via"): green is its resting cue. */
 .detail-source-link {
   cursor: pointer;
   color: var(--accent);
   text-decoration: none;
-  outline: none;
 }
+.detail-link:hover,
+.detail-link:focus-visible,
+.detail-source-link:hover,
+.detail-source-link:focus-visible { text-decoration: underline; outline: none; }
 /* Compact "+N" tag: how much this outgoing target influenced on its own. */
 .detail-conn-onward {
   color: var(--muted);
