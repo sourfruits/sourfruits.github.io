@@ -182,6 +182,68 @@
       }, 550);
     }
 
+    // The tenth-click drop, as physics: the button pops up-and-out, falls under
+    // gravity, hits the navbar at whatever rotation it's tumbled to, rolls a
+    // little (spin coupled to its speed), then — like the offset yellow is a
+    // weighted bob — rocks to rest with yellow settling to green's lower-left.
+    // Drives the button's inline transform each frame; freezes + saves at rest.
+    const YELLOW_DOWN_LEFT = 90;   // rot (deg) that hangs yellow to green's lower-left
+    function dropLemon() {
+      const g = 0.85;             // gravity (px/frame^2)
+      const radius = 13;          // ~lemon radius, for rolling (spin ↔ travel)
+      const DEG = 180 / Math.PI;
+      const floorY = 25;          // where it lands relative to its start
+      let x = 0, y = 0, rot = 0;
+      let vx = -1.25, vy = -7;    // initial pop: up and out to the left (kept short, near the logo)
+      let vrot = -5;              // initial tumble in the air (gentle — most of the turning is the ground roll)
+      let stage = "air";          // air → roll (one continuous, decelerating roll to rest)
+      let eq = 0;                 // resting angle (yellow lower-left) just ahead in the rolling direction
+      let cap = 0;                // rolling speed on touchdown; the ease is never faster than this
+      dots.style.transition = "none";   // physics drives the transform per frame
+      // The nearest yellow-lower-left orientation strictly ahead in the rolling direction.
+      function restAhead(from, dir) {
+        const k = (from - YELLOW_DOWN_LEFT) / 360;
+        return YELLOW_DOWN_LEFT + 360 * (dir < 0 ? Math.ceil(k) - 1 : Math.floor(k) + 1);
+      }
+      function frame() {
+        if (stage === "air") {
+          vy += g;
+          x += vx; y += vy; rot += vrot;
+          if (y >= floorY) {
+            y = floorY;
+            if (vy > 3) {                 // still has drop energy → a small bounce
+              vy = -vy * 0.34; vx *= 0.86; vrot *= 0.86;
+            } else {                      // vertical energy spent → settle onto the ground and roll to rest
+              vy = 0; stage = "roll";
+              eq = restAhead(rot, vx);
+              cap = Math.abs((vx / radius) * DEG);
+            }
+          }
+        } else {                          // roll: speed ∝ remaining angle → smooth, single deceleration to rest
+          cap *= 0.99;                    // gentle rolling friction on the ceiling speed
+          let v = (eq - rot) * 0.09;      // ease-out toward the rest angle
+          if (Math.abs(v) > cap) v = Math.sign(v) * cap;   // …but never faster than the roll came in
+          rot += v;
+          x += (v / DEG) * radius;        // no-slip: turning is rolling, never a spin in place
+          if (Math.abs(eq - rot) < 0.4) {
+            finishDrop(x, floorY, eq);
+            return;
+          }
+        }
+        dots.style.transform = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+    function finishDrop(x, y, rot) {
+      const t = `translate(${x}px, ${y}px) rotate(${rot}deg)`;
+      dots.style.transform = t;
+      dots.classList.remove("is-rolling");
+      dots.classList.add("is-rested");
+      phase = "rested";
+      lemonSave({ stage: "rested", count: landedSqueezes, grow: dotWrap.style.getPropertyValue("--grow") || "1", rest: t });
+    }
+
     dots.addEventListener("click", () => {
       if (phase === "rolling" || phase === "finale") return;   // locked mid-transition
       if (phase === "rested") {
@@ -201,7 +263,8 @@
       if (squeezes >= 10) {
         phase = "rolling";
         dotWrap.classList.remove("is-shuddering");
-        dots.classList.add("is-rolling", "is-dropping");
+        dots.classList.add("is-rolling");
+        dropLemon();
         return;
       }
       dotWrap.style.setProperty("--grow", (1 + squeezes * GROW_STEP).toFixed(3));
@@ -213,16 +276,6 @@
       if (e.animationName === "lemon-shudder") dotWrap.classList.remove("is-shuddering");
       if (e.animationName === "lemon-squeeze") dotWrap.classList.remove("is-squeezing");
       if (e.animationName === "logo-finale-shudder") dotWrap.classList.remove("is-finale-shudder");
-    });
-    // When the roll finishes, unlock it — it's now clickable at its new resting
-    // spot (the old spot is dead, since the button transform moved its hit area).
-    dots.addEventListener("animationend", (e) => {
-      if (e.animationName === "lemon-drop") {
-        dots.classList.remove("is-rolling");
-        dots.classList.add("is-landed", "is-rested");   // hold the rolled spot; no hover-swell
-        phase = "rested";
-        lemonSave({ stage: "rested", count: landedSqueezes, grow: dotWrap.style.getPropertyValue("--grow") || "1" });
-      }
     });
 
     // State carries across page *navigations* within the tab, but a refresh
@@ -240,7 +293,11 @@
       const s = lemonLoad();
       if (s.stage !== "rested" && s.stage !== "fallen") return;
       if (s.grow) dotWrap.style.setProperty("--grow", s.grow);
-      dots.classList.add("is-landed", "is-rested");   // sit at the rolled spot (no animation)
+      // Restore the exact resting transform the physics landed on (fallback to
+      // the static landed spot for older saves without it). No animation.
+      if (s.rest) dots.style.transform = s.rest;
+      else dots.classList.add("is-landed");
+      dots.classList.add("is-rested");
       landedSqueezes = s.count || 0;
       finaled = !!s.finaled;
       phase = "rested";                               // clickable — green keeps counting

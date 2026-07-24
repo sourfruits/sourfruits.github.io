@@ -11,10 +11,10 @@
   --contrast-ink: #ffffff; /* light in day mode, dark in dark mode (overridden below) */
   --accent2: #e8c840;      /* logo yellow (the lower-right dot in the mark) */
   /* Connection relationship-type line colors (see js/precursors.js). */
-  --rel-adaptation: #3a8a8f;   /* teal */
-  --rel-influence:  #c0503c;   /* red */
-  --rel-thematic:   #8f8f86;   /* neutral grey */
-  --rel-authorship: #9c6b3f;   /* ochre / ink brown (dashed) */
+  --rel-adaptation: #4e8f8a;   /* muted teal */
+  --rel-influence:  #5b6fa8;   /* slate blue — complements the yellow nodes */
+  --rel-thematic:   #9b9488;   /* warm taupe grey */
+  --rel-authorship: #b06a45;   /* sienna (dashed) */
   --rel-discovery:  #4a72b0;   /* steel blue (Discovery view edges) */
   --radius: 14px;
   --radius-pill: 5px;      /* was a full pill (999px); now a soft 5px on all controls */
@@ -72,10 +72,10 @@
      treatment is identical in both modes (accent-ink only ever sits on an
      accent-green fill, so it needs no dark-background variant). */
   /* Slightly lighter relationship colors so they read on the dark background. */
-  --rel-adaptation: #5bb3b8;
-  --rel-influence:  #d9705c;
-  --rel-thematic:   #9a9288;
-  --rel-authorship: #c49060;
+  --rel-adaptation: #6fb0aa;
+  --rel-influence:  #8296c8;
+  --rel-thematic:   #b0a798;
+  --rel-authorship: #cb8560;
   --rel-discovery:  #6f9bd6;
 }
 
@@ -183,6 +183,8 @@ main {
   border: none;
   background: none;
   cursor: pointer;
+  line-height: 0;       /* hug the dots so transform-origin is reliable */
+  transform-origin: 35% 35%;   /* the green dot's centre — the lemon rolls around it */
 }
 /* Cookie-clicker style: each squeeze of the fallen lemon spawns a number that
    floats up and away, fades, then removes itself. --jx is a small random start
@@ -268,17 +270,9 @@ main {
 }
 .dot-wrap.is-squeezing { animation: lemon-squeeze 0.4s ease; }
 
-/* Tenth click: the button pops straight up, falls onto the navbar, then rolls
-   left to a stop. Transform is on the button so its clickable area moves with
-   it — after this the old spot is dead and only the rested lemon is clickable.
-   Pop eases out; fall accelerates (gravity); the roll eases to a stop. */
-@keyframes lemon-drop {
-  0%   { transform: translate(0, 0) rotate(0deg); animation-timing-function: ease-out; }
-  14%  { transform: translate(-3px, -20px) rotate(-8deg); animation-timing-function: ease-in; }   /* pop up */
-  36%  { transform: translate(-11px, 25px) rotate(-28deg); animation-timing-function: ease-out; } /* land on the nav floor */
-  100% { transform: translate(-62px, 25px) rotate(-260deg); }                                     /* roll left, ease to stop */
-}
-.logo-dots.is-dropping { animation: lemon-drop 1.15s linear forwards; }
+/* The tenth-click drop is driven by a JS physics loop (dropLemon in header.js) —
+   a natural pop-out, gravity fall, and short roll to rest — not a CSS animation.
+   .is-landed is only a fallback resting transform for restoring old saved state. */
 
 
 .header-actions {
@@ -1291,7 +1285,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   margin-left: auto;
   margin-right: auto;
   margin-top: var(--header-gap-sub);   /* first element on tags.html */
-  margin-bottom: 14px;   /* equal gap to the subtitle below */
+  margin-bottom: 9px;    /* subtitle sits a little closer to the title than to the divider below */
 }
 /* Summary count line ("N tags across M posts") — a small subtitle directly
    under the title, above the index, with equal spacing on both sides. */
@@ -1770,7 +1764,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   border-top-style: solid;
 }
 .legend-swatch.swatch-node,
-.legend-swatch.swatch-source {
+.legend-swatch.swatch-hub {
   width: 12px;
   height: 12px;
   border: 1.5px solid;
@@ -1778,7 +1772,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   border-top-width: 1.5px;
 }
 .legend-swatch.swatch-node { background: var(--accent); border-color: var(--accent-ink); }
-.legend-swatch.swatch-source { background: var(--bg); border-color: var(--muted); border-style: dashed; }
+.legend-swatch.swatch-hub { background: var(--bg); border-color: var(--muted); border-style: dashed; }
 
 /* Live tuning panel (troubleshooting) — positioned into the right margin beside
    the graph, so it never shrinks the graph. Shown only when toggled. */
@@ -1798,7 +1792,18 @@ a.post-tag:focus-visible { color: var(--accent); }
   background: var(--surface);
   font-size: var(--text-small);
 }
+/* Tier-specific controls live in the left margin instead of the right. */
+.tuning-panel--left { left: auto; right: calc(100% + 12px); }
 .tuning-panel[hidden] { display: none; }
+.tuning-group-title {
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 4px;
+}
+.tuning-group-title:not(:first-child) { margin-top: 6px; }
 .tuning-row { display: flex; flex-direction: column; gap: 4px; }
 .tuning-head { display: flex; justify-content: space-between; gap: 8px; }
 .tuning-name { color: var(--ink); }
@@ -1849,7 +1854,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 #graph:active { cursor: grabbing; }
 .node { cursor: pointer; }
-.node text {
+.node-label {
   paint-order: stroke;
   pointer-events: none;
   user-select: none;
@@ -1979,6 +1984,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 .detail-dv-list { list-style: none; margin: 4px 0 0; padding: 0; color: var(--ink); }
 .detail-dv-list li + li { margin-top: 6px; }
 .detail-dv-date { color: var(--muted); font-size: var(--text-tiny); }
+.detail-dv-mech { color: var(--muted); font-size: var(--text-tiny); }
 
 /* Connections: a stats label that stays put over the scrolling list. The list
    is capped to 3 rows in JS; this keeps it bounded even before that runs. */

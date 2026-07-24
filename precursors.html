@@ -31,8 +31,8 @@
         </div>
       </div>
       <div class="graph-controls graph-controls--tr">
-        <button type="button" class="graph-fs-btn" id="graph-reset">Reset</button>
         <button type="button" class="graph-fs-btn" id="graph-tuning-btn" aria-pressed="false">Tuning</button>
+        <button type="button" class="graph-fs-btn" id="graph-reset">Reset</button>
       </div>
       <button type="button" class="graph-fs-icon" id="graph-fs" aria-pressed="false" aria-label="Full screen" title="Full screen">
         <svg class="fs-icon fs-expand" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -58,7 +58,9 @@
       <div class="node-detail" id="node-detail" hidden></div>
     </div>
 
-    <!-- Live tuning controls (troubleshooting); populated by js/precursors.js -->
+    <!-- Live tuning controls (troubleshooting); populated by js/precursors.js.
+         Tier-specific controls sit in the left margin, shared ones in the right. -->
+    <div class="tuning-panel tuning-panel--left" id="tuning-panel-left" hidden></div>
     <div class="tuning-panel" id="tuning-panel" hidden></div>
     </div>
 

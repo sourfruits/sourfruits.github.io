@@ -22,7 +22,7 @@
       "kind": "book",
       "post_ids": [],
       "discovered_via": [
-        { "source": "class-philosophy-dis", "date": "2026-03" }
+        { "source": "class-philosophy-dis", "date": "2026-03", "note": "Read excerpt: The Unhappiest One" }
       ],
       "connections": [
         { "to": "melancholia", "relationship": "thematic" }
@@ -32,7 +32,10 @@
       "id": "the-moviegoer",
       "label": "The Moviegoer",
       "kind": "book",
-      "post_ids": []
+      "post_ids": [],
+      "discovered_via": [
+        { "source": "the-stranger", "date": "2026-04", "note": "Looking for more existential fiction" }
+      ]
     },
     {
       "id": "melancholia",
@@ -46,14 +49,13 @@
         { "to": "either-or", "relationship": "thematic" }
       ]
     },
-
     {
       "id": "the-trial",
       "label": "The Trial",
       "kind": "book",
       "post_ids": ["kafka-the-trial"],
       "discovered_via": [
-        { "source": "the-stranger", "date": "2026-06" }
+        { "source": "the-stranger", "date": "2026-06", "note": "Existential fiction thread" }
       ],
       "connections": [
         { "to": "the-trial-film", "relationship": "adaptation" },
@@ -77,7 +79,7 @@
       "kind": "film",
       "author": "Martin Scorsese",
       "discovered_via": [
-        { "date": "2026-03" }
+        { "source": "platform-letterboxd", "date": "2026-03" }
       ]
     },
     {
@@ -86,10 +88,9 @@
       "kind": "film",
       "post_ids": [],
       "discovered_via": [
-        { "date": "2026-04", "note": "Part of a Denmark movie-binge phase; exact source unclear." }
+        { "source": "platform-letterboxd", "date": "2026-04", "note": "Part of a Denmark movie-binge phase." }
       ]
     },
-
     {
       "id": "the-stranger",
       "label": "The Stranger",
@@ -111,20 +112,19 @@
         { "to": "the-stranger", "relationship": "thematic" }
       ]
     },
-
     {
       "id": "fyodor-dostoevsky",
       "label": "Fyodor Dostoevsky",
       "kind": "author",
       "post_ids": [],
       "discovered_via": [
-        { "source": "the-stranger", "date": "2026-05" }
+        { "source": "notes-from-underground", "date": "2026-05" }
       ],
       "connections": [
         { "to": "notes-from-underground", "relationship": "authorship" },
         { "to": "white-nights", "relationship": "authorship" },
         { "to": "crime-and-punishment", "relationship": "authorship" },
-        { "to": "the-myth-of-sisyphus", "relationship": "influence", "note" : "Camus directly cites Dostoevsky in the Myth of Sisyphus." }
+        { "to": "the-myth-of-sisyphus", "relationship": "influence", "note": "Camus directly cites Dostoevsky in the Myth of Sisyphus." }
       ]
     },
     {
@@ -146,10 +146,10 @@
       "kind": "book",
       "post_ids": [],
       "discovered_via": [
-        { "source": "fyodor-dostoevsky", "date": "2026-05" }
+        { "source": "the-stranger", "date": "2026-05" }
       ],
       "connections": [
-        { "to": "the-stranger", "relationship": "influence"}
+        { "to": "the-stranger", "relationship": "influence" }
       ]
     },
     {
@@ -158,7 +158,7 @@
       "kind": "book",
       "post_ids": [],
       "discovered_via": [
-        { "source": "fyodor-dostoevsky", "date": "2026-05" }
+        { "strength": "aware", "source": "fyodor-dostoevsky", "date": "2026-05" }
       ],
       "connections": [
         { "to": "pickpocket", "relationship": "influence" }
@@ -178,7 +178,7 @@
       "kind": "director",
       "post_ids": [],
       "discovered_via": [
-        { "source": "le-samourai", "date": "2026-05" }
+        { "source": "pickpocket", "date": "2026-05" }
       ],
       "connections": [
         { "to": "pickpocket", "relationship": "authorship" },
@@ -200,7 +200,7 @@
       "kind": "film",
       "post_ids": [],
       "discovered_via": [
-        { "source": "robert-bresson", "date": "2026-05" }
+        { "source": "le-samourai", "date": "2026-04", "note": "Ascetic style and influences" }
       ]
     },
     {
@@ -209,7 +209,7 @@
       "kind": "film",
       "post_ids": [],
       "discovered_via": [
-        { "source": "the-parallax-view", "date": "2026-03", "note": "Circling the spy/assassin genre around this time." }
+        { "source": "the-parallax-view", "mechanism": "platform-letterboxd", "date": "2026-03", "note": "70s paranoia deep dive" }
       ],
       "connections": [
         { "to": "ghost-dog", "relationship": "influence", "note": "Jarmusch built Ghost Dog on Le Samouraï's lone-hitman code and stillness." },
@@ -222,7 +222,7 @@
       "label": "Jim Jarmusch",
       "kind": "director",
       "discovered_via": [
-        { "source": "ghost-dog", "date": "2026-04" }
+        { "source": "ghost-dog", "date": "2026-05" }
       ],
       "connections": [
         { "to": "stranger-than-paradise", "relationship": "authorship" },
@@ -278,7 +278,7 @@
       "kind": "film",
       "post_ids": [],
       "discovered_via": [
-        { "source": "the-parallax-view", "date": "2023-04" }
+        { "source": "the-parallax-view", "date": "2023-04", "note": "70s paranoia deep dive" }
       ],
       "connections": [
         { "to": "the-parallax-view", "relationship": "thematic" }
@@ -290,7 +290,7 @@
       "kind": "film",
       "post_ids": [],
       "discovered_via": [
-        { "source": "the-parallax-view", "date": "2023-04" }
+        { "source": "the-parallax-view", "date": "2023-04", "note": "70s paranoia deep dive" }
       ],
       "connections": []
     },
@@ -300,6 +300,42 @@
       "kind": "film",
       "discovered_via": [
         { "date": "2023-04", "note": "General interest in spy/paranoia thrillers around this time; no specific trigger." }
+      ]
+    },
+    {
+      "id": "mahjong",
+      "label": "Mahjong (1996)",
+      "kind": "film",
+      "author": "Edward Yang",
+      "discovered_via": [
+        { "source": "platform-letterboxd", "date": "2026-05" }
+      ]
+    },
+    {
+      "id": "cold-water",
+      "label": "Cold Water (1994)",
+      "kind": "film",
+      "author": "Olivier Assayas",
+      "discovered_via": [
+        { "source": "mahjong", "note": "Virginie Ledoyen" }
+      ]
+    },
+    {
+      "id": "purple-noon",
+      "label": "Purple Noon (1960)",
+      "kind": "film",
+      "author": "René Clément",
+      "discovered_via": [
+        { "source": "le-samourai", "date": "2026-05", "note": "Alain Delon" }
+      ]
+    },
+    {
+      "id": "thief",
+      "label": "Thief (1981)",
+      "kind": "film",
+      "author": "Michael Mann",
+      "discovered_via": [
+        { "source": "le-samourai", "date": "2026-05", "note": "Looking for lone operator movies" }
       ]
     }
   ]

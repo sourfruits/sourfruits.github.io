@@ -38,17 +38,24 @@ Connections — how what I'm interested in relates to each other (personal notic
 // via the "Tuning" panel on the page (toggle button in the toolbar) — handy for
 // troubleshooting without an edit-and-refresh loop.
 const TUNING = {
-  labelThreshold: 5,   // on-screen node radius (size × zoom, px) to show a label by default
-  maxLabelWidth: 170,  // label pixel width (world units) before it's cut off with an ellipsis
-  nodeBase: 11,        // leaf/content node radius (world units)
-  growthStep: 3,       // + radius per point of downstream influence (uncapped)
-  nodeFont: 18,        // content label font (px)
-  sourceFont: 15,      // source-hub label font (px)
-  // Force-simulation knobs:
+  // ── Hub tier ──────────────────────────────────────────────────────────────
+  hubThreshold: 3,       // growth (outgoing connections) at/above which a node is a "hub":
+                         // permanent label + hollow/dashed outline. Fixed value, not a
+                         // percentile — so equally-sized nodes never split across the boundary.
+  growthStep: 3,         // + hub radius per point of downstream influence (uncapped)
+  hubFont: 18,           // hub label font (px)
+  hubMaxLabelWidth: 170, // hub label pixel width (world units) before ellipsis
+  hubLabelThreshold: 0,  // on-screen radius (size × zoom, px) to reveal a hub label (0 = always)
+  // ── Leaf tier ─────────────────────────────────────────────────────────────
+  nodeBase: 11,          // base node radius (world units): leaves stay here, hubs grow from it
+  leafFont: 15,          // leaf hover-label font (px)
+  leafMaxLabelWidth: 170,// leaf label pixel width (world units) before ellipsis
+  leafLabelThreshold: 5, // on-screen radius (size × zoom, px) to reveal a leaf label
+  // ── Shared (whole simulation) ───────────────────────────────────────────────
   charge: -260,        // many-body repulsion (more negative = nodes push apart harder)
   linkDistance: 90,    // preferred edge length
   collidePad: 22,      // extra spacing beyond each node's radius (collision force)
-  linkWidth: 1.4,      // edge stroke width (world units); directional edges draw a touch thicker
+  linkWidth: 3,        // edge stroke width (world units); directional edges draw a touch thicker
 };
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -61,7 +68,8 @@ const status = document.getElementById("status");
 const modeButtons = document.querySelectorAll(".mode-btn");
 const fsBtn = document.getElementById("graph-fs");
 const tuningBtn = document.getElementById("graph-tuning-btn");
-const tuningPanel = document.getElementById("tuning-panel");
+const tuningPanel = document.getElementById("tuning-panel");            // right: shared controls
+const tuningPanelLeft = document.getElementById("tuning-panel-left");   // left: tier-specific controls
 const resetBtn = document.getElementById("graph-reset");
 
 // Fill the "Learn more" cards from LEARN_MORE_CARDS (see top of file). Each
@@ -106,6 +114,9 @@ const posCache = new Map();
 const zoomLayer = svg.append("g").attr("class", "zoom-layer");
 const linkLayer = zoomLayer.append("g").attr("class", "links");
 const nodeLayer = zoomLayer.append("g").attr("class", "nodes");
+// Labels live in their own layer above every node, so a title is always drawn in
+// front of the circles (its own and its neighbours'), never hidden behind them.
+const labelLayer = zoomLayer.append("g").attr("class", "node-labels");
 
 // Preset relationship types for connections. Directional types draw an arrow
 // from the origin (the node the connection is written on) and grow the origin
@@ -125,7 +136,8 @@ const RELATIONSHIP_TYPES = {
 };
 
 // One arrowhead marker per directional relationship type, coloured to match its
-// line. userSpaceOnUse keeps the arrow a fixed size regardless of stroke width.
+// line. markerUnits "strokeWidth" scales the arrow with its line's stroke width,
+// so the Line-thickness tuning drives the arrowheads too.
 const defs = svg.append("defs");
 Object.entries(RELATIONSHIP_TYPES).forEach(([name, t]) => {
   if (!t.directional) return;
@@ -133,8 +145,8 @@ Object.entries(RELATIONSHIP_TYPES).forEach(([name, t]) => {
     .attr("id", `arrow-${name}`)
     .attr("viewBox", "0 0 10 10")
     .attr("refX", 10).attr("refY", 5)
-    .attr("markerWidth", 8).attr("markerHeight", 8)
-    .attr("markerUnits", "userSpaceOnUse")
+    .attr("markerWidth", 4).attr("markerHeight", 4)
+    .attr("markerUnits", "strokeWidth")
     .attr("orient", "auto")
     .append("path")
     .attr("d", "M0,0 L10,5 L0,10 Z")
@@ -216,7 +228,7 @@ function sourceType(sourceId) {
 function discoveredVia(node) {
   const dv = node.discovered_via;
   const arr = Array.isArray(dv) ? dv : (dv ? [dv] : []);
-  return arr.filter((d) => d && (d.source || d.note || d.date));
+  return arr.filter((d) => d && (d.source || d.note || d.date || d.mechanism));
 }
 
 // Display label for a discovery source: another node's real label when the
@@ -381,32 +393,47 @@ function buildConnections(data) {
     n.growth = g;
   });
 
-  return { nodes, links: edges };
+  // Only keep nodes that actually take part in a connection (as either end) —
+  // a node with no real connection data never appears as an isolated floating dot.
+  const connected = new Set();
+  edges.forEach((e) => { connected.add(e.source); connected.add(e.target); });
+  return { nodes: nodes.filter((n) => connected.has(n.id)), links: edges };
 }
 
 // --- rendering ------------------------------------------------------------
 
-// Every node — content or discovery source hub — sizes the same way: a base
-// radius plus growth per point of downstream influence (uncapped), so influential
-// origins and prolific sources read as larger.
+// A node is a "hub" once its downstream influence (out-degree) reaches the
+// tunable cutoff; anything below is a "leaf". A fixed cutoff (not a rank) means
+// equally-sized nodes always fall on the same side of the line.
+function isHub(d) {
+  return (d.growth || 0) >= TUNING.hubThreshold;
+}
+
+// Node size: leaves stay at the shared base radius; hubs grow from that base by
+// their downstream influence (uncapped), so influential origins read as larger.
 function nodeRadius(d) {
-  return TUNING.nodeBase + (d.growth || 0) * TUNING.growthStep;
+  return isHub(d) ? TUNING.nodeBase + (d.growth || 0) * TUNING.growthStep : TUNING.nodeBase;
 }
 
-// Label font size (world units) for a node.
+// Label font size (px) — per tier.
 function labelFontSize(d) {
-  return d.isSource ? TUNING.sourceFont : TUNING.nodeFont;
+  return isHub(d) ? TUNING.hubFont : TUNING.leafFont;
 }
 
-// A label is visible if the node is hovered, or its *rendered* radius (data
-// size × current zoom) clears TUNING.labelThreshold (see top of file) — so bigger
-// hubs stay labelled at any zoom, and small nodes reveal their labels once you
-// zoom in close enough.
+// Label truncation width (px) — per tier.
+function labelMaxWidth(d) {
+  return isHub(d) ? TUNING.hubMaxLabelWidth : TUNING.leafMaxLabelWidth;
+}
+
+// Label tiers each have their own reveal threshold: a label shows on hover, or
+// once its on-screen radius (size × zoom) clears the tier's threshold. Hubs
+// default to 0 (always shown); leaves reveal as you zoom in.
 function labelVisible(d) {
-  return d.__hover === true || nodeRadius(d) * currentScale >= TUNING.labelThreshold;
+  const thr = isHub(d) ? TUNING.hubLabelThreshold : TUNING.leafLabelThreshold;
+  return d.__hover === true || nodeRadius(d) * currentScale >= thr;
 }
 function updateLabelVisibility() {
-  nodeLayer.selectAll("g.node").select("text")
+  labelLayer.selectAll("text.node-label")
     .style("opacity", (d) => (labelVisible(d) ? 1 : 0));
 }
 
@@ -418,12 +445,11 @@ function measureTextWidth(s, fs) {
   return _measureCtx.measureText(s).width;
 }
 
-// Cut a label to TUNING.maxLabelWidth *pixels* (not characters) with an ellipsis,
-// trimming from the end until it fits. The full name is still available on hover
-// (the tooltip uses the untruncated d.label).
-function truncateLabel(s, fs) {
+// Cut a label to `max` *pixels* (not characters) with an ellipsis, trimming from
+// the end until it fits. The full name is still available on hover (the tooltip
+// uses the untruncated d.label).
+function truncateLabel(s, fs, max) {
   s = String(s);
-  const max = TUNING.maxLabelWidth;
   if (measureTextWidth(s, fs) <= max) return s;
   let out = s;
   while (out.length > 1 && measureTextWidth(out + "…", fs) > max) {
@@ -461,8 +487,10 @@ function edgeColor(d) {
   return d.kind === "connection" ? "var(--rel-thematic)" : "var(--muted)";
 }
 
-// The hover label for a typed connection ("" for untyped/discovery edges).
+// The hover label for a typed connection. Discovery edges read by strength —
+// "Consciousness" (engaged) vs "Awareness" (aware) — matching the legend.
 function edgeLabel(d) {
+  if (d.type === "discovery") return d.strength === "aware" ? "Awareness" : "Consciousness";
   return d.type && RELATIONSHIP_TYPES[d.type] ? RELATIONSHIP_TYPES[d.type].label : "";
 }
 
@@ -676,14 +704,22 @@ function openDetail(node, event) {
   // explains the untraceable origin.
   const dvs = discoveredVia(node);
   const dvLabel = (d) => (d.source ? escapeHTML(sourceDisplay(d.source)) : "—");
+  // Optional mechanism metadata: "platform-letterboxd" → "· found on Letterboxd".
+  const dvMech = (d) => {
+    if (!d.mechanism) return "";
+    const phrase = sourceType(d.mechanism) === "platform"
+      ? `found on ${sourceLabel(d.mechanism)}`
+      : sourceLabel(d.mechanism);
+    return ` <span class="detail-dv-mech">· ${escapeHTML(phrase)}</span>`;
+  };
   const dvDate = (d) => (d.date ? ` <span class="detail-dv-date">· ${escapeHTML(formatDiscoveryDate(d.date))}</span>` : "");
   if (currentMode === "discovery" && dvs.length === 1) {
     const d = dvs[0];
-    html += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvDate(d)}</div>`;
+    html += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvMech(d)}${dvDate(d)}</div>`;
     if (d.note) html += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
   } else if (currentMode === "discovery" && dvs.length > 1) {
     const items = dvs.map((d) => {
-      let li = `<li>${dvLabel(d)}${dvDate(d)}`;
+      let li = `<li>${dvLabel(d)}${dvMech(d)}${dvDate(d)}`;
       if (d.note) li += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
       return li + `</li>`;
     }).join("");
@@ -880,27 +916,30 @@ function render(mode) {
 
   const nodeEnter = node.enter().append("g").attr("class", "node");
   nodeEnter.append("circle");
-  nodeEnter.append("text");
 
   const nodeAll = nodeEnter.merge(node)
-    .attr("class", (d) => `node${d.isSource ? " is-source" : ""}`);
+    .attr("class", (d) => `node${isHub(d) ? " is-hub" : ""}`);
 
-  // Content nodes are yellow in Connections view, green in Discovery view;
-  // source hubs stay hollow in both. (The stroke follows the fill.)
+  // Leaves are solid — yellow in Connections view, green in Discovery view (this
+  // now includes discovery source nodes). Hubs read as hollow with a dashed
+  // outline, in both modes. (The stroke follows the fill for leaves.)
   const contentFill = mode === "connections" ? "var(--accent2)" : "var(--accent)";
   const contentStroke = mode === "connections" ? "var(--accent2)" : "var(--accent-ink)";
   nodeAll.select("circle")
     .attr("r", nodeRadius)
-    .style("fill", (d) => (d.isSource ? "var(--bg)" : contentFill))
-    .style("stroke", (d) => (d.isSource ? "var(--muted)" : contentStroke))
-    .style("stroke-width", (d) => (d.isSource ? 1.5 : 1))
-    .style("stroke-dasharray", (d) => (d.isSource ? "3 2" : null));
+    .style("fill", (d) => (isHub(d) ? "var(--bg)" : contentFill))
+    .style("stroke", (d) => (isHub(d) ? "var(--muted)" : contentStroke))
+    .style("stroke-width", (d) => (isHub(d) ? 1.5 : 1))
+    .style("stroke-dasharray", (d) => (isHub(d) ? "3 2" : null));
 
-  // Label position (x/y/anchor) is set per tick by positionLabels, so it points
-  // outward from the graph's centre.
-  nodeAll.select("text")
-    .text((d) => truncateLabel(graphLabel(d), labelFontSize(d)))
-    .style("fill", (d) => (d.isSource ? "var(--muted)" : "var(--ink)"))
+  // Labels live in the top layer (not in the node groups) so they always paint in
+  // front. Position (x/y/anchor) is set per tick by positionLabels.
+  const label = labelLayer.selectAll("text.node-label").data(graph.nodes, (d) => d.id);
+  label.exit().remove();
+  const labelAll = label.enter().append("text").attr("class", "node-label").merge(label);
+  labelAll
+    .text((d) => truncateLabel(graphLabel(d), labelFontSize(d), labelMaxWidth(d)))
+    .style("fill", "var(--ink)")
     .style("font-family", "var(--font-sans)")
     .style("font-size", (d) => labelFontSize(d) + "px");
 
@@ -943,7 +982,7 @@ function render(mode) {
         posCache.set(d.id, { x: d.x, y: d.y });
         return `translate(${d.x},${d.y})`;
       });
-      positionLabels(graph.nodes, nodeAll);
+      positionLabels(graph.nodes, labelAll);
       if (autoFit) fitView(false);
     })
     // One more fit once it settles, in case the last tick lagged the final layout.
@@ -959,22 +998,33 @@ function render(mode) {
 // from the centre. The open-space direction (d.__ldx/__ldy) is computed once per
 // tick by forceLabelSeparation, reusing that scan; here we just read it. Falls
 // back to the outward-from-centroid direction before the first scan has run.
-function positionLabels(nodes, sel) {
+function positionLabels(nodes, labelSel) {
   if (!nodes.length) return;
   let sx = 0, sy = 0;
   for (const n of nodes) { sx += n.x || 0; sy += n.y || 0; }
   const cx = sx / nodes.length, cy = sy / nodes.length;
-  sel.select("text").each(function (d) {
+  // Labels sit in their own top layer (world coordinates), so positions are the
+  // node's own x/y plus the offset — not relative to a node group.
+  labelSel.each(function (d) {
+    const nx = d.x || 0, ny = d.y || 0;
+    // Hubs carry their label centred on the node itself, not offset outward.
+    if (isHub(d)) {
+      d3.select(this)
+        .attr("x", nx).attr("y", ny)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle");
+      return;
+    }
     let ux = d.__ldx, uy = d.__ldy;
     if (ux === undefined) {
-      const dx = (d.x || 0) - cx, dy = (d.y || 0) - cy;
+      const dx = nx - cx, dy = ny - cy;
       const len = Math.hypot(dx, dy) || 1;
       ux = dx / len; uy = dy / len;
     }
     const gap = nodeRadius(d) + 5;
     d3.select(this)
-      .attr("x", ux * gap)
-      .attr("y", uy * gap)
+      .attr("x", nx + ux * gap)
+      .attr("y", ny + uy * gap)
       .attr("text-anchor", ux > 0.25 ? "start" : ux < -0.25 ? "end" : "middle")
       .attr("dominant-baseline", uy > 0.25 ? "hanging" : uy < -0.25 ? "auto" : "middle");
   });
@@ -997,7 +1047,7 @@ function forceLabelSeparation() {
     for (const L of nodes) {
       if (!labelVisible(L)) continue;
       const fs = labelFontSize(L);
-      const w = Math.max(measureTextWidth(truncateLabel(graphLabel(L), fs), fs), fs);
+      const w = Math.max(measureTextWidth(truncateLabel(graphLabel(L), fs, labelMaxWidth(L)), fs), fs);
       const h = fs;
       const gap = nodeRadius(L) + 5;
       // Direction chosen last tick (or outward-from-centroid until one exists).
@@ -1072,20 +1122,22 @@ function linkKey(d) {
 
 function renderLegend(mode) {
   legend.setAttribute("aria-hidden", "false");
+  // Hollow/dashed swatch = a hub (high out-degree); shown in both modes.
+  const hubItem = `<span class="legend-item"><span class="legend-swatch swatch-hub"></span>Hub</span>`;
   if (mode === "connections") {
     // One entry per relationship type (discovery excluded — it's not used here),
     // coloured to match its line; directional types get an arrow glyph.
     legend.innerHTML = Object.values(RELATIONSHIP_TYPES).filter((t) => !t.discoveryOnly).map((t) =>
       `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${t.color}${t.dashed ? ";border-top-style:dashed" : ""}"></span>${t.label}${t.directional ? " →" : ""}</span>`
-    ).join("");
+    ).join("") + hubItem;
     return;
   }
   const dc = RELATIONSHIP_TYPES.discovery.color;
   legend.innerHTML =
-    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>CONSCIOUSNESS →</span>` +
-    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc};border-top-style:dashed"></span>AWARENESS →</span>` +
+    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>Consciousness →</span>` +
+    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc};border-top-style:dashed"></span>Awareness →</span>` +
     `<span class="legend-item"><span class="legend-swatch swatch-node"></span>Discovered</span>` +
-    `<span class="legend-item"><span class="legend-swatch swatch-source"></span>Source</span>`;
+    hubItem;
 }
 
 // --- drag -----------------------------------------------------------------
@@ -1177,28 +1229,41 @@ if (fsBtn) {
 
 // --- tuning panel (troubleshooting) ---------------------------------------
 
-// One row per TUNING key: [key, label, min, max, step].
-const TUNING_CONTROLS = [
-  ["labelThreshold", "Label threshold", 0, 40, 1],
-  ["maxLabelWidth", "Max label width", 40, 400, 5],
-  ["nodeBase", "Node base radius", 4, 30, 1],
-  ["growthStep", "Growth step", 0, 10, 0.5],
-  ["nodeFont", "Node font", 8, 40, 1],
-  ["sourceFont", "Source font", 8, 40, 1],
-  ["charge", "Charge (repulsion)", -800, 0, 10],
-  ["linkDistance", "Link distance", 20, 240, 5],
-  ["collidePad", "Collision padding", 0, 80, 1],
-  ["linkWidth", "Line thickness", 0.5, 6, 0.1],
+// Controls grouped into titled sections. Tier-specific groups render in the left
+// panel; the shared group renders in the right panel. Each row: [key, label, min,
+// max, step].
+const TUNING_GROUPS = [
+  { side: "left", title: "Shared", controls: [
+    ["charge", "Charge (repulsion)", -800, 0, 10],
+    ["linkDistance", "Link distance", 20, 240, 5],
+    ["collidePad", "Collision padding", 0, 80, 1],
+    ["linkWidth", "Line thickness", 0.5, 6, 0.1],
+  ] },
+  { side: "right", title: "Hub", controls: [
+    ["hubThreshold", "Hub threshold", 0, 20, 1],
+    ["growthStep", "Hub growth step", 0, 10, 0.5],
+    ["hubFont", "Hub font", 8, 40, 1],
+    ["hubMaxLabelWidth", "Hub max label width", 40, 400, 5],
+    ["hubLabelThreshold", "Hub label threshold", 0, 40, 1],
+  ] },
+  { side: "right", title: "Leaf", controls: [
+    ["nodeBase", "Leaf base radius", 4, 30, 1],
+    ["leafFont", "Leaf font", 8, 40, 1],
+    ["leafMaxLabelWidth", "Leaf max label width", 40, 400, 5],
+    ["leafLabelThreshold", "Leaf label threshold", 0, 40, 1],
+  ] },
 ];
 
 // Snapshot of the baked-in defaults, so the Reset button can restore them.
 const TUNING_DEFAULTS = { ...TUNING };
 
 function initTuningPanel() {
-  if (!tuningPanel || !tuningBtn) return;
+  if (!tuningPanel || !tuningPanelLeft || !tuningBtn) return;
+  tuningPanel.innerHTML = "";
+  tuningPanelLeft.innerHTML = "";
 
   const rows = [];  // { key, input, val } for the Reset button
-  TUNING_CONTROLS.forEach(([key, label, min, max, step]) => {
+  const buildRow = (parent, [key, label, min, max, step]) => {
     const row = document.createElement("label");
     row.className = "tuning-row";
     const head = document.createElement("div");
@@ -1220,11 +1285,20 @@ function initTuningPanel() {
       if (rawData) render(currentMode);  // re-render live with the new value
     });
     row.append(head, input);
-    tuningPanel.appendChild(row);
+    parent.appendChild(row);
     rows.push({ key, input, val });
+  };
+
+  TUNING_GROUPS.forEach((group) => {
+    const parent = group.side === "left" ? tuningPanelLeft : tuningPanel;
+    const title = document.createElement("div");
+    title.className = "tuning-group-title";
+    title.textContent = group.title;
+    parent.appendChild(title);
+    group.controls.forEach((ctrl) => buildRow(parent, ctrl));
   });
 
-  // Reset every control back to the baked-in defaults.
+  // Reset every control back to the baked-in defaults (lives under the shared group).
   const reset = document.createElement("button");
   reset.type = "button";
   reset.className = "tuning-reset";
@@ -1237,11 +1311,12 @@ function initTuningPanel() {
     });
     if (rawData) render(currentMode);
   });
-  tuningPanel.appendChild(reset);
+  tuningPanelLeft.appendChild(reset);
 
   tuningBtn.addEventListener("click", () => {
     const show = tuningPanel.hidden;
     tuningPanel.hidden = !show;
+    tuningPanelLeft.hidden = !show;
     tuningBtn.setAttribute("aria-pressed", show ? "true" : "false");
   });
 }
