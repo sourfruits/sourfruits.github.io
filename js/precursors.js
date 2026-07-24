@@ -1281,7 +1281,10 @@ function dragMove(event, d) {
   if (!dragDismissed && dragDist > 6) {
     hideTooltip();
     closeDetail();
-    if (!event.active) simulation.alphaTarget(0.3).restart();
+    // Reheat once for a genuine drag. (No !event.active guard: event.active is
+    // only 0 in start/end, so it would never be true here and the reheat would
+    // never fire — leaving the whole graph frozen.)
+    simulation.alphaTarget(0.3).restart();
     dragDismissed = true;
   }
   d.fx = event.x; d.fy = event.y;
