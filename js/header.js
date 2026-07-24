@@ -192,7 +192,7 @@
         dotWrap.classList.add("is-squeezing");
         spawnCount(landedSqueezes);
         lemonSave({ count: landedSqueezes });
-        if (!finaled && landedSqueezes >= 50) finale();   // milestone: the dots fall away
+        if (!finaled && landedSqueezes >= 1) finale();   // TESTING: milestone lowered (was 50)
         return;
       }
       // Building: swell a step and shudder (like it's working loose) each click,
