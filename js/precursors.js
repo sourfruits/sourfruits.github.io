@@ -430,6 +430,28 @@ function truncateLabel(s, fs) {
   return out.trimEnd() + "…";
 }
 
+// A person node = author / philosopher / director by kind, or anything that
+// authored something (an outgoing authorship link). Used to abbreviate names.
+function isPersonNode(d) {
+  const kind = (d.kind || "").toLowerCase();
+  if (kind === "author" || kind === "philosopher" || kind === "director") return true;
+  return Array.isArray(d.connections) &&
+    d.connections.some((c) => c && typeof c === "object" && c.relationship === "authorship");
+}
+
+// The label as drawn in the graph. For a person with a full first + last name,
+// shorten to "F. Lastname" (e.g. "Fyodor Dostoevsky" → "F. Dostoevsky") to cut
+// label length and collisions. The full name is untouched on hover / in the
+// detail card (those read d.label directly).
+function graphLabel(d) {
+  const full = String(d.label || "");
+  if (!isPersonNode(d)) return full;
+  const parts = full.trim().split(/\s+/);
+  if (parts.length < 2) return full;
+  const initial = parts[0].charAt(0).toUpperCase();
+  return `${initial}. ${parts[parts.length - 1]}`;
+}
+
 // The line color for an edge: its relationship type's color, the neutral
 // "thematic" color for an untyped connection, or muted grey for discovery edges.
 function edgeColor(d) {
@@ -787,11 +809,15 @@ function render(mode) {
   autoFit = true;  // reframe this fresh layout as it settles
 
   // Count each node's connections in this view (edges touching it), for the
-  // hover card. Done now, while link endpoints are still plain ids.
+  // hover card. Done now, while link endpoints are still plain ids. Incoming
+  // authorship is folded into the work's "director/author" line (not shown or
+  // counted as a connection), so it doesn't add to the target's count — keeping
+  // the hover count in step with the expanded card's "Connections (N)".
   const degree = new Map();
   graph.links.forEach((l) => {
     const s = idOf(l.source), t = idOf(l.target);
     degree.set(s, (degree.get(s) || 0) + 1);
+    if (l.type === "authorship") return;   // don't count it on the authored work
     degree.set(t, (degree.get(t) || 0) + 1);
   });
   graph.nodes.forEach((n) => { n.degree = degree.get(n.id) || 0; });
@@ -871,12 +897,14 @@ function render(mode) {
   // Label position (x/y/anchor) is set per tick by positionLabels, so it points
   // outward from the graph's centre.
   nodeAll.select("text")
-    .text((d) => truncateLabel(d.label, labelFontSize(d)))
+    .text((d) => truncateLabel(graphLabel(d), labelFontSize(d)))
     .style("fill", (d) => (d.isSource ? "var(--muted)" : "var(--ink)"))
     .style("font-family", "var(--font-sans)")
     .style("font-size", (d) => labelFontSize(d) + "px");
 
   nodeAll
+    // Hover shows the small tooltip card; clicking a node opens the expanded
+    // detail card (toggle). Dragging dismisses both (see dragStart).
     .on("mouseenter", (event, d) => { d.__hover = true; updateLabelVisibility(); showTooltip(nodeTooltipHTML(d), event); })
     .on("mousemove", moveTooltip)
     .on("mouseleave", (event, d) => { d.__hover = false; updateLabelVisibility(); hideTooltip(); })
@@ -950,16 +978,10 @@ function positionLabels(nodes, sel) {
   });
 }
 
-// Two jobs, folded into one per-tick label×node scan:
-//   1. Separation — each visible label gets an approximate bounding box; any
-//      *other* node sitting inside it is nudged out (velocity-based, alpha-scaled,
-//      so it blends with the layout and fades as things settle).
-//   2. Open-space placement — while scanning, accumulate each label's "crowd
-//      vector" (the weighted pull toward nearby nodes/labels) and store the
-//      opposite direction on the node as d.__ldx/__ldy. positionLabels reads it
-//      so the label opens toward the emptiest side, not just outward.
-// Boxes are built from the direction chosen on the previous tick; positions move
-// slowly, so that one-tick lag is invisible and we avoid a second scan.
+// For each node, gather nearby nodes/labels (weighted by distance, labels heavier),
+// sum into one "crowd vector," and point the label the opposite way (its emptiest
+// side). Also nudges any node sitting inside a label's box back out. One per-tick
+// scan; the direction is stored on d.__ldx/__ldy for positionLabels to read.
 const LABEL_CROWD_RANGE = 100;   // world units: neighbours nearer than this crowd
 function forceLabelSeparation() {
   let nodes = [];
@@ -973,7 +995,7 @@ function forceLabelSeparation() {
     for (const L of nodes) {
       if (!labelVisible(L)) continue;
       const fs = labelFontSize(L);
-      const w = Math.max(measureTextWidth(truncateLabel(L.label, fs), fs), fs);
+      const w = Math.max(measureTextWidth(truncateLabel(graphLabel(L), fs), fs), fs);
       const h = fs;
       const gap = nodeRadius(L) + 5;
       // Direction chosen last tick (or outward-from-centroid until one exists).
@@ -1066,12 +1088,27 @@ function renderLegend(mode) {
 
 // --- drag -----------------------------------------------------------------
 
+let dragDist = 0;          // total pointer travel this gesture, to tell drag from click
+let dragDismissed = false; // whether this gesture already dismissed the cards
 function dragStart(event, d) {
   autoFit = false;  // hand off framing control to the user once they grab a node
+  dragDist = 0;
+  dragDismissed = false;
+  // NOTE: don't dismiss the cards here — dragStart also fires on a plain click,
+  // and clearing the open card would make the click's toggle reopen it. Wait
+  // until the pointer actually moves (dragMove).
   if (!event.active) simulation.alphaTarget(0.3).restart();
   d.fx = d.x; d.fy = d.y;
 }
 function dragMove(event, d) {
+  dragDist += Math.hypot(event.dx || 0, event.dy || 0);
+  // Past the click threshold it's a genuine drag — dismiss both cards once (a
+  // real drag suppresses the click event, so this won't fight the toggle).
+  if (!dragDismissed && dragDist > 6) {
+    hideTooltip();
+    closeDetail();
+    dragDismissed = true;
+  }
   d.fx = event.x; d.fy = event.y;
 }
 function dragEnd(event, d) {

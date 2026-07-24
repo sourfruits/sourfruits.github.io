@@ -602,6 +602,42 @@ main {
 /* Keep the full-bleed carousel from adding a horizontal scrollbar to the page. */
 body:has(.grid.is-carousel) { overflow-x: hidden; }
 
+/* Soft edge shadows: the strip's left/right ends are shaded so tiles darken into
+   shadow where the arrows sit. Sit above the tiles but below the arrows
+   (z-index 5) and never intercept scrolling. */
+.grid-wrap.is-carousel::before,
+.grid-wrap.is-carousel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 64px;
+  z-index: 4;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.grid-wrap.is-carousel::before {
+  left: 0;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.3), transparent);
+}
+.grid-wrap.is-carousel::after {
+  right: 0;
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.3), transparent);
+}
+/* No edge shadow where the strip has nothing more to scroll (that arrow is
+   greyed out). */
+.grid-wrap.is-carousel:has(.carousel-arrow-left:disabled)::before { opacity: 0; }
+.grid-wrap.is-carousel:has(.carousel-arrow-right:disabled)::after { opacity: 0; }
+/* Fade the shadows in on load alongside the strip's images — the left with the
+   first image, the right with the last — matching the tiles' fade-in. Gated on
+   the arrow NOT being disabled so a hidden end doesn't flash in. */
+.grid-wrap.is-carousel:not(:has(.carousel-arrow-left:disabled))::before {
+  animation: fadeIn 0.5s ease 0.3s backwards;
+}
+.grid-wrap.is-carousel:not(:has(.carousel-arrow-right:disabled))::after {
+  animation: fadeIn 0.5s ease 0.55s backwards;
+}
+
 .grid.is-carousel {
   display: flex;
   gap: 1px;
@@ -729,7 +765,48 @@ body:has(.grid.is-carousel) main { padding-bottom: 24px; }
 .carousel-seeall-inner {
   font-weight: 700;
   font-size: var(--text-medium);
+  transition: transform 0.25s ease;
 }
+/* Label grows on hover for every "See all" card, image or not. */
+.carousel-seeall:hover .carousel-seeall-inner,
+.carousel-seeall:focus-visible .carousel-seeall-inner { transform: scale(1.12); }
+
+/* Preview variant: the next post's image, blurred + darkened, sits behind the
+   label as a teaser for what's beyond the strip. */
+.carousel-seeall--preview {
+  position: relative;
+  overflow: hidden;
+  border-style: solid;
+}
+.carousel-seeall--preview img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: blur(5px);        /* lighter blur — still a teaser, not a smear */
+  transform: scale(1.1);    /* hide the soft blurred edges */
+  z-index: 0;
+}
+/* Dark scrim over the image (not a brightness filter) so the label reads while
+   the photo keeps its own color underneath. */
+.carousel-seeall--preview::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.carousel-seeall--preview .carousel-seeall-inner {
+  position: relative;
+  z-index: 2;
+  color: #fff;
+}
+/* On hover the image zooms in from its 1.1 base (so it grows rather than
+   shrinking to the global .tile scale); the label expand is handled above. */
+.carousel-seeall--preview:hover img,
+.carousel-seeall--preview:focus-visible img { transform: scale(1.18); }
 
 /* ---------- Pagination ---------- */
 /* A unified, centered group — Prev · 1 · 2 · 3 · Next — sitting under a thin
@@ -804,7 +881,7 @@ a.page-link:focus-visible {
 /* ---------- Post view ---------- */
 .back-link {
   display: inline-block;
-  margin: var(--header-gap-sub) 0 24px;
+  margin: var(--header-gap-sub) 0 20px;
   color: var(--muted);
   text-decoration: none;
   font-size: var(--text-base);
@@ -1374,6 +1451,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   color: var(--muted);
   font-size: var(--text-small);
   list-style: none;                 /* drop the default ▸ marker */
+  user-select: none;                /* "Learn more" isn't selectable text */
 }
 .precursors-learn-toggle::-webkit-details-marker { display: none; }
 .precursors-learn-toggle::before {
@@ -1551,17 +1629,23 @@ a.post-tag:focus-visible { color: var(--accent); }
   list-style: none;   /* drop the default ▸ marker */
   font-weight: 600;
   color: var(--muted);
+  user-select: none;  /* "Legend" isn't selectable text */
 }
 .graph-legend-summary::-webkit-details-marker { display: none; }
 .graph-legend-summary::before {
-  content: "\25B8";   /* ▸ — rotates in place to point down when open */
+  content: "\25B8";   /* ▸ — same chevron as the "Learn more" toggle */
   display: inline-block;
-  width: 1em;         /* fixed box so the label doesn't shift on rotate */
-  margin-right: 4px;
+  margin-right: 6px;
+  font-size: 1.2em;
+  line-height: 1;
+  vertical-align: -0.05em;
   transition: transform 0.15s ease;
 }
-.graph-legend-card[open] .graph-legend-summary::before { transform: rotate(90deg); }
+/* Fill the label in (ink) when open; rotate the chevron to point UP — inverted
+   vs "Learn more" (which points down), since the legend's items expand upward. */
+.graph-legend-card[open] .graph-legend-summary,
 .graph-legend-summary:hover { color: var(--ink); }
+.graph-legend-card[open] .graph-legend-summary::before { transform: rotate(-90deg); }
 .graph-legend {
   display: flex;
   flex-direction: column;

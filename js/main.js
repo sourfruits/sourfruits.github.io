@@ -78,14 +78,29 @@ function renderGrid(posts) {
 // that drops back to the normal grid.
 function renderCarousel(posts) {
   const strip = posts.slice(0, CAROUSEL_MAX);
+  // The first post beyond the strip (if any) previews behind the "See all" card.
+  const nextPost = posts[CAROUSEL_MAX];
   grid.innerHTML =
     strip.map(renderTile).join("") +
-    `<a class="tile carousel-seeall" href="index.html" data-seeall>
-       <span class="carousel-seeall-inner">See all posts <span aria-hidden="true">&rarr;</span></span>
-     </a>`;
+    renderSeeAll(nextPost);
   // No pager in carousel mode.
   pagination.innerHTML = "";
   updateCarouselArrows();
+}
+
+// The "See all posts" card at the end of the strip. If there are more posts than
+// the strip shows, the next one's image sits blurred behind the label as a
+// teaser; otherwise it's a plain card.
+function renderSeeAll(nextPost) {
+  const label = `<span class="carousel-seeall-inner">See all posts <span aria-hidden="true">&rarr;</span></span>`;
+  if (!nextPost) {
+    return `<a class="tile carousel-seeall" href="index.html" data-seeall>${label}</a>`;
+  }
+  const img = escapeHTML(nextPost.thumb || nextPost.image);
+  return `<a class="tile carousel-seeall carousel-seeall--preview" href="index.html" data-seeall>
+       <img src="${img}" alt="" aria-hidden="true" loading="lazy">
+       ${label}
+     </a>`;
 }
 
 // Scroll the filmstrip roughly one viewport of tiles in the given direction.
