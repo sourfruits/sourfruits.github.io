@@ -36,15 +36,7 @@ Connections — how what I'm interested in relates to each other (personal notic
 // via the "Tuning" panel on the page (toggle button in the toolbar) — handy for
 // troubleshooting without an edit-and-refresh loop.
 const TUNING = {
-  // Tier-based labels: a node always shows its label once its "outgoing" (growth)
-  // meets the cutoff — all-or-nothing, never split by rank. The cutoff is
-  // labelTier, loosened by one per zoom band (see zoomBand1..3), so zooming in
-  // reveals successively lower tiers. Everything below the current cutoff is
-  // hover-only.
-  labelTier: 3,        // min outgoing (growth) to always show a label (most zoomed out)
-  zoomBand1: 1.3,      // band breakpoints as multiples of the fitted view (×fit);
-  zoomBand2: 1.9,      //   crossing one up loosens the tier by 1 (reveals more labels).
-  zoomBand3: 2.8,      //   Relative to fit, so consistent across screens/graphs.
+  labelThreshold: 5,   // on-screen node radius (size × zoom, px) to show a label by default
   maxLabelWidth: 170,  // label pixel width (world units) before it's cut off with an ellipsis
   nodeBase: 11,        // leaf/content node radius (world units)
   growthStep: 3,       // + radius per point of downstream influence (uncapped)
@@ -152,11 +144,7 @@ Object.entries(RELATIONSHIP_TYPES).forEach(([name, t]) => {
 // so we don't fight the user; resize, full screen, mode switch, and
 // double-click turn it back on.
 let autoFit = true;
-let currentScale = 1;  // live zoom scale, drives label visibility
-let fitScale = 1;      // scale at which the whole graph just fits — the baseline the
-                       // zoom bands are measured against, so they're stable across
-                       // screen sizes / node counts (band = currentScale / fitScale)
-let tuningReadout = null;  // live "zoom …× · band …" line in the tuning panel
+let currentScale = 1;  // live zoom scale, drives size-based label visibility
 const zoom = d3.zoom().scaleExtent([0.1, 4]).on("zoom", (event) => {
   zoomLayer.attr("transform", event.transform);
   currentScale = event.transform.k;
@@ -197,7 +185,6 @@ function fitView(animate) {
   const boxW = (maxX - minX) + FIT_PADDING * 2;
   const boxH = (maxY - minY) + FIT_PADDING * 2;
   const scale = Math.max(0.1, Math.min(MAX_FIT_SCALE, w / boxW, h / boxH));
-  fitScale = scale;   // baseline for the zoom bands (see zoomBand)
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
   const t = d3.zoomIdentity.translate(w / 2 - scale * cx, h / 2 - scale * cy).scale(scale);
   (animate ? svg.transition().duration(400) : svg).call(zoom.transform, t);
@@ -409,44 +396,16 @@ function labelFontSize(d) {
   return d.isSource ? TUNING.sourceFont : TUNING.nodeFont;
 }
 
-// Current discrete zoom band: 0 (fitted / most zoomed out) up to 3 (most zoomed
-// in). Measured as how far zoomed in *relative to the fitted view* (currentScale
-// / fitScale), so the bands mean the same thing on any screen size or graph — a
-// breakpoint of 1.5 = "1.5× more zoomed-in than the fitted view."
-function zoomRatio() {
-  return fitScale ? currentScale / fitScale : currentScale;
-}
-function zoomBand() {
-  const r = zoomRatio();
-  if (r >= TUNING.zoomBand3) return 3;
-  if (r >= TUNING.zoomBand2) return 2;
-  if (r >= TUNING.zoomBand1) return 1;
-  return 0;
-}
-// The growth cutoff for labels right now: the base tier, loosened by one per
-// zoom band. Fixed within a band; drops (revealing a lower tier) only when a
-// band boundary is crossed. Clamped at 0 (top band shows every label).
-function effectiveTier() {
-  return Math.max(0, TUNING.labelTier - zoomBand());
-}
-// All-or-nothing per tier: a node shows its label if hovered, or if its outgoing
-// (growth) meets the current cutoff. No partial/percentage splitting of a tie.
+// A label is visible if the node is hovered, or its *rendered* radius (data
+// size × current zoom) clears TUNING.labelThreshold (see top of file) — so bigger
+// hubs stay labelled at any zoom, and small nodes reveal their labels once you
+// zoom in close enough.
 function labelVisible(d) {
-  return d.__hover === true || (d.growth || 0) >= effectiveTier();
+  return d.__hover === true || nodeRadius(d) * currentScale >= TUNING.labelThreshold;
 }
 function updateLabelVisibility() {
   nodeLayer.selectAll("g.node").select("text")
     .style("opacity", (d) => (labelVisible(d) ? 1 : 0));
-  updateTuningReadout();
-}
-
-// Live line in the tuning panel showing the current zoom (relative to fit), the
-// band it lands in, and the resulting label cutoff — so the bands can be
-// calibrated by watching real numbers instead of guessing at scales.
-function updateTuningReadout() {
-  if (!tuningReadout) return;
-  tuningReadout.textContent =
-    `zoom ${zoomRatio().toFixed(2)}× · band ${zoomBand()} · labels ≥ ${effectiveTier()} outgoing`;
 }
 
 // Measure a string's rendered width (world units) at a given font size, using an
@@ -1218,10 +1177,7 @@ if (fsBtn) {
 
 // One row per TUNING key: [key, label, min, max, step].
 const TUNING_CONTROLS = [
-  ["labelTier", "Label tier (min out)", 0, 12, 1],
-  ["zoomBand1", "Zoom band 1 (×fit)", 1, 6, 0.1],
-  ["zoomBand2", "Zoom band 2 (×fit)", 1, 6, 0.1],
-  ["zoomBand3", "Zoom band 3 (×fit)", 1, 6, 0.1],
+  ["labelThreshold", "Label threshold", 0, 40, 1],
   ["maxLabelWidth", "Max label width", 40, 400, 5],
   ["nodeBase", "Node base radius", 4, 30, 1],
   ["growthStep", "Growth step", 0, 10, 0.5],
@@ -1236,19 +1192,8 @@ const TUNING_CONTROLS = [
 // Snapshot of the baked-in defaults, so the Reset button can restore them.
 const TUNING_DEFAULTS = { ...TUNING };
 
-// These only affect which labels show, not the layout — so tweaking them just
-// refreshes visibility live (no re-run of the simulation, so the graph doesn't
-// reshuffle while you calibrate).
-const LABEL_ONLY_KEYS = new Set(["labelTier", "zoomBand1", "zoomBand2", "zoomBand3"]);
-
 function initTuningPanel() {
   if (!tuningPanel || !tuningBtn) return;
-
-  // Live zoom/band/tier readout at the top, updated on every zoom + slider change.
-  tuningReadout = document.createElement("div");
-  tuningReadout.className = "tuning-readout";
-  tuningPanel.appendChild(tuningReadout);
-  updateTuningReadout();
 
   const rows = [];  // { key, input, val } for the Reset button
   TUNING_CONTROLS.forEach(([key, label, min, max, step]) => {
@@ -1270,9 +1215,7 @@ function initTuningPanel() {
     input.addEventListener("input", () => {
       TUNING[key] = parseFloat(input.value);
       val.textContent = TUNING[key];
-      // Label/band knobs just refresh visibility; the rest re-render the layout.
-      if (LABEL_ONLY_KEYS.has(key)) updateLabelVisibility();
-      else if (rawData) render(currentMode);
+      if (rawData) render(currentMode);  // re-render live with the new value
     });
     row.append(head, input);
     tuningPanel.appendChild(row);
@@ -1298,7 +1241,6 @@ function initTuningPanel() {
     const show = tuningPanel.hidden;
     tuningPanel.hidden = !show;
     tuningBtn.setAttribute("aria-pressed", show ? "true" : "false");
-    if (show) updateTuningReadout();
   });
 }
 initTuningPanel();
