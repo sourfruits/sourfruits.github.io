@@ -225,7 +225,9 @@
       }
     });
 
-    // Rebuild this tab's saved state on load, so the lemon carries across pages.
+    // Rebuild this tab's saved state on load, so the lemon carries across page
+    // navigations and refreshes within the tab; it's gone once the tab is closed
+    // (or in a new tab), since sessionStorage is per-tab.
     (function restore() {
       const s = lemonLoad();
       if (s.stage !== "rested" && s.stage !== "fallen") return;
