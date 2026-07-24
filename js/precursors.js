@@ -199,30 +199,42 @@ const zoom = d3.zoom().scaleExtent([0.1, 4]).on("zoom", (event) => {
 });
 svg.call(zoom);
 
-// Double-click reframes the graph and re-enables auto-fit.
+// Track the last two pointer presses (capture phase, so d3-zoom can't swallow
+// them) — enough to tell whether either half of a double-click landed on a node.
+let lastDownOnNode = false;
+let prevDownOnNode = false;
+let bgDownXY = null;
+document.addEventListener("pointerdown", (e) => {
+  bgDownXY = [e.clientX, e.clientY];
+  prevDownOnNode = lastDownOnNode;
+  lastDownOnNode = !!(e.target.closest && e.target.closest("g.node"));
+}, true);
+
+// Double-click reframes the graph and re-enables auto-fit — but only when the
+// whole gesture was on blank canvas. If either press hit a node, skip it.
 svg.on("dblclick.zoom", null);
-svg.on("dblclick", () => { autoFit = true; fitView(true); });
+svg.on("dblclick", () => {
+  if (lastDownOnNode || prevDownOnNode) return;
+  autoFit = true;
+  fitView(true);
+});
 
 // Tap/click inside the graph but outside the open detail card to dismiss it.
 // Listens in the capture phase on the document so d3-zoom (which swallows the
 // svg's own click via preventDefault) can't stop it. A small movement guard
 // means panning the canvas doesn't count as a click, and node taps are left to
 // the node's own toggle handler.
-(function () {
-  let downXY = null;
-  document.addEventListener("pointerdown", (e) => { downXY = [e.clientX, e.clientY]; }, true);
-  document.addEventListener("pointerup", (e) => {
-    if (detailNodeId === null || !downXY) return;
-    const moved = Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]);
-    downXY = null;
-    if (moved > 6) return;                             // a drag/pan, not a tap
-    const t = e.target;
-    if (!wrap.contains(t)) return;                     // outside the graph entirely
-    if (detail.contains(t)) return;                    // inside the card
-    if (t.closest && t.closest("g.node")) return;      // a node — it toggles itself
-    closeDetail();
-  }, true);
-})();
+document.addEventListener("pointerup", (e) => {
+  if (detailNodeId === null || !bgDownXY) return;
+  const moved = Math.hypot(e.clientX - bgDownXY[0], e.clientY - bgDownXY[1]);
+  bgDownXY = null;
+  if (moved > 6) return;                             // a drag/pan, not a tap
+  const t = e.target;
+  if (!wrap.contains(t)) return;                     // outside the graph entirely
+  if (detail.contains(t)) return;                    // inside the card
+  if (t.closest && t.closest("g.node")) return;      // a node — it toggles itself
+  closeDetail();
+}, true);
 
 function size() {
   const rect = wrap.getBoundingClientRect();
