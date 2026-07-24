@@ -179,13 +179,19 @@ function renderRelated(posts, current) {
 
   section.querySelector(".related-grid").innerHTML = related.map(({ post, matched }) => {
     const src = post.thumb || post.image;
-    // Only the tags shared with the current post; CSS truncates with ellipsis.
-    const tags = matched.join(" · ");
+    // All of the post's tags, shared ones first (highlighted), then the rest.
+    // They sit on a single line; CSS clips whatever overflows the row.
+    const matchedSet = new Set(matched);
+    const rest = post.tags.filter((t) => !matchedSet.has(t));
+    const ordered = [...matched, ...rest];
+    const tags = ordered
+      .map((t) => `<span class="related-tag${matchedSet.has(t) ? " is-shared" : ""}">${escapeHTML(t)}</span>`)
+      .join("");
     return `
       <a class="related-card" href="post.html?id=${encodeURIComponent(post.id)}">
         <span class="related-thumb"><img src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}" loading="lazy"></span>
         <span class="related-title">${escapeHTML(post.title)}</span>
-        ${tags ? `<span class="related-tags">${escapeHTML(tags)}</span>` : ""}
+        ${tags ? `<span class="related-tags">${tags}</span>` : ""}
       </a>`;
   }).join("");
   section.hidden = false;

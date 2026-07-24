@@ -48,7 +48,8 @@ const TUNING = {
   hubMaxLabelWidth: 170, // hub label pixel width (world units) before ellipsis
   hubLabelThreshold: 0,  // on-screen radius (size × zoom, px) to reveal a hub label (0 = always)
   // ── Leaf tier ─────────────────────────────────────────────────────────────
-  nodeBase: 11,          // base node radius (world units): leaves stay here, hubs grow from it
+  nodeBase: 11,          // base node radius (world units): every node grows from this base
+  leafStep: 3,           // + leaf radius per point of downstream influence (hubs use growthStep)
   leafFont: 15,          // leaf hover-label font (px)
   leafMaxLabelWidth: 170,// leaf label pixel width (world units) before ellipsis
   leafLabelThreshold: 5, // on-screen radius (size × zoom, px) to reveal a leaf label
@@ -440,10 +441,13 @@ function isHub(d) {
   return (d.growth || 0) >= TUNING.hubThreshold;
 }
 
-// Node size: leaves stay at the shared base radius; hubs grow from that base by
-// their downstream influence (uncapped), so influential origins read as larger.
+// Node size: every node grows from the shared base by its downstream influence
+// (out-degree, uncapped), so more-influential nodes read as larger — leaves
+// included. Leaves and hubs each have their own per-connection growth step
+// (leafStep / growthStep), so the two tiers can be tuned independently.
 function nodeRadius(d) {
-  return isHub(d) ? TUNING.nodeBase + (d.growth || 0) * TUNING.growthStep : TUNING.nodeBase;
+  const step = isHub(d) ? TUNING.growthStep : TUNING.leafStep;
+  return TUNING.nodeBase + (d.growth || 0) * step;
 }
 
 // Label font size (px) — per tier.
@@ -1308,7 +1312,8 @@ const TUNING_GROUPS = [
     ["hubLabelThreshold", "Hub label threshold", 0, 40, 1, "On-screen size a hub must reach before its label shows (0 = always shown)."],
   ] },
   { side: "right", title: "Leaf", controls: [
-    ["nodeBase", "Leaf base radius", 4, 30, 1, "Base radius of every node; leaves stay this size, hubs grow from it."],
+    ["nodeBase", "Leaf base radius", 4, 30, 1, "Base radius every node grows from."],
+    ["leafStep", "Leaf growth step", 0, 10, 0.5, "How much a leaf's radius grows per outgoing connection."],
     ["leafFont", "Leaf font", 8, 40, 1, "Font size of leaf labels (shown on hover / zoom)."],
     ["leafMaxLabelWidth", "Leaf max label width", 40, 400, 5, "Pixel width before a leaf label is trimmed with an ellipsis."],
     ["leafLabelThreshold", "Leaf label threshold", 0, 40, 1, "On-screen size a leaf must reach before its label appears as you zoom in."],
