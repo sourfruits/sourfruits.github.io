@@ -236,6 +236,30 @@ main {
 }
 .dot-wrap.is-shuddering { animation: lemon-shudder 0.4s ease-in-out; }
 
+/* 50-click milestone: a quick, harder shake of the whole lemon before the dots
+   fall away. */
+@keyframes logo-finale-shudder {
+  0%, 100% { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(0, 0) rotate(0deg); }
+  12%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(-2.5px, 1px) rotate(-11deg); }
+  24%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(2.5px, -1px) rotate(11deg); }
+  36%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(-2.5px, 1px) rotate(-10deg); }
+  48%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(2.5px, -1px) rotate(10deg); }
+  62%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(-2px, 1px) rotate(-7deg); }
+  78%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(2px, 0) rotate(5deg); }
+}
+.dot-wrap.is-finale-shudder { animation: logo-finale-shudder 0.5s ease-in-out; }
+
+/* A dot detached from the logo, falling freely off the bottom of the viewport. */
+.falling-dot {
+  position: fixed;
+  z-index: 50;
+  border-radius: 50%;
+  pointer-events: none;
+}
+/* Rolled resting position of the lemon (matches the lemon-drop endpoint), applied
+   with no animation when rebuilding saved (session) state on a fresh page load. */
+.logo-dots.is-landed { transform: translate(-62px, 25px) rotate(-260deg); }
+
 /* After it's landed: clicking squeezes it in place (squash narrow + tall). */
 @keyframes lemon-squeeze {
   0%, 100% { transform: scale(calc(var(--grow,1) * var(--hs,1))); }

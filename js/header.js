@@ -70,8 +70,22 @@
   if (dots) {
     const dotWrap = dots.querySelector(".dot-wrap");
     let squeezes = 0;
-    let phase = "building";   // building → rolling → rested
+    let phase = "building";   // building → rolling → rested → finale → rested
+    let finaled = false;      // the yellow-falls finale only happens once
     const GROW_STEP = 0.05;   // how much the lemon swells per click
+
+    // Persist across page navigations for this tab (sessionStorage — clears when
+    // the tab closes). Stores the rolled/rested lemon, its count/size, and whether
+    // the finale (yellow gone) has happened.
+    const LEMON_KEY = "sourfruits:lemon";
+    function lemonLoad() {
+      try { return JSON.parse(sessionStorage.getItem(LEMON_KEY)) || {}; } catch (e) { return {}; }
+    }
+    function lemonSave(patch) {
+      const s = lemonLoad();
+      Object.assign(s, patch);
+      try { sessionStorage.setItem(LEMON_KEY, JSON.stringify(s)); } catch (e) { /* ignore */ }
+    }
 
     // Count only starts once the lemon has fallen. Each squeeze of the grounded
     // lemon spawns a floating number (cookie-clicker style) that drifts up and
@@ -94,8 +108,82 @@
       brand.appendChild(f);
       f.addEventListener("animationend", () => f.remove());
     }
+
+    // Detach a dot into a fixed-position clone at its current on-screen spot, so
+    // it can fall freely (past the rotated logo / down the page). Hides the
+    // original and hands off to the clone.
+    function makeFallingClone(dotEl) {
+      const r = dotEl.getBoundingClientRect();
+      const c = document.createElement("span");
+      c.className = "falling-dot";
+      c.style.left = r.left + "px";
+      c.style.top = r.top + "px";
+      c.style.width = r.width + "px";
+      c.style.height = r.height + "px";
+      c.style.background = getComputedStyle(dotEl).backgroundColor;
+      document.body.appendChild(c);
+      dotEl.style.visibility = "hidden";
+      return c;
+    }
+
+    // Simple gravity fall: accelerate downward, and (if it bounces) rebound off
+    // floorY with diminishing energy until it settles. vx gives a little sideways
+    // momentum (with friction on each bounce). Drives top/left per frame.
+    // Yellow's exit: it rolls (drifts sideways + spins) as it bounces fully on
+    // the floor; once the bounces are spent it stops rolling and drops straight
+    // off the bottom into the void (no extra roll tacked on). onDone when gone.
+    function yellowFall(el, floorY, onDone) {
+      const g = 1.1;
+      let x = parseFloat(el.style.left) || 0;
+      let y = parseFloat(el.style.top) || 0;
+      let vy = 0, vx = -1.4, rot = 0, vrot = -9;
+      let floored = true;
+      const goneY = floorY + window.innerHeight + 200;
+      el.style.transition = "none";
+      function step() {
+        vy += g; y += vy; x += vx; rot += vrot;
+        if (floored && y >= floorY) {
+          y = floorY; vy = -vy * 0.55; vx *= 0.8; vrot *= 0.8;   // bounce, roll a little slower
+          if (Math.abs(vy) < 2.2) {                              // bounces spent → stop rolling, drop
+            floored = false; vy = 0; vx = 0; vrot = 0;
+          }
+        }
+        el.style.left = x + "px"; el.style.top = y + "px";
+        el.style.transform = "rotate(" + rot + "deg)";
+        if (!floored && y > goneY) {                             // gone past the bottom
+          if (onDone) onDone();
+          return;
+        }
+        requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    // 50-click milestone: the whole lemon shakes, then yellow drops (gravity + a
+    // little bounce) and settles on the footer. Green stays on the logo for now.
+    function finale() {
+      finaled = true;
+      phase = "finale";
+      lemonSave({ stage: "fallen", finaled: true });   // persist even if you navigate mid-fall
+      dotWrap.classList.remove("is-shuddering", "is-squeezing");
+      void dotWrap.offsetWidth;
+      dotWrap.classList.add("is-finale-shudder");
+
+      setTimeout(() => {
+        // Yellow drops, bounces fully at the bottom of the viewport, rolls a bit,
+        // then falls off the screen. Green stays on the logo — and the click
+        // counter resumes on it once yellow is gone.
+        const yellow = makeFallingClone(dots.querySelector(".dot-yellow"));
+        const floorY = window.innerHeight - 8 - yellow.offsetHeight;
+        yellowFall(yellow, floorY, () => {
+          yellow.remove();
+          phase = "rested";   // green is clickable again; counting continues on it
+        });
+      }, 550);
+    }
+
     dots.addEventListener("click", () => {
-      if (phase === "rolling") return;   // locked while it falls/rolls
+      if (phase === "rolling" || phase === "finale") return;   // locked mid-transition
       if (phase === "rested") {
         // Fallen lemon: clicking it squeezes it in place and floats up a count.
         landedSqueezes += 1;
@@ -103,6 +191,8 @@
         void dotWrap.offsetWidth;
         dotWrap.classList.add("is-squeezing");
         spawnCount(landedSqueezes);
+        lemonSave({ count: landedSqueezes });
+        if (!finaled && landedSqueezes >= 10) finale();   // TESTING: milestone lowered (was 50)
         return;
       }
       // Building: swell a step and shudder (like it's working loose) each click,
@@ -122,16 +212,32 @@
     dotWrap.addEventListener("animationend", (e) => {
       if (e.animationName === "lemon-shudder") dotWrap.classList.remove("is-shuddering");
       if (e.animationName === "lemon-squeeze") dotWrap.classList.remove("is-squeezing");
+      if (e.animationName === "logo-finale-shudder") dotWrap.classList.remove("is-finale-shudder");
     });
     // When the roll finishes, unlock it — it's now clickable at its new resting
     // spot (the old spot is dead, since the button transform moved its hit area).
     dots.addEventListener("animationend", (e) => {
       if (e.animationName === "lemon-drop") {
         dots.classList.remove("is-rolling");
-        dots.classList.add("is-rested");   // no more hover-swell now it's grounded
+        dots.classList.add("is-landed", "is-rested");   // hold the rolled spot; no hover-swell
         phase = "rested";
+        lemonSave({ stage: "rested", count: landedSqueezes, grow: dotWrap.style.getPropertyValue("--grow") || "1" });
       }
     });
+
+    // Rebuild this tab's saved state on load, so the lemon carries across pages.
+    (function restore() {
+      const s = lemonLoad();
+      if (s.stage !== "rested" && s.stage !== "fallen") return;
+      if (s.grow) dotWrap.style.setProperty("--grow", s.grow);
+      dots.classList.add("is-landed", "is-rested");   // sit at the rolled spot (no animation)
+      landedSqueezes = s.count || 0;
+      finaled = !!s.finaled;
+      phase = "rested";                               // clickable — green keeps counting
+      if (s.stage === "fallen") {
+        dots.querySelector(".dot-yellow").style.visibility = "hidden";   // yellow already fell away
+      }
+    })();
   }
 
   // Search: the magnifier is a submit button. With a query typed, submitting
