@@ -3,13 +3,14 @@
 // hover labels, data/posts.json (to resolve post_ids to real post titles).
 //
 // Two views are computed from the *same* dataset at render time:
-//   Discovery   — every content node plus synthesized "source" hubs pulled from
-//                 discovered_via.source, with source → node edges.
-//   Connections — content nodes only, wired by each node's connections array of
-//                 bare node ids (plain, symmetric, undirected links).
+//   Discovery   — every node that has a discovered_via, plus synthesized "source"
+//                 hubs pulled from discovered_via.source, with source → node edges.
+//   Connections — nodes wired by their connections array; each connection is a
+//                 bare id (plain line) or { to, relationship } (typed, possibly
+//                 directional). In either view, nodes with no edges are omitted.
 //
-// All colors are set through the site's CSS custom properties (--ink, --muted,
-// --line, --accent, --surface), so the graph follows the light/dark theme toggle
+// All colors are set through the site's CSS custom properties (--accent, --accent2,
+// --rel-*, --ink, --muted, …), so the graph follows the light/dark theme toggle
 // automatically — no hardcoded hex values here.
 
 // ── "Learn more" cards ──────────────────────────────────────────────────────
@@ -153,6 +154,33 @@ Object.entries(RELATIONSHIP_TYPES).forEach(([name, t]) => {
     .style("fill", t.color);
 });
 
+// Faint dot-grid backdrop: a tiled dot pattern on a full-viewport rect behind the
+// graph. Its patternTransform tracks the zoom transform, so the dots pan and
+// scale *with* the graph (reinforcing the pannable-canvas feel) rather than
+// sticking to the screen. A radial mask fades the dots out toward the panel edges
+// so the grid never boxes the area in.
+const GRID_TILE = 38;
+const gridPattern = defs.append("pattern")
+  .attr("id", "dot-grid")
+  .attr("patternUnits", "userSpaceOnUse")
+  .attr("width", GRID_TILE).attr("height", GRID_TILE);
+gridPattern.append("circle")
+  .attr("class", "grid-dot")
+  .attr("cx", GRID_TILE / 2).attr("cy", GRID_TILE / 2).attr("r", 2.5);
+const gridFade = defs.append("radialGradient")
+  .attr("id", "grid-fade").attr("cx", "50%").attr("cy", "50%").attr("r", "62%");
+gridFade.append("stop").attr("offset", "50%").attr("stop-color", "#fff");
+gridFade.append("stop").attr("offset", "100%").attr("stop-color", "#000");
+defs.append("mask").attr("id", "grid-mask")
+  .append("rect").attr("width", "100%").attr("height", "100%").attr("fill", "url(#grid-fade)");
+svg.append("rect")
+  .attr("class", "grid-bg")
+  .attr("width", "100%").attr("height", "100%")
+  .attr("fill", "url(#dot-grid)")
+  .attr("mask", "url(#grid-mask)")
+  .attr("pointer-events", "none")
+  .lower();   // behind the zoom layer
+
 // While auto-fit is on, the camera reframes the graph each tick. A hand
 // pan/zoom (a real gesture → event.sourceEvent set) or a node drag turns it off
 // so we don't fight the user; resize, full screen, mode switch, and
@@ -161,6 +189,9 @@ let autoFit = true;
 let currentScale = 1;  // live zoom scale, drives size-based label visibility
 const zoom = d3.zoom().scaleExtent([0.1, 4]).on("zoom", (event) => {
   zoomLayer.attr("transform", event.transform);
+  // Pan/scale the dot grid with the graph so the backdrop moves with the content.
+  gridPattern.attr("patternTransform",
+    `translate(${event.transform.x},${event.transform.y}) scale(${event.transform.k})`);
   currentScale = event.transform.k;
   if (event.sourceEvent) autoFit = false;
   updateLabelVisibility();
@@ -269,13 +300,13 @@ function buildDiscovery(data) {
   const ledTo = new Map();     // source graph id -> [{ to, note }]
 
   const includeContent = (id) => {
-    if (!included.has(id)) included.set(id, { ...byId.get(id), isSource: false, growth: 0 });
+    if (!included.has(id)) included.set(id, { ...byId.get(id), growth: 0 });
     return included.get(id);
   };
   const includeHub = (src) => {
     const id = `source:${src}`;
     if (!included.has(id)) {
-      included.set(id, { id, label: sourceLabel(src), kind: sourceType(src), isSource: true, post_ids: [], growth: 0 });
+      included.set(id, { id, label: sourceLabel(src), kind: sourceType(src), post_ids: [], growth: 0 });
     }
     return included.get(id);
   };
@@ -293,7 +324,7 @@ function buildDiscovery(data) {
       // node can have two (a distinct earlier "aware" and a later "engaged").
       const strength = dv.strength === "aware" ? "aware" : "engaged";
       const sourceId = byId.has(src) ? includeContent(src).id : includeHub(src).id;
-      links.push({ source: sourceId, target: n.id, type: "discovery", directional: true, kind: "connection", note, strength });
+      links.push({ source: sourceId, target: n.id, type: "discovery", directional: true, note, strength });
       if (!ledTo.has(sourceId)) ledTo.set(sourceId, []);
       ledTo.get(sourceId).push({ to: n.id, note });
     });
@@ -321,7 +352,7 @@ function buildDiscovery(data) {
 //                                         back to a plain undirected line
 // Directional edges also count toward their origin node's size (out-degree).
 function buildConnections(data) {
-  const nodes = data.nodes.map((n) => ({ ...n, isSource: false, growth: 0 }));
+  const nodes = data.nodes.map((n) => ({ ...n, growth: 0 }));
   const known = new Set(nodes.map((n) => n.id));
   const pairs = new Map();  // normalized "a b" key -> array of entries
 
@@ -352,17 +383,17 @@ function buildConnections(data) {
     if (directional.length === 0) {
       // Untyped or non-directional: symmetric line. Prefer a typed entry's label.
       const typed = entries.find((e) => e.type) || entries[0];
-      edge = { source: typed.from, target: typed.to, type: typed.type, directional: false, kind: "connection" };
+      edge = { source: typed.from, target: typed.to, type: typed.type, directional: false };
     } else {
       const origins = new Set(directional.map((e) => e.from));
       if (origins.size > 1) {
         // Directional written from both ends — don't guess a direction.
         const [a, b] = [...origins];
         console.warn(`precursors: directional relationship on both sides of ${a} ↔ ${b}; drawing a plain line instead of guessing the direction.`);
-        edge = { source: directional[0].from, target: directional[0].to, type: "", directional: false, kind: "connection" };
+        edge = { source: directional[0].from, target: directional[0].to, type: "", directional: false };
       } else {
         const d = directional[0];
-        edge = { source: d.from, target: d.to, type: d.type, directional: true, kind: "connection" };
+        edge = { source: d.from, target: d.to, type: d.type, directional: true };
       }
     }
     edge.note = note;
@@ -510,11 +541,11 @@ function graphLabel(d) {
   return `${initial}. ${parts[parts.length - 1]}`;
 }
 
-// The line color for an edge: its relationship type's color, the neutral
-// "thematic" color for an untyped connection, or muted grey for discovery edges.
+// The line color for an edge: its relationship type's color, or the neutral
+// "thematic" color for an untyped connection.
 function edgeColor(d) {
   if (d.type && RELATIONSHIP_TYPES[d.type]) return RELATIONSHIP_TYPES[d.type].color;
-  return d.kind === "connection" ? "var(--rel-thematic)" : "var(--muted)";
+  return "var(--rel-thematic)";
 }
 
 // The hover label for a typed connection. Discovery edges read by strength —
@@ -1156,19 +1187,18 @@ function renderLegend(mode) {
   // Hollow/dashed swatch = a hub (high out-degree); shown in both modes.
   const hubItem = `<span class="legend-item"><span class="legend-swatch swatch-hub"></span>Hub</span>`;
   if (mode === "connections") {
-    // One entry per relationship type (discovery excluded — it's not used here),
-    // coloured to match its line; directional types get an arrow glyph.
-    legend.innerHTML = Object.values(RELATIONSHIP_TYPES).filter((t) => !t.discoveryOnly).map((t) =>
+    // Hub first, then one entry per relationship type (discovery excluded — it's
+    // not used here), coloured to match its line; directional types get an arrow.
+    legend.innerHTML = hubItem + Object.values(RELATIONSHIP_TYPES).filter((t) => !t.discoveryOnly).map((t) =>
       `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${t.color}${t.dashed ? ";border-top-style:dashed" : ""}"></span>${t.label}${t.directional ? " →" : ""}</span>`
-    ).join("") + hubItem;
+    ).join("");
     return;
   }
   const dc = RELATIONSHIP_TYPES.discovery.color;
   legend.innerHTML =
+    hubItem +
     `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>Consciousness →</span>` +
-    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc};border-top-style:dashed"></span>Awareness →</span>` +
-    `<span class="legend-item"><span class="legend-swatch swatch-node"></span>Discovered</span>` +
-    hubItem;
+    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc};border-top-style:dashed"></span>Awareness →</span>`;
 }
 
 // --- drag -----------------------------------------------------------------
@@ -1260,11 +1290,9 @@ if (fsBtn) {
 
 // --- tuning panel (troubleshooting) ---------------------------------------
 
-// Controls grouped into titled sections. Tier-specific groups render in the left
-// panel; the shared group renders in the right panel. Each row: [key, label, min,
-// max, step].
-// Each row: [key, label, min, max, step, description]. The description shows as a
-// hover tooltip on the row.
+// Controls grouped into titled sections: the shared group renders in the left
+// panel, the tier-specific (Hub/Leaf) groups in the right. Each row is
+// [key, label, min, max, step, description] — the description is a hover tooltip.
 const TUNING_GROUPS = [
   { side: "left", title: "Shared", controls: [
     ["charge", "Charge (repulsion)", -800, 0, 10, "How hard nodes push apart — more negative spreads the graph out."],

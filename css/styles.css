@@ -1,6 +1,7 @@
 :root {
   --bg: #fbfbf9;
   --bg-top: #ffffff;       /* lighter shade at the top of the page gradient */
+  --bg-bottom: #f6f5ef;    /* a touch darker at the bottom, so the gradient shows */
   --surface: #ffffff;
   --ink: #1c1c1a;
   --muted: #76766e;
@@ -11,6 +12,7 @@
   --contrast-ink: #ffffff; /* light in day mode, dark in dark mode (overridden below) */
   --accent2: #e8c840;      /* logo yellow (the lower-right dot in the mark) */
   --accent2-ink: #8a6d15;  /* dark amber — legible outline/text on an --accent2 fill */
+  --grid-dot: #dcd8ca;     /* faint dot-grid backdrop on the precursors graph */
   /* Connection relationship-type line colors (see js/precursors.js). */
   --rel-adaptation: #86c06a;      /* light green */
   --rel-influence:  #2f6d43;      /* darker green */
@@ -62,7 +64,8 @@
    flips automatically. The green accent stays identical in both modes. */
 [data-theme="dark"] {
   --bg: #1a1814;
-  --bg-top: #1a1814;       /* same as --bg — gradient hidden in dark mode for now */
+  --bg-top: #1a1814;       /* top of the page gradient (the base brown) */
+  --bg-bottom: #120f0a;    /* a little darker at the bottom, so the brown gradient shows */
   --surface: #141210;
   --header-bg: #141210;
   --ink: #e8e4dc;
@@ -78,6 +81,7 @@
   --rel-influence:  #4f9c66;      /* darker green (kept visible on dark bg) */
   --rel-thematic:   #b3906b;      /* lighter brown for dark bg */
   --rel-discovery:  #6f9bd6;
+  --grid-dot: #302b23;            /* faint dot-grid backdrop (dark mode) */
 }
 
 * { box-sizing: border-box; }
@@ -91,10 +95,10 @@ body {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  /* Subtle top-of-page gradient: --bg-top fading into --bg by ~40% of the
-     viewport height, then flat --bg for the rest. */
-  background-color: var(--bg);
-  background-image: linear-gradient(to bottom, var(--bg-top), var(--bg) 40vh);
+  /* Subtle page gradient: --bg-top fading into --bg-bottom by ~60% of the
+     viewport height, then flat for the rest. */
+  background-color: var(--bg-bottom);
+  background-image: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom) 60vh);
   background-repeat: no-repeat;
   color: var(--ink);
   font-family: var(--font-sans);
@@ -259,8 +263,9 @@ main {
   border-radius: 50%;
   pointer-events: none;
 }
-/* Rolled resting position of the lemon (matches the lemon-drop endpoint), applied
-   with no animation when rebuilding saved (session) state on a fresh page load. */
+/* Approximate rolled resting transform, applied with no animation as a fallback
+   when restoring saved (session) state that predates the physics-saved transform
+   (see the note below). */
 .logo-dots.is-landed { transform: translate(-62px, 25px) rotate(-260deg); }
 
 /* After it's landed: clicking squeezes it in place (squash narrow + tall). */
@@ -1638,7 +1643,8 @@ a.post-tag:focus-visible { color: var(--accent); }
 
 /* Segmented Discovery / Connections switch. */
 .mode-toggle {
-  display: inline-flex;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;   /* both buttons take the wider one's width */
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: var(--surface);   /* solid, so it stays legible over the graph */
@@ -1651,6 +1657,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   color: var(--muted);
   font-family: var(--font-sans);
   font-size: var(--text-small);
+  text-align: center;
   cursor: pointer;
 }
 .mode-btn + .mode-btn { border-left: 1px solid var(--line); }
@@ -1764,16 +1771,16 @@ a.post-tag:focus-visible { color: var(--accent); }
   border-top-width: 2px;
   border-top-style: solid;
 }
-.legend-swatch.swatch-node,
 .legend-swatch.swatch-hub {
   width: 12px;
   height: 12px;
   border: 1.5px solid;
   border-radius: 50%;
   border-top-width: 1.5px;
+  background: var(--bg);
+  border-color: var(--muted);
+  border-style: dashed;
 }
-.legend-swatch.swatch-node { background: var(--accent); border-color: var(--accent-ink); }
-.legend-swatch.swatch-hub { background: var(--bg); border-color: var(--muted); border-style: dashed; }
 
 /* Live tuning panel (troubleshooting) — positioned into the right margin beside
    the graph, so it never shrinks the graph. Shown only when toggled. */
@@ -1854,6 +1861,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   cursor: grab;
 }
 #graph:active { cursor: grabbing; }
+.grid-dot { fill: var(--grid-dot); }
 .node { cursor: pointer; }
 .node-label {
   paint-order: stroke;

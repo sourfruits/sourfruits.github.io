@@ -13,7 +13,9 @@ the URL via `?tags=`), draft posts that stay hidden until you reveal them, a
 light/dark theme toggle (floating, remembered per browser), an inline header search
 box, gentle load-in fade animations (which respect `prefers-reduced-motion`), and —
 at the bottom of every post — previous/next links and a "More like this" row of
-posts sharing its tags.
+posts sharing its tags. There's also a small easter egg in the header logo (give
+the little green-and-yellow mark a few clicks) and a companion **Precursors** page
+— a force-directed graph of where things were discovered and how they connect.
 
 ## File structure
 
@@ -29,8 +31,8 @@ sourfruits-blog/
 ├── css/
 │   └── styles.css    All styling, shared by every page
 ├── js/
-│   ├── utils.js      Shared helpers: formatDate, escapeHTML, fetchPosts, sortByDateDesc, renderTile, initBackButton
-│   ├── header.js     Injects the shared header/nav + search into every page (also stamps the footer year)
+│   ├── utils.js      Shared helpers: formatDate, escapeHTML, fetchPosts, sortByDateDesc, isDraft, renderTile, initBackButton
+│   ├── header.js     Injects the shared header/nav + search into every page (stamps the footer year; hosts the logo "squeeze the lemon" easter egg)
 │   ├── theme.js      Floating dark-mode toggle; remembers the choice per browser
 │   ├── pagination.js Shared page slicing + prev/next/numbered nav
 │   ├── main.js       Homepage — loads posts.json, builds the grid
@@ -132,14 +134,24 @@ convention and sizing tips.
 connect them. It has two views, toggled at the top of the page and both computed
 from the same data:
 
-- **Discovery** — every node plus a hub for each `discovered_via.source`
-  (friends, classes, platforms…), with an edge from each source to what it led
-  you to. Nodes are green here.
+- **Discovery** — every node that records a `discovered_via`, plus a synthesized
+  node for each discovery `source` (friends, classes, platforms…), with an edge
+  from each source to what it led you to. An "engaged" discovery (you really sat with it) draws a
+  solid edge, labelled *Consciousness* on hover; a lighter "aware" one (you'd just
+  heard of it) draws dashed, labelled *Awareness*. Nodes are green here.
 - **Connections** — the nodes wired together by their `connections`. Each
   connection can carry a `relationship` type, colored per type with a legend;
   directional types (adaptation, influence, authorship) draw an arrow from the
   origin and enlarge the origin node, while the non-directional type (thematic)
   is a plain symmetric line. Nodes are yellow here.
+
+In both views a node is drawn as a **hub** or a **leaf** by its out-degree (how
+much points *out* of it). Hubs are the well-connected origins — larger, hollow
+with a dashed outline, and permanently labelled (bold, centered on the node) —
+while leaves are solid and reveal their label on hover or once you zoom in close.
+A view only shows nodes that actually have data for it, so nothing floats
+disconnected: Connections omits nodes with no connections, and Discovery omits
+nodes with no `discovered_via`.
 
 Its data lives in its own file, **`data/precursors.json`** — completely separate
 from `posts.json`, which it never touches. The file is a single object with one
@@ -153,22 +165,29 @@ node automatically). Each node carries its *own* connections:
       "id": "the-trial",                       // stable, unique, hand-picked slug
       "label": "The Trial",                    // display name on the graph
       "kind": "book",                          // free string: film, book, person, platform…
+      "author": "Franz Kafka",                 // optional — shown as the Author/Director line
       "post_ids": ["kafka-the-trial"],         // 0, 1, or many post ids (optional link-out)
-      "connections": [                         // bare id, or { to, relationship }
+      "connections": [                         // bare id, or { to, relationship, note }
         { "to": "after-hours", "relationship": "influence" }
       ],
-      "discovered_via": {                      // optional — how you first met this
-        "source": "class-philosophy-denmark",  // {type}-{descriptor}, or another node's id
-        "note": "Read for a philosophy class in Denmark."  // optional, shown on hover
-      }
+      "discovered_via": [                      // optional — an ARRAY of discovery events
+        {
+          "source": "class-philosophy-dis",   // {type}-{descriptor}, or another node's id
+          "strength": "engaged",              // "engaged" (default) or "aware"
+          "date": "2026-03",                  // optional — year / year-month / full date
+          "note": "Read for a philosophy class."  // optional, shown on hover + card
+        }
+      ]
     },
     {
       "id": "four-nights-of-a-dreamer",
       "label": "Four Nights of a Dreamer (1971)",
       "kind": "film",
       "post_ids": [],
-      "discovered_via": { "source": "white-nights" },   // discovered via another node
-      "connections": ["pickpocket"]                      // bare id = untyped, plain line
+      "discovered_via": [                      // discovered via another node, found on a platform
+        { "source": "the-parallax-view", "mechanism": "platform-letterboxd", "date": "2026-03" }
+      ],
+      "connections": ["pickpocket"]            // bare id = untyped, plain line
     }
   ]
 }
@@ -181,9 +200,13 @@ node automatically). Each node carries its *own* connections:
 - `label` — the display name shown next to the node.
 - `kind` — an open string, not a fixed list (`film`, `book`, `philosopher`,
   `person`, `platform`, `class`, `podcast`, …). New kinds need no code change.
+- `author` — optional string. Shown on hover and in the detail card as the
+  "Director" line (for a `film`) or "Author" line (otherwise). If instead another
+  node points at this one with an `authorship` connection, that node is used as the
+  author automatically and you can omit this field.
 - `post_ids` — array of `posts.json` ids this node maps to. Usually empty (a
-  graph-only node with no write-up yet); can point to one or several. Hovering a
-  node shows the linked post title(s).
+  graph-only node with no write-up yet); can point to one or several. The detail
+  card lists the linked post title(s) as links.
 - `connections` — an array of the other nodes this one connects to. Each entry is
   either a **bare node id** (`"pickpocket"`) — an untyped, plain undirected line
   with no hover label — or an object
@@ -199,12 +222,25 @@ node automatically). Each node carries its *own* connections:
   optional `note` is free text shown on edge hover (below the relationship label) —
   use it to say *how* the two are connected. If a pair is written from both sides
   and both carry a note, the first (in `nodes` order) is shown.
-- `discovered_via` — optional. `source` is either a `{type}-{descriptor}` string
-  (`friend-maya`, `class-philosophy-denmark`, `platform-criterion-channel`) **or
-  another node's id** (when the discovery came from something already in the graph).
-  A source that isn't a node id auto-creates one shared hollow hub node the first
-  time it's used, so reuse the *exact same* string every time or it splits into
-  duplicate hubs. `note` is optional free text shown on hover.
+- `discovered_via` — optional. An **array** of discovery events (a thing can be
+  discovered more than once, by different routes), each an object with:
+  - `source` — where it came from: either a `{type}-{descriptor}` string
+    (`friend-maya`, `class-philosophy-dis`, `platform-criterion-channel`) **or
+    another node's id** (when the discovery came from something already in the
+    graph). A string source auto-creates one shared hub node the first time it's
+    used, so reuse the *exact same* string every time or it splits into duplicate
+    hubs. Omit `source` for a discovery with no traceable origin — the node still
+    counts as discovered (it just draws no edge).
+  - `strength` — `"engaged"` (default; a solid edge, *Consciousness*) or `"aware"`
+    (a dashed edge, *Awareness*, for something you'd only heard of).
+  - `mechanism` — optional. The platform/means you actually found it through, as a
+    `{type}-{descriptor}` string; a `platform-*` value renders as "found on X"
+    (e.g. `platform-letterboxd` → "found on Letterboxd") in the detail card.
+  - `date` — optional, at any precision: `"2024"`, `"2026-03"`, or `"2026-03-14"`.
+  - `note` — optional free text, shown on hover and in the card.
+
+  (The older single-object form — `"discovered_via": { "source": … }` — is still
+  read and treated as a one-element array, so existing data keeps working.)
 
 Notes:
 - **Write connections on either side — or both.** Listing B under A, A under B, or
@@ -214,12 +250,24 @@ Notes:
   should live only on the origin's side — if the same pair is marked directional
   from both ends, the origin is ambiguous, so it logs a console warning and falls
   back to a plain undirected line rather than guessing.
-- Nodes with no connections or discovery at all still render — they just float,
-  never filtered out. Partial, in-progress data is fine.
+- Each view hides nodes that have no data for it (no connections in Connections, no
+  `discovered_via` in Discovery), so nothing floats disconnected. Partial,
+  in-progress data is fine — a node simply appears in whichever view(s) it has data
+  for. (A discovery with a `note`/`date` but no `source` still counts, showing as an
+  orphan in Discovery.)
 - New nodes and connections plug into the layout automatically; there's no manual
   positioning. The camera auto-fits to frame whatever the graph settles into (node
   sizes included, so hubs never clip). Pan by dragging the background, zoom with the
-  scroll wheel, and drag a node to reposition it; double-click to reframe.
+  scroll wheel, and drag a node to reposition it; double-click to reframe. Hover a
+  node for a quick card; click it for a persistent detail card (drag it by its header
+  to move it, Escape or × to close). **Reset** respawns the layout; the full-screen
+  button expands the canvas.
+- A **Tuning** panel (toolbar button) exposes live sliders for troubleshooting the
+  layout without editing code — shared force knobs (charge, link distance, collision
+  padding, line thickness) on the left, per-tier Hub/Leaf sizing and label controls
+  on the right, each with a hover tooltip. Only the force knobs re-run the layout;
+  the rest update in place so the graph doesn't drift while you compare. "Reset to
+  defaults" restores every slider.
 - Privacy: use first names only for real people (`friend-maya`), or an initial/handle
   (`friend-m`) for anyone who'd rather not be named — the graph only needs the id to
   stay consistent.
