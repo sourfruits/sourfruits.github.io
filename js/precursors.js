@@ -203,17 +203,25 @@ svg.call(zoom);
 svg.on("dblclick.zoom", null);
 svg.on("dblclick", () => { autoFit = true; fitView(true); });
 
-// Click empty graph space to dismiss an open detail card. Node clicks
-// stopPropagation, so this only fires for background clicks; a small movement
-// guard means panning the canvas doesn't count as a click.
+// Tap/click inside the graph but outside the open detail card to dismiss it.
+// Listens in the capture phase on the document so d3-zoom (which swallows the
+// svg's own click via preventDefault) can't stop it. A small movement guard
+// means panning the canvas doesn't count as a click, and node taps are left to
+// the node's own toggle handler.
 (function () {
-  const svgEl = svg.node();
   let downXY = null;
-  svgEl.addEventListener("pointerdown", (e) => { downXY = [e.clientX, e.clientY]; });
-  svgEl.addEventListener("click", (e) => {
+  document.addEventListener("pointerdown", (e) => { downXY = [e.clientX, e.clientY]; }, true);
+  document.addEventListener("pointerup", (e) => {
     if (detailNodeId === null || !downXY) return;
-    if (Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]) <= 4) closeDetail();
-  });
+    const moved = Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]);
+    downXY = null;
+    if (moved > 6) return;                             // a drag/pan, not a tap
+    const t = e.target;
+    if (!wrap.contains(t)) return;                     // outside the graph entirely
+    if (detail.contains(t)) return;                    // inside the card
+    if (t.closest && t.closest("g.node")) return;      // a node — it toggles itself
+    closeDetail();
+  }, true);
 })();
 
 function size() {
