@@ -2058,7 +2058,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 .np-graph {
   position: absolute;
   inset: 0;
-  z-index: 2;   /* above the letters so the connecting lines read as continuous */
+  z-index: 0;   /* behind the letters; lines run through each letter's centre */
   overflow: visible;
   pointer-events: none;
   opacity: 0;
@@ -2069,7 +2069,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   opacity: 1;
   transition-delay: 0.15s;          /* fade in shortly after the letters move */
 }
-.np-line { stroke: var(--accent-ink); stroke-width: 1; }
+.np-line { stroke: var(--muted); stroke-width: 1; }
 
 /* Reduced-motion: keep the colour shift + lines, drop the letter movement. */
 @media (prefers-reduced-motion: reduce) {
