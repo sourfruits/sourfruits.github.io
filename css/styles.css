@@ -1,7 +1,7 @@
 :root {
   --bg: #fbfbf9;
   --bg-top: #ffffff;       /* lighter shade at the top of the page gradient */
-  --bg-bottom: #f6f5ef;    /* a touch darker at the bottom, so the gradient shows */
+  --bg-bottom: #f9f8f2;    /* a touch darker at the bottom, so the gradient shows */
   --surface: #ffffff;
   --ink: #1c1c1a;
   --muted: #76766e;
@@ -309,7 +309,9 @@ main {
   border-radius: 999px;
   border: 1px solid transparent;
   background: var(--bg);
-  transition: background 0.2s ease, box-shadow 0.2s ease;
+  /* Only the focus ring animates — background must not, or it lags behind the
+     rest of the page (which flips instantly) when the theme is toggled. */
+  transition: box-shadow 0.2s ease;
 }
 .header-search:focus-within {
   background: #ffffff;
@@ -398,7 +400,10 @@ main {
 
 .site-nav {
   display: flex;
-  align-items: center;
+  /* Baseline, not center: "Precursors" is built from inline-block letter spans
+     (for the hover jitter), which give it a taller line box — centering would
+     drop its baseline below the plain-text "About"/"Tags". */
+  align-items: baseline;
   gap: 20px;
 }
 
