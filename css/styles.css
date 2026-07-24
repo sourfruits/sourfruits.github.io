@@ -367,6 +367,80 @@ main {
   .header-search { width: 120px; }
 }
 
+/* ---------- Mobile nav ---------- */
+/* Hamburger + stacked panel. Both are hidden on desktop; the media query below
+   swaps the inline nav links for the hamburger under a breakpoint. The .nav-open
+   class (set in header.js) morphs the icon into an X and slides the panel open. */
+.nav-toggle {
+  display: none;   /* revealed under the breakpoint */
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.nav-toggle:hover,
+.nav-toggle:focus-visible { color: var(--ink); }
+.nav-toggle:focus-visible { outline: none; }
+/* Three bars stacked in a small box; each animates position/rotation so the
+   hamburger folds into an X. */
+.nav-toggle-box {
+  position: relative;
+  width: 18px;
+  height: 12px;
+}
+.nav-toggle-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: top 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+.nav-toggle-bar:nth-child(1) { top: 0; }
+.nav-toggle-bar:nth-child(2) { top: 5px; }
+.nav-toggle-bar:nth-child(3) { top: 10px; }
+/* Open: outer bars slide to the middle and cross; the middle bar fades out. */
+.site-header.nav-open .nav-toggle-bar:nth-child(1) { top: 5px; transform: rotate(45deg); }
+.site-header.nav-open .nav-toggle-bar:nth-child(2) { opacity: 0; }
+.site-header.nav-open .nav-toggle-bar:nth-child(3) { top: 5px; transform: rotate(-45deg); }
+
+/* Stacked panel below the header bar. Collapsed by default; slides open with a
+   quick height + fade when .nav-open is set. Hidden entirely on desktop. */
+.mobile-nav {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  /* Swap the inline links for the hamburger. */
+  .site-nav { display: none; }
+  .nav-toggle { display: inline-flex; }
+
+  .mobile-nav {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    background: var(--header-bg);
+    transition: max-height 0.2s ease, opacity 0.2s ease;
+  }
+  .site-header.nav-open .mobile-nav {
+    max-height: 200px;
+    opacity: 1;
+    border-bottom: 1px solid var(--line);
+  }
+  .mobile-nav .nav-link {
+    padding: 12px 20px;
+  }
+}
+
 /* Dark-mode toggle: a single plain moon/sun icon floating in the bottom-right
    corner of every page — no frame or background, muted color, subtle. */
 .theme-toggle {

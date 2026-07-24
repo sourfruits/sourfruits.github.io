@@ -56,9 +56,21 @@
               </svg>
             </button>
           </form>
+          <button type="button" class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+            <span class="nav-toggle-box">
+              <span class="nav-toggle-bar"></span>
+              <span class="nav-toggle-bar"></span>
+              <span class="nav-toggle-bar"></span>
+            </span>
+          </button>
         </div>
       </div>
-    </div>${intro}
+    </div>
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
+      <a class="nav-link" href="precursors.html">Precursors</a>
+      <a class="nav-link" href="about.html">About</a>
+      <a class="nav-link" href="tags.html">Tags</a>
+    </nav>${intro}
   `;
 
   // Logo dots easter egg: the two dots are their own button (not the home link),
@@ -305,6 +317,18 @@
         dots.querySelector(".dot-yellow").style.visibility = "hidden";   // yellow already fell away
       }
     })();
+  }
+
+  // Mobile nav: below the CSS breakpoint the three links are hidden and this
+  // hamburger toggles a stacked panel under the header. The .nav-open class on
+  // the header drives both the icon morph (→ X) and the panel open/close (CSS).
+  const navToggle = header.querySelector(".nav-toggle");
+  if (navToggle) {
+    navToggle.addEventListener("click", () => {
+      const open = header.classList.toggle("nav-open");
+      navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      navToggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    });
   }
 
   // Search: the magnifier is a submit button. With a query typed, submitting
