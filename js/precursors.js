@@ -837,6 +837,7 @@ function openDetail(node, event) {
   }
 
   detail.innerHTML = html;
+  detail.classList.remove("is-closing");   // cancel any in-progress fade-out
   detail.hidden = false;
 
   // Restart the pop-in animation on every open — including node-to-node, where
@@ -867,11 +868,30 @@ function openDetail(node, event) {
   updateNodeSelection();
 }
 
-function closeDetail() {
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+// Close the card. By default it plays the pop-out animation and hides once the
+// animation ends; pass immediate=true (e.g. on a full graph rebuild) to hide at
+// once. Reduced-motion also hides immediately.
+function closeDetail(immediate) {
   if (!detail) return;
-  detail.hidden = true;
   detailNodeId = null;
   updateNodeSelection();
+  if (immediate || reduceMotion.matches) {
+    detail.classList.remove("is-closing");
+    detail.hidden = true;
+    return;
+  }
+  if (detail.hidden || detail.classList.contains("is-closing")) return;
+  detail.classList.add("is-closing");
+}
+if (detail) {
+  detail.addEventListener("animationend", (e) => {
+    if (e.animationName === "detail-pop-out" && detail.classList.contains("is-closing")) {
+      detail.hidden = true;
+      detail.classList.remove("is-closing");
+    }
+  });
 }
 
 // Highlight the node whose card is open (a gentle scale-up — see CSS), and clear
@@ -923,7 +943,7 @@ if (detail) {
 }
 
 function render(mode) {
-  closeDetail();  // node objects are rebuilt here; drop any stale open card
+  closeDetail(true);  // node objects are rebuilt here; drop any stale open card at once
 
   const graph = mode === "connections"
     ? buildConnections(rawData)
@@ -1234,25 +1254,29 @@ function dragStart(event, d) {
   autoFit = false;  // hand off framing control to the user once they grab a node
   dragDist = 0;
   dragDismissed = false;
-  // NOTE: don't dismiss the cards here — dragStart also fires on a plain click,
-  // and clearing the open card would make the click's toggle reopen it. Wait
-  // until the pointer actually moves (dragMove).
-  if (!event.active) simulation.alphaTarget(0.3).restart();
+  // NOTE: don't dismiss the cards or reheat the simulation here — dragStart also
+  // fires on a plain click. Clearing the card would make the click's toggle
+  // reopen it, and restarting the sim would make the whole layout drift on every
+  // click. Both wait until the pointer actually moves (dragMove). Pin the node
+  // in place so a click alone doesn't nudge it.
   d.fx = d.x; d.fy = d.y;
 }
 function dragMove(event, d) {
   dragDist += Math.hypot(event.dx || 0, event.dy || 0);
-  // Past the click threshold it's a genuine drag — dismiss both cards once (a
-  // real drag suppresses the click event, so this won't fight the toggle).
+  // Past the click threshold it's a genuine drag — dismiss both cards and reheat
+  // the simulation once (a real drag suppresses the click event, so this won't
+  // fight the toggle).
   if (!dragDismissed && dragDist > 6) {
     hideTooltip();
     closeDetail();
+    if (!event.active) simulation.alphaTarget(0.3).restart();
     dragDismissed = true;
   }
   d.fx = event.x; d.fy = event.y;
 }
 function dragEnd(event, d) {
-  if (!event.active) simulation.alphaTarget(0);
+  // Only cool the simulation if this gesture actually reheated it (a real drag).
+  if (dragDismissed && !event.active) simulation.alphaTarget(0);
   // Release the node so the layout can breathe again after repositioning.
   d.fx = null; d.fy = null;
 }
