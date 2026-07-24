@@ -35,7 +35,12 @@
   header.innerHTML = `
     <div class="header-bar">
       <div class="header-bar-inner">
-        <a class="header-logo" href="index.html"><span class="dot-wrap"><span class="dot dot-green"></span><span class="dot dot-yellow"></span></span>${SITE_NAME}</a>
+        <div class="header-brand">
+          <button type="button" class="logo-dots" aria-label="Squeeze the lemon">
+            <span class="dot-wrap"><span class="dot dot-green"></span><span class="dot dot-yellow"></span></span>
+          </button>
+          <a class="header-logo" href="index.html">${SITE_NAME}</a>
+        </div>
         <div class="header-actions">
           <nav class="site-nav" aria-label="Primary">
             <a class="nav-link nav-precursors" href="precursors.html">${precursorsLetters}<svg class="np-graph" aria-hidden="true"></svg></a>
@@ -55,6 +60,79 @@
       </div>
     </div>${intro}
   `;
+
+  // Logo dots easter egg: the two dots are their own button (not the home link),
+  // so clicking navigates nowhere. Each click swells the lemon a step and makes
+  // it shudder (like it's working loose); on the 10th it pops off, falls onto the
+  // navbar, and rolls left. Counter is in memory only (resets on reload).
+  // (More rewards TBD.)
+  const dots = header.querySelector(".logo-dots");
+  if (dots) {
+    const dotWrap = dots.querySelector(".dot-wrap");
+    let squeezes = 0;
+    let phase = "building";   // building → rolling → rested
+    const GROW_STEP = 0.05;   // how much the lemon swells per click
+
+    // Count only starts once the lemon has fallen. Each squeeze of the grounded
+    // lemon spawns a floating number (cookie-clicker style) that drifts up and
+    // away, fades, and removes itself — several can overlap on fast clicks.
+    const brand = dots.parentElement;   // un-rotated anchor (the button itself is rolled)
+    let landedSqueezes = 0;
+    function spawnCount(n) {
+      const f = document.createElement("span");
+      f.className = "squeeze-float";
+      f.textContent = n;
+      f.style.setProperty("--jx", (Math.random() * 10 - 5).toFixed(1) + "px");  // random start
+      f.style.setProperty("--dx", (Math.random() * 16 - 8).toFixed(1) + "px");  // sideways drift
+      // Anchor to the brand (not the rolled button) and place at the lemon's
+      // current on-screen spot, so the number floats straight up regardless of
+      // how the lemon is rotated.
+      const b = brand.getBoundingClientRect();
+      const d = dotWrap.getBoundingClientRect();
+      f.style.left = (d.left + d.width / 2 - b.left) + "px";
+      f.style.top = (d.top - b.top - 8) + "px";   // start a little above the lemon
+      brand.appendChild(f);
+      f.addEventListener("animationend", () => f.remove());
+    }
+    dots.addEventListener("click", () => {
+      if (phase === "rolling") return;   // locked while it falls/rolls
+      if (phase === "rested") {
+        // Fallen lemon: clicking it squeezes it in place and floats up a count.
+        landedSqueezes += 1;
+        dotWrap.classList.remove("is-squeezing");
+        void dotWrap.offsetWidth;
+        dotWrap.classList.add("is-squeezing");
+        spawnCount(landedSqueezes);
+        return;
+      }
+      // Building: swell a step and shudder (like it's working loose) each click,
+      // restarting even on rapid repeats; the 10th pops it loose.
+      squeezes += 1;
+      if (squeezes >= 10) {
+        phase = "rolling";
+        dotWrap.classList.remove("is-shuddering");
+        dots.classList.add("is-rolling", "is-dropping");
+        return;
+      }
+      dotWrap.style.setProperty("--grow", (1 + squeezes * GROW_STEP).toFixed(3));
+      dotWrap.classList.remove("is-shuddering");
+      void dotWrap.offsetWidth;   // force reflow
+      dotWrap.classList.add("is-shuddering");
+    });
+    dotWrap.addEventListener("animationend", (e) => {
+      if (e.animationName === "lemon-shudder") dotWrap.classList.remove("is-shuddering");
+      if (e.animationName === "lemon-squeeze") dotWrap.classList.remove("is-squeezing");
+    });
+    // When the roll finishes, unlock it — it's now clickable at its new resting
+    // spot (the old spot is dead, since the button transform moved its hit area).
+    dots.addEventListener("animationend", (e) => {
+      if (e.animationName === "lemon-drop") {
+        dots.classList.remove("is-rolling");
+        dots.classList.add("is-rested");   // no more hover-swell now it's grounded
+        phase = "rested";
+      }
+    });
+  }
 
   // Search: the magnifier is a submit button. With a query typed, submitting
   // (button click or Enter) navigates to search.html. When the field is empty,

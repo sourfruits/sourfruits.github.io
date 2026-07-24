@@ -152,6 +152,13 @@ main {
   padding: var(--nav-pad-y) 20px;
 }
 
+/* Brand cluster: the dots (their own button) + the "Sourfruits" home link. */
+.header-brand {
+  position: relative;   /* anchors the squeeze reward bubble */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 /* Small logo / site name, top left. */
 .header-logo {
   display: inline-flex;
@@ -163,14 +170,92 @@ main {
   text-decoration: none;
   transition: color 0.2s ease;
 }
-/* Logo mark: two overlapping dots — green upper-left underneath, yellow
-   lower-right on top. */
-.dot-wrap { position: relative; width: 13px; height: 13px; flex-shrink: 0; margin-right: 8px; }
+.header-logo:hover,
+.header-logo:focus-visible { color: var(--accent); }
+
+/* The dots are a standalone button (a lemon to squeeze), not a link — clicking
+   navigates nowhere, just fires the easter egg. */
+.logo-dots {
+  position: relative;   /* anchors the squeeze count */
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+/* Cookie-clicker style: each squeeze of the fallen lemon spawns a number that
+   floats up and away, fades, then removes itself. --jx is a small random start
+   offset and --dx a small sideways drift, so they don't stack in one spot.
+   Quiet + muted. */
+.squeeze-float {
+  position: absolute;   /* left/top set inline to the lemon's current spot */
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+  animation: squeeze-float 0.9s ease-out forwards;
+}
+@keyframes squeeze-float {
+  0%   { opacity: 0; transform: translate(calc(-50% + var(--jx, 0px)), 4px); }
+  18%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--jx, 0px) + var(--dx, 0px)), -24px); }
+}
+.logo-dots:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+/* While it's falling/rolling, the whole thing is un-clickable (locked mid-roll). */
+.logo-dots.is-rolling { pointer-events: none; }
+
+/* Logo mark: two overlapping dots. --grow swells a step per click (header.js);
+   --hs is the hover swell — both fold into one scale. Size + shudder + squeeze
+   live here; the fall/roll transform lives on the button, so they compose (and
+   the button's clickable area travels with the roll). */
+.dot-wrap {
+  position: relative;
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  transform-origin: center;
+  transform: scale(calc(var(--grow, 1) * var(--hs, 1)));
+  transition: transform 0.15s ease;
+}
+/* Hover swell only while it's still up top — once it's landed (rested), hovering
+   doesn't enlarge it. */
+.logo-dots:not(.is-rested) .dot-wrap:hover { --hs: 1.30; }
 .dot { position: absolute; width: 9px; height: 9px; border-radius: 50%; }
 .dot-green { background: #67b35d; top: 0; left: 0; z-index: 0; }
 .dot-yellow { background: #e8c840; top: 4px; left: 4px; z-index: 1; }
-.header-logo:hover,
-.header-logo:focus-visible { color: var(--accent); }
+
+/* Each click (until the last): a quick shudder at the current swollen size. */
+@keyframes lemon-shudder {
+  0%, 100% { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(0, 0) rotate(0deg); }
+  15%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(-1.5px, 1px) rotate(-7deg); }
+  30%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(1.5px, -1px) rotate(7deg); }
+  45%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(-1.5px, 1px) rotate(-6deg); }
+  60%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(1.5px, -1px) rotate(6deg); }
+  80%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(-1px, 0) rotate(-3deg); }
+}
+.dot-wrap.is-shuddering { animation: lemon-shudder 0.4s ease-in-out; }
+
+/* After it's landed: clicking squeezes it in place (squash narrow + tall). */
+@keyframes lemon-squeeze {
+  0%, 100% { transform: scale(calc(var(--grow,1) * var(--hs,1))); }
+  35%      { transform: scaleX(calc(var(--grow,1) * var(--hs,1) * 0.72)) scaleY(calc(var(--grow,1) * var(--hs,1) * 1.28)); }
+  65%      { transform: scaleX(calc(var(--grow,1) * var(--hs,1) * 1.10)) scaleY(calc(var(--grow,1) * var(--hs,1) * 0.90)); }
+}
+.dot-wrap.is-squeezing { animation: lemon-squeeze 0.4s ease; }
+
+/* Tenth click: the button pops straight up, falls onto the navbar, then rolls
+   left to a stop. Transform is on the button so its clickable area moves with
+   it — after this the old spot is dead and only the rested lemon is clickable.
+   Pop eases out; fall accelerates (gravity); the roll eases to a stop. */
+@keyframes lemon-drop {
+  0%   { transform: translate(0, 0) rotate(0deg); animation-timing-function: ease-out; }
+  14%  { transform: translate(-3px, -20px) rotate(-8deg); animation-timing-function: ease-in; }   /* pop up */
+  36%  { transform: translate(-11px, 25px) rotate(-28deg); animation-timing-function: ease-out; } /* land on the nav floor */
+  100% { transform: translate(-62px, 25px) rotate(-260deg); }                                     /* roll left, ease to stop */
+}
+.logo-dots.is-dropping { animation: lemon-drop 1.15s linear forwards; }
+
 
 .header-actions {
   display: flex;
