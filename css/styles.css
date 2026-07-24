@@ -1690,6 +1690,13 @@ a.post-tag:focus-visible { color: var(--accent); }
   font-size: var(--text-small);
 }
 .tuning-panel[hidden] { display: none; }
+/* Live zoom/band/tier readout pinned at the top of the tuning panel. */
+.tuning-readout {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
 .tuning-row { display: flex; flex-direction: column; gap: 4px; }
 .tuning-head { display: flex; justify-content: space-between; gap: 8px; }
 .tuning-name { color: var(--ink); }
