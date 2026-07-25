@@ -193,7 +193,8 @@ function setDensity(next) {
 
 densityToggle.addEventListener("click", (e) => {
   const btn = e.target.closest(".density-btn");
-  if (btn) setDensity(btn.dataset.density);
+  // Ignore a click on the view you're already in — no needless re-render.
+  if (btn && btn.dataset.density !== currentView) setDensity(btn.dataset.density);
 });
 
 // Drafts toggle: flip whether drafts are included, then rebuild the tag menu

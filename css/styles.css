@@ -521,7 +521,7 @@ body.wide main { max-width: var(--maxw-wide); }
   margin: 0;   /* reset the default h1 margin */
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: var(--text-hero);
+  font-size: var(--text-display);
   font-weight: 700;
   letter-spacing: 0.02em;   /* spaced out a touch */
   color: var(--ink);
@@ -537,29 +537,21 @@ body.wide main { max-width: var(--maxw-wide); }
   background: var(--accent);
 }
 
-/* Homepage hero taglines (both serif). The eyebrow sits ABOVE the title (italic,
-   muted); the subtitle sits below the green accent bar (ink, larger), with a
-   divider line beneath it separating the hero from the content. */
-.site-eyebrow {
-  /* Extra space above (from the header) + a tight gap below groups it with the
-     title beneath it rather than the navbar above. */
-  margin: 10px 0 3px;
-  font-variant: small-caps;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: var(--muted);
-  font-size: var(--text-base);
-}
+/* Homepage hero subtitle: a muted serif italic line under the title, followed
+   by the divider that separates the hero from the content. */
 .site-subtitle {
   margin: 14px 0 0;
   font-family: var(--font-serif);
   font-style: italic;
-  color: var(--ink);
-  font-size: var(--text-reading);
+  color: var(--muted);
+  font-size: var(--text-medium);
 }
 .hero-rule {
   max-width: var(--maxw-wide);   /* follows the wide content frame */
-  margin: 32px auto;             /* symmetric spacing, shared by all dividers */
+  /* 32px above; the gap BELOW (to the carousel) is set on the carousel's own
+     margin-top so it can't shift with margin-collapsing across the header/main
+     flex boundary. Both gaps stay 32px. */
+  margin: 32px auto 0;
   border: 0;
   border-top: 1px solid var(--line);
 }
@@ -848,7 +840,7 @@ body.wide main { max-width: var(--maxw-wide); }
 }
 /* Homepage: the carousel is the first thing in <main>; the hero-rule divider
    above it (in the header) owns the spacing, so no extra top margin here. */
-main > .grid-wrap.is-carousel:first-child { margin-top: 0; }
+main > .grid-wrap.is-carousel:first-child { margin-top: 32px; }
 /* Keep the full-bleed carousel from adding a horizontal scrollbar to the page. */
 body:has(.grid.is-carousel) { overflow-x: hidden; }
 
@@ -906,13 +898,15 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
    2 on mobile (matching the grid's column counts). Images stay lazy-loaded. */
 .grid.is-carousel .tile {
   flex: 0 0 auto;
-  --carousel-tile: calc((min(100vw, var(--carousel-maxw)) - 40px) / 2.2);
+  /* Tiles are square, so this size is also the strip's height. Bigger divisor
+     → smaller (shorter) tiles; tune the 3.2 to grow/shrink the carousel. */
+  --carousel-tile: calc((min(100vw, var(--carousel-maxw)) - 40px) / 2.5);
   width: var(--carousel-tile);
   height: var(--carousel-tile);
   aspect-ratio: 1 / 1;
 }
 @media (max-width: 720px) {
-  .grid.is-carousel .tile { --carousel-tile: 80vw; }
+  .grid.is-carousel .tile { --carousel-tile: 60vw; }
 }
 
 /* Soft shadow hugging every photo tile's inner edges (grid, tag, and carousel
