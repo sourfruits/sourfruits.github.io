@@ -272,26 +272,37 @@
     // On the search page, reflect the active ?q= so the header bar shows it.
     const q = new URLSearchParams(window.location.search).get("q");
     if (q) searchInput.value = q;
+    // Below this width the field is collapsed to just the magnifier (matches the
+    // CSS breakpoint).
+    const isCollapsedLayout = () => window.matchMedia("(max-width: 640px)").matches;
     searchForm.addEventListener("submit", (e) => {
-      const visible = getComputedStyle(searchInput).display !== "none";
-      // On mobile the field is collapsed to just the magnifier. The first tap
-      // expands it inline and focuses it (rather than navigating to an empty
-      // search page); typing + tapping again then runs the search.
-      if (!visible) {
-        e.preventDefault();
-        searchForm.classList.add("is-expanded");
-        searchInput.focus();
+      if (isCollapsedLayout()) {
+        // Mobile: the first tap opens the field and focuses it. Once open, an
+        // empty tap does nothing (no re-expand, no navigate); a tap with text
+        // runs the search.
+        if (!searchForm.classList.contains("is-expanded")) {
+          e.preventDefault();
+          searchForm.classList.add("is-expanded");
+          searchInput.focus();
+        } else if (!searchInput.value.trim()) {
+          e.preventDefault();
+        }
         return;
       }
-      // Visible (desktop, or already-expanded on mobile) but empty → just focus.
+      // Desktop: an empty submit just focuses the field, doesn't navigate.
       if (!searchInput.value.trim()) {
         e.preventDefault();
         searchInput.focus();
       }
     });
-    // Collapse the mobile field back to an icon once it's left empty.
-    searchInput.addEventListener("blur", () => {
-      if (!searchInput.value.trim()) searchForm.classList.remove("is-expanded");
+    // Collapse the mobile field back to an icon when you tap outside it while
+    // it's empty (tapping the magnifier itself stays open — handled above).
+    document.addEventListener("click", (e) => {
+      if (searchForm.classList.contains("is-expanded") &&
+          !searchForm.contains(e.target) &&
+          !searchInput.value.trim()) {
+        searchForm.classList.remove("is-expanded");
+      }
     });
   }
 

@@ -27,7 +27,6 @@
      inner content (logo + links + search). */
   --maxw: 1040px;          /* normal frame — header + content align everywhere */
   --maxw-wide: 1200px;     /* wider cap for the nav inner content — tunable */
-  --carousel-maxw: 1040px; /* width the carousel tiles size against — tune to grow/shrink tiles */
   --post-width: 700px;     /* reading column for post/search/tag content */
 
   /* Font stacks */
@@ -462,27 +461,35 @@ body.wide main { max-width: var(--maxw-wide); }
 
   /* Collapse the search bar to just its magnifier icon (the input hides; the
      button submits straight to the search page — see header.js). */
+  /* Collapsed to just the magnifier. The field is clipped by the form's width
+     (overflow:hidden) rather than display:none, so it can slide open smoothly;
+     right padding stays 0 in both states so the magnifier's right edge — the
+     tap target — never moves. */
   .header-search {
-    width: auto;
+    width: 34px;
     padding: 0;
     background: none;
     border-color: transparent;
+    overflow: hidden;
+    transition: width 0.22s ease, background 0.2s ease, border-color 0.2s ease;
   }
   .header-search:focus-within {
     background: none;
     box-shadow: none;
   }
-  .header-search-input { display: none; }
+  /* 16px so iOS Safari doesn't zoom (and drag the header down) on focus. */
+  .header-search-input { font-size: 16px; }
+  /* Non-interactive while collapsed so a tap falls through to the magnifier. */
+  .header-search:not(.is-expanded) .header-search-input { pointer-events: none; }
 
-  /* Tapped-open state: expand the field inline so it can be typed into (see the
-     submit handler in header.js), instead of collapsing to just the icon. */
+  /* Tapped-open state: slide the field open so it can be typed into (see the
+     submit handler in header.js). */
   .header-search.is-expanded {
-    width: min(55vw, 180px);
-    padding: 0 4px 0 12px;
+    width: min(50vw, 150px);
+    padding: 0 0 0 12px;
     background: var(--bg);
     border-color: var(--line);
   }
-  .header-search.is-expanded .header-search-input { display: block; }
   .header-search.is-expanded:focus-within {
     background: #ffffff;
     box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 0.25);
@@ -898,7 +905,7 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
   flex: 0 0 auto;
   /* Tiles are square, so this size is also the strip's height. Bigger divisor
      → smaller (shorter) tiles; tune the 2.5 to grow/shrink the carousel. */
-  --carousel-tile: calc((min(100vw, var(--carousel-maxw)) - 40px) / 2.5);
+  --carousel-tile: calc((min(100vw, var(--maxw)) - 40px) / 2.5);
   width: var(--carousel-tile);
   height: var(--carousel-tile);
   aspect-ratio: 1 / 1;
