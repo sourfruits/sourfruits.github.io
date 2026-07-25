@@ -28,6 +28,7 @@
   --maxw: 1040px;          /* normal frame — header + content align everywhere */
   --maxw-wide: 1200px;     /* wider cap for the nav inner content — tunable */
   --post-width: 700px;     /* reading column for post/search/tag content */
+  --maxw-header: 1440px;     /* wider cap for the nav inner content — tunable */
 
   /* Font stacks */
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -155,14 +156,16 @@ body.wide main { max-width: var(--maxw-wide); }
   border-bottom: 1px solid var(--line);
 }
 
-/* Top row content: logo on the left, links + search on the right, held within
-   a wider centered column (--maxw-wide) than the page content (--maxw). */
+/* Top row content: logo on the left, links + search on the right. Full-bleed —
+   no max-width cap, so it spans the whole header bar edge to edge on every page,
+   independent of the page content width below it. (The 20px side padding just
+   keeps the logo/search off the very edge.) */
 .header-bar-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  max-width: var(--maxw-wide);
+  max-width: var(--maxw-header);
   margin: 0 auto;
   padding: var(--nav-pad-y) 20px;
 }
@@ -459,13 +462,10 @@ body.wide main { max-width: var(--maxw-wide); }
   .site-nav { display: none; }
   .nav-toggle { display: inline-flex; }
 
-  /* Collapse the search bar to just its magnifier icon (the input hides; the
-     button submits straight to the search page — see header.js). */
   /* Collapsed to just the magnifier. The field is clipped by the form's width
-     (overflow:hidden) rather than display:none, so it can slide open smoothly;
-     right padding stays 0 in both states so the magnifier's right edge — the
-     tap target — never moves. */
+     (overflow:hidden) rather than display:none, so it can slide open smoothly. */
   .header-search {
+    position: relative;   /* anchors the absolutely-pinned magnifier */
     width: 34px;
     padding: 0;
     background: none;
@@ -477,8 +477,20 @@ body.wide main { max-width: var(--maxw-wide); }
     background: none;
     box-shadow: none;
   }
-  /* 16px so iOS Safari doesn't zoom (and drag the header down) on focus. */
-  .header-search-input { font-size: 16px; }
+  /* Pin the magnifier to the right edge so it stays put as the field slides
+     open/closed (in normal flex flow the gap + clipping nudged it a couple px). */
+  .header-search-btn {
+    position: absolute;
+    top: 50%;
+    right: 3px;
+    transform: translateY(-50%);
+  }
+  /* 16px so iOS Safari doesn't zoom (and drag the header down) on focus;
+     padding-right clears the pinned magnifier so typed text doesn't run under it. */
+  .header-search-input {
+    font-size: 16px;
+    padding-right: 30px;
+  }
   /* Non-interactive while collapsed so a tap falls through to the magnifier. */
   .header-search:not(.is-expanded) .header-search-input { pointer-events: none; }
 
@@ -549,7 +561,7 @@ body.wide main { max-width: var(--maxw-wide); }
   font-size: var(--text-base);
 }
 .hero-rule {
-  max-width: var(--maxw-wide);   /* follows the wide content frame */
+  max-width: var(--maxw);        /* normal frame width */
   /* 32px above; the gap BELOW (to the carousel) is set on the carousel's own
      margin-top so it can't shift with margin-collapsing across the header/main
      flex boundary. Both gaps stay 32px. */
@@ -1403,7 +1415,7 @@ a.page-link:focus-visible {
    the meta. */
 .post-rule {
   border: 0;
-  border-top: 1px solid var(--line-light);
+  border-top: 1px solid var(--line);
   margin: 20px 0;
 }
 /* "By Elia C." byline above the meta; the name links to About. */
@@ -1487,8 +1499,14 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 .tag-heading .tag-name { color: var(--ink); }
 .tag-heading .tag-count { color: var(--ink); }
-/* Single-tag page (tag.html): center the heading. */
-#tag-heading { text-align: center; }
+/* Single-tag page (tag.html): center the heading, with a divider under it. */
+#tag-heading { text-align: center; margin-bottom: 14px; }
+.tag-rule {
+  max-width: var(--maxw);
+  margin: 0 auto 28px;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
 /* On the tags-list page, keep the heading within (and left-aligned to) the
    centered index column, not the full page width. */
 .tags-heading {
@@ -1508,6 +1526,14 @@ a.post-tag:focus-visible { color: var(--accent); }
   height: 5px;
   margin: 10px auto 0;
   background: var(--accent);
+}
+/* Grey divider under the "All tags" heading, aligned to the index column.
+   Symmetric 32px spacing to match the About page's divider (.about-rule). */
+.tags-rule {
+  max-width: var(--post-width);
+  margin: 32px auto;
+  border: 0;
+  border-top: 1px solid var(--line);
 }
 /* The full tag list (tags.html): an editorial index — tag name, dotted leader,
    post count — in two columns (one below 600px). Quiet by design: no boxes,

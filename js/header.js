@@ -269,23 +269,29 @@
   const searchForm = header.querySelector(".header-search");
   if (searchForm) {
     const searchInput = searchForm.querySelector(".header-search-input");
-    // On the search page, reflect the active ?q= so the header bar shows it.
+    // On the search page, reflect the active ?q= so the header bar shows it —
+    // and keep the field open (mobile) so it doesn't appear to close after you
+    // press enter and land on the results page.
     const q = new URLSearchParams(window.location.search).get("q");
-    if (q) searchInput.value = q;
+    if (q) {
+      searchInput.value = q;
+      searchForm.classList.add("is-expanded");
+    }
     // Below this width the field is collapsed to just the magnifier (matches the
     // CSS breakpoint).
     const isCollapsedLayout = () => window.matchMedia("(max-width: 640px)").matches;
     searchForm.addEventListener("submit", (e) => {
       if (isCollapsedLayout()) {
         // Mobile: the first tap opens the field and focuses it. Once open, an
-        // empty tap does nothing (no re-expand, no navigate); a tap with text
-        // runs the search.
+        // empty tap closes it again; a tap with text runs the search.
         if (!searchForm.classList.contains("is-expanded")) {
           e.preventDefault();
           searchForm.classList.add("is-expanded");
           searchInput.focus();
         } else if (!searchInput.value.trim()) {
           e.preventDefault();
+          searchForm.classList.remove("is-expanded");
+          searchInput.blur();
         }
         return;
       }
