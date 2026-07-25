@@ -1816,6 +1816,14 @@ a.post-tag:focus-visible { color: var(--accent); }
 .graph-fs-btn:hover { color: var(--ink); }
 .graph-fs-btn:focus-visible { outline: none; color: var(--ink); }
 
+/* Mobile: the top-left mode toggle and top-right utilities collide on narrow
+   graphs. Hide the dev-only Tuning button and tighten the rest so they fit. */
+@media (max-width: 560px) {
+  #graph-tuning-btn { display: none; }
+  .mode-btn { padding: 5px 9px; font-size: var(--text-tiny); }
+  .graph-fs-btn { padding: 5px 9px; font-size: var(--text-tiny); }
+}
+
 /* Full-screen toggle: an icon button pinned to the graph's bottom-right. */
 .graph-fs-icon {
   position: absolute;
