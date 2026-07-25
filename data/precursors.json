@@ -357,7 +357,9 @@
       "id": "dis-philosophy",
       "label": "DIS Philosophy",
       "kind": "class",
-      "post_ids": []
+      "discovered_via": [
+        { "date": "2026-01" }
+      ]
     },
     {
       "id": "letterboxd",

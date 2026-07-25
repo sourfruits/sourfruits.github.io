@@ -1816,6 +1816,25 @@ a.post-tag:focus-visible { color: var(--accent); }
 .graph-fs-btn:hover { color: var(--ink); }
 .graph-fs-btn:focus-visible { outline: none; color: var(--ink); }
 
+/* Square icon button (Reset) — same look as the full-screen icon, minus its
+   corner positioning, so it sits in the top-right group next to Tuning. */
+.graph-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+}
+.graph-icon-btn:hover { color: var(--ink); }
+.graph-icon-btn:focus-visible { outline: none; color: var(--ink); }
+.graph-icon-btn svg { display: block; }
+
 /* Mobile: the top-left mode toggle and top-right utilities collide on narrow
    graphs. Hide the dev-only Tuning button and tighten the rest so they fit. */
 @media (max-width: 560px) {
@@ -2001,6 +2020,29 @@ a.post-tag:focus-visible { color: var(--accent); }
   height: 100dvh;   /* fill the visual viewport on mobile, accounting for browser chrome */
 }
 body.is-graph-faux-fs { overflow: hidden; }
+/* In full screen, keep the corner controls clear of the device safe areas
+   (notch / home indicator) — otherwise the bottom row gets clipped in landscape.
+   env() is 0 on devices without insets, so this is a no-op elsewhere. */
+.graph-wrap:fullscreen .graph-controls--tl,
+.graph-wrap.is-faux-fullscreen .graph-controls--tl {
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  left: calc(12px + env(safe-area-inset-left, 0px));
+}
+.graph-wrap:fullscreen .graph-controls--tr,
+.graph-wrap.is-faux-fullscreen .graph-controls--tr {
+  top: calc(12px + env(safe-area-inset-top, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+}
+.graph-wrap:fullscreen .graph-legend-card,
+.graph-wrap.is-faux-fullscreen .graph-legend-card {
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  left: calc(12px + env(safe-area-inset-left, 0px));
+}
+.graph-wrap:fullscreen .graph-fs-icon,
+.graph-wrap.is-faux-fullscreen .graph-fs-icon {
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  right: calc(12px + env(safe-area-inset-right, 0px));
+}
 #graph {
   display: block;
   width: 100%;
@@ -2055,6 +2097,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* Title — serif, like the card. */
 .graph-tooltip .tip-title {
   font-family: var(--font-serif);
+  font-size: var(--text-base);
   font-weight: 700;
 }
 /* Creator byline on its own line below the title. */
@@ -2062,6 +2105,7 @@ body.is-graph-faux-fs { overflow: hidden; }
   display: block;
   margin-top: 3px;
   color: var(--muted);
+  font-size: var(--text-small);
 }
 /* Hairline between the title block and the connection counts. */
 .graph-tooltip .tip-rule {
