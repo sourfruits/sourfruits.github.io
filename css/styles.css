@@ -22,11 +22,11 @@
   --rel-discovery:  #4a72b0;      /* steel blue (Discovery view edges) */
   --radius: 14px;
   --radius-pill: 5px;      /* was a full pill (999px); now a soft 5px on all controls */
-  /* Content-frame scale. --maxw is the normal frame; --maxw-wide is an opt-in
-     wider frame for pages that need room (e.g. the Precursors graph); posts use
-     the narrower --post-width. A page opts into wide via `<body class="wide">`. */
+  /* Content-frame scale. --maxw is the normal frame used everywhere; posts use
+     the narrower --post-width. --maxw-wide is a wider cap for the nav bar's
+     inner content (logo + links + search). */
   --maxw: 1040px;          /* normal frame — header + content align everywhere */
-  --maxw-wide: 1200px;     /* wider frame for "larger" pages (Precursors) — tunable */
+  --maxw-wide: 1200px;     /* wider cap for the nav inner content — tunable */
   --carousel-maxw: 1040px; /* width the carousel tiles size against — tune to grow/shrink tiles */
   --post-width: 700px;     /* reading column for post/search/tag content */
 
@@ -92,11 +92,6 @@
   --grid-dot: #302b23;            /* faint dot-grid backdrop (dark mode) */
 }
 
-/* Pages opt into the wider frame with <body class="wide"> — only the main
-   content widens; the header/nav stays on the normal --maxw so it's identical
-   across every page. */
-body.wide main { max-width: var(--maxw-wide); }
-
 * { box-sizing: border-box; }
 
 html { -webkit-text-size-adjust: 100%; }
@@ -145,6 +140,9 @@ main {
   margin: 0 auto;
   padding: 0 20px 64px;
 }
+/* Pages opting into <body class="wide"> (Precursors) widen their main content
+   to the same --maxw-wide cap as the nav, so the two line up. */
+body.wide main { max-width: var(--maxw-wide); }
 
 /* ---------- Header ---------- */
 .site-header {
@@ -158,14 +156,14 @@ main {
   border-bottom: 1px solid var(--line);
 }
 
-/* Top row content: logo on the left, About + Tags links + search icon on the
-   right, held within the centered content column. */
+/* Top row content: logo on the left, links + search on the right, held within
+   a wider centered column (--maxw-wide) than the page content (--maxw). */
 .header-bar-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  max-width: var(--maxw);
+  max-width: var(--maxw-wide);
   margin: 0 auto;
   padding: var(--nav-pad-y) 20px;
 }
@@ -301,11 +299,11 @@ main {
 }
 
 /* Centered site title + tagline below the top row. Sits --header-gap below the
-   navbar; the 10px bottom keeps the old breathing room above the grid (this used
-   to come from .site-header's bottom padding). */
+   navbar; no bottom padding — the hero-rule divider's symmetric margin owns the
+   gap down to the content. */
 .site-intro {
   text-align: center;
-  padding: var(--header-gap) 10px 10px;
+  padding: var(--header-gap) 10px 0;
 }
 
 /* Inline search bar: a compact 150x30 bar sitting by the tag-filter button,
@@ -521,9 +519,11 @@ main {
 .site-title {
   display: inline-block;
   margin: 0;   /* reset the default h1 margin */
+  font-family: var(--font-serif);
+  font-style: italic;
   font-size: var(--text-hero);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: 0.02em;   /* spaced out a touch */
   color: var(--ink);
 }
 
@@ -537,14 +537,47 @@ main {
   background: var(--accent);
 }
 
-.site-tagline {
-  margin: 14px 0 0;
+/* Homepage hero taglines (both serif). The eyebrow sits ABOVE the title (italic,
+   muted); the subtitle sits below the green accent bar (ink, larger), with a
+   divider line beneath it separating the hero from the content. */
+.site-eyebrow {
+  /* Extra space above (from the header) + a tight gap below groups it with the
+     title beneath it rather than the navbar above. */
+  margin: 10px 0 3px;
+  font-variant: small-caps;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   color: var(--muted);
   font-size: var(--text-base);
 }
+.site-subtitle {
+  margin: 14px 0 0;
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--ink);
+  font-size: var(--text-reading);
+}
+.hero-rule {
+  max-width: var(--maxw-wide);   /* follows the wide content frame */
+  margin: 32px auto;             /* symmetric spacing, shared by all dividers */
+  border: 0;
+  border-top: 1px solid var(--line);
+}
 
-/* ---------- Homepage controls ---------- */
-/* Tag filter on the left, grid-density toggle on the right. */
+/* Divider closing out a page, below its last content (past the invisible
+   pagination on the posts page). Matches the page's content width; the
+   --narrow variant is for the post-width columns (About, Tags). */
+.page-end-rule {
+  max-width: var(--maxw);
+  margin: 32px auto;   /* symmetric spacing, shared by all dividers */
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+.page-end-rule--narrow { max-width: var(--post-width); }
+
+/* ---------- Posts-page controls ---------- */
+/* Tag filter on the left, grid-density toggle on the right. Sits under the
+   "Posts" page heading (which carries its own accent bar), so no extra divider. */
 .controls {
   position: relative;
   /* Sit above the grid so the tag dropdown menu isn't covered by the tiles. */
@@ -553,10 +586,9 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  /* Divider sits ABOVE the toolbar (between the hero and the controls). */
-  margin-top: 16px;
-  margin-bottom: 16px;
+  /* Divider sits ABOVE the toolbar, between the heading and the toolbar. */
   padding-top: 16px;
+  margin-bottom: 16px;
   border-top: 1px solid var(--line);
 }
 
@@ -814,6 +846,9 @@ main {
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
 }
+/* Homepage: the carousel is the first thing in <main>; the hero-rule divider
+   above it (in the header) owns the spacing, so no extra top margin here. */
+main > .grid-wrap.is-carousel:first-child { margin-top: 0; }
 /* Keep the full-bleed carousel from adding a horizontal scrollbar to the page. */
 body:has(.grid.is-carousel) { overflow-x: hidden; }
 
@@ -1290,10 +1325,8 @@ a.page-link:focus-visible {
    (About, tag, search, tags list) use the smaller shared --heading-size,
    centered. */
 .post-title {
-  font-family: var(--font-serif);
   font-size: var(--text-heading-lg);
-  font-weight: 700;
-  font-style: italic;
+  font-weight: 800;
   letter-spacing: -0.02em;
   /* Top 0 so the back link's bottom margin owns the gap above — aligning the
      title with the tag/search headings on the other back-button pages. */
@@ -1307,11 +1340,7 @@ a.page-link:focus-visible {
   font-size: var(--text-heading-lg);
   font-weight: var(--heading-weight);
   letter-spacing: var(--heading-letter-spacing);
-  /* +4px on top of --header-gap-sub: this heading uses the smaller
-     --text-heading-lg font, whose shorter line-box leading makes its cap sit
-     several px higher than the larger --text-display headings (Precursors /
-     homepage). The nudge lines the visible top of the text up across pages. */
-  margin: calc(var(--header-gap-sub) + 4px) 0 32px;
+  margin: var(--header-gap-sub) 0 32px;
 }
 /* Green accent bar beneath the title, matching the homepage and Precursors. */
 .page-heading::after {
@@ -1324,10 +1353,29 @@ a.page-link:focus-visible {
   background: var(--accent);
 }
 
+/* About: center the title and its accent bar (the reading text below stays
+   left-aligned), with a divider between the title and the body. */
+.about-heading { text-align: center; }
+.about-heading::after { margin-left: auto; margin-right: auto; }
+.about-rule {
+  margin: 32px auto;   /* symmetric spacing, shared by all dividers */
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
+/* Posts page: a larger, centered heading (with its accent bar centered too).
+   Tighter bottom margin so the toolbar sits closer beneath it. */
+.posts-heading {
+  text-align: center;
+  font-size: var(--text-heading-lg);
+  margin-bottom: 20px;
+}
+.posts-heading::after { margin-left: auto; margin-right: auto; }
+
 /* Optional post subtitle: a smaller serif line under the title. */
 .post-subtitle {
-  font-family: var(--font-serif);
   font-size: var(--text-heading-sm);
+  font-style: italic;
   color: var(--muted);
   margin: 0 0 10px;
 }
@@ -1446,13 +1494,10 @@ a.post-tag:focus-visible { color: var(--accent); }
    centered index column, not the full page width. */
 .tags-heading {
   max-width: var(--post-width);
+  font-size: var(--text-heading-lg);   /* one step up from --heading-size */
   margin-left: auto;
   margin-right: auto;
-  /* Pushed down so the visible top of this heading lines up with the About
-     page's title: this uses the smaller --heading-size font, whose shorter
-     line-box leading otherwise sits several px higher than the 2rem
-     .page-heading (tracks the .page-heading nudge). */
-  margin-top: calc(var(--header-gap-sub) + 7px);   /* first element on tags.html */
+  margin-top: var(--header-gap-sub);   /* first element on tags.html */
   margin-bottom: 4px;    /* subtitle sits close under the title... */
 }
 /* Summary count line ("N tags across M posts") — a small subtitle directly
@@ -1719,8 +1764,28 @@ a.post-tag:focus-visible { color: var(--accent); }
   font-size: var(--text-medium);
   margin: 0 0 0.4rem;   /* gap above comes from the title's 10px bottom margin */
 }
-/* "Learn more" disclosure under the tagline, collapsed by default. */
-.precursors-learn { margin: 0 0 1.4rem; }
+/* Meta line under the intro: "Updated <date> · Learn more". The date span and
+   the <details> sit inline (flex row); the learn-more cards are a sibling that
+   wraps to its own full-width row below (shown only when the details is open). */
+.precursors-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 8px;
+  margin: 0 0 1.4rem;
+}
+/* Quiet meta line: last-updated date pulled from the GitHub API. */
+.precursors-updated {
+  color: var(--muted);
+  font-size: var(--text-small);
+  margin: 0;
+}
+.precursors-updated::before {   /* dot separator after "Learn more" */
+  content: "·";
+  margin-right: 8px;
+}
+/* "Learn more" disclosure, collapsed by default. */
+.precursors-learn { margin: 0; }
 .precursors-learn-toggle {
   display: inline-block;
   cursor: pointer;
@@ -1745,11 +1810,14 @@ a.post-tag:focus-visible { color: var(--accent); }
 /* Two side-by-side quiet cards (thin border, no shadow), stacking on narrow
    screens. */
 .precursors-learn-cards {
+  flex-basis: 100%;      /* wrap to its own full-width row below the meta line */
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   margin: 0.75rem 0 0;   /* matches the subtitle/toolbar gaps around the toggle */
 }
+/* Sibling of the <details>: only visible while the disclosure is open. */
+.precursors-learn:not([open]) ~ .precursors-learn-cards { display: none; }
 @media (max-width: 640px) {
   .precursors-learn-cards { grid-template-columns: 1fr; }
 }

@@ -24,11 +24,35 @@
     `<span class="np-letter" style="--dy:${JITTER[i % JITTER.length]}px;--d:${(i * 0.015).toFixed(3)}s">${ch}</span>`
   ).join("");
 
-  // Homepage hero: the big centered title + green divider line.
+  // Primary nav links + search, shared by the top bar (interior pages) and the
+  // homepage hero. Only one of the two layouts renders per page, so the
+  // easter-egg selectors (.nav-precursors, .header-search) stay unambiguous.
+  const navLinks = `
+            <a class="nav-link nav-precursors" href="precursors.html">${precursorsLetters}<svg class="np-graph" aria-hidden="true"></svg></a>
+            <a class="nav-link" href="posts.html">Posts</a>
+            <a class="nav-link" href="tags.html">Tags</a>
+            <a class="nav-link" href="about.html">About</a>`;
+  const searchMarkup = `
+          <form class="header-search" action="search.html" method="get" role="search">
+            <input type="search" name="q" class="header-search-input" aria-label="Search posts" autocomplete="off">
+            <button type="submit" class="header-search-btn" aria-label="Search">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </button>
+          </form>`;
+
+  // Every page — homepage included — carries the same top bar. The homepage
+  // additionally shows the big centered hero title below it (a masthead); other
+  // pages show just the bar.
   const intro = isHome
     ? `
     <div class="site-intro">
+      <p class="site-eyebrow">a visual archive of taste</p>
       <h1 class="site-title">${SITE_NAME}</h1>
+      <p class="site-subtitle">Documenting what I read, watch, and create.</p>
+      <hr class="hero-rule">
     </div>`
     : "";
 
@@ -42,20 +66,9 @@
           <a class="header-logo" href="index.html">${SITE_NAME}</a>
         </div>
         <div class="header-actions">
-          <nav class="site-nav" aria-label="Primary">
-            <a class="nav-link nav-precursors" href="precursors.html">${precursorsLetters}<svg class="np-graph" aria-hidden="true"></svg></a>
-            <a class="nav-link" href="about.html">About</a>
-            <a class="nav-link" href="tags.html">Tags</a>
+          <nav class="site-nav" aria-label="Primary">${navLinks}
           </nav>
-          <form class="header-search" action="search.html" method="get" role="search">
-            <input type="search" name="q" class="header-search-input" aria-label="Search posts" autocomplete="off">
-            <button type="submit" class="header-search-btn" aria-label="Search">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="11" cy="11" r="7"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </button>
-          </form>
+          ${searchMarkup}
           <button type="button" class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
             <span class="nav-toggle-box">
               <span class="nav-toggle-bar"></span>
@@ -68,8 +81,9 @@
     </div>
     <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
       <a class="nav-link" href="precursors.html">Precursors</a>
-      <a class="nav-link" href="about.html">About</a>
+      <a class="nav-link" href="posts.html">Posts</a>
       <a class="nav-link" href="tags.html">Tags</a>
+      <a class="nav-link" href="about.html">About</a>
     </nav>${intro}
   `;
 

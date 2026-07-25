@@ -16,11 +16,20 @@
   <main>
     <h1 class="precursors-title">Precursors<span class="beta-tag">beta</span></h1>
     <p class="precursors-intro">Not what I've consumed, but where each thing came from and what I connect it to.</p>
-    <details class="precursors-learn">
-      <summary class="precursors-learn-toggle">Learn more</summary>
+    <!-- Meta line: "Updated <date> · Learn more". The date is filled by
+         js/precursors.js from the GitHub API (last commit touching
+         data/precursors.json); it stays hidden if the fetch fails. The
+         learn-more cards live as a sibling AFTER the <details> so they wrap to
+         their own full-width row below the line — CSS shows them only when the
+         details is open. -->
+    <div class="precursors-sub">
+      <details class="precursors-learn">
+        <summary class="precursors-learn-toggle">Learn more</summary>
+      </details>
+      <span class="precursors-updated" id="precursors-updated" hidden></span>
       <!-- Cards populated from LEARN_MORE_CARDS in js/precursors.js -->
       <div class="precursors-learn-cards" id="learn-more-cards"></div>
-    </details>
+    </div>
 
     <div class="graph-area">
     <div class="graph-wrap" id="graph-wrap">

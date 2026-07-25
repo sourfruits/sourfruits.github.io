@@ -21,7 +21,8 @@ the little green-and-yellow mark a few clicks) and a companion **Precursors** pa
 
 ```
 sourfruits-blog/
-├── index.html        Homepage — the paginated photo grid
+├── index.html        Homepage — hero + a recent-posts carousel preview
+├── posts.html        The full photo grid: tag filter, density toggle, pagination
 ├── post.html         Single post view (reads ?id= from the URL)
 ├── tag.html          Posts filtered by one tag (reads ?tag= from the URL)
 ├── tags.html         All tags used across posts, with post counts
@@ -35,7 +36,8 @@ sourfruits-blog/
 │   ├── header.js     Injects the shared header/nav + search into every page (stamps the footer year; hosts the logo "squeeze the lemon" easter egg)
 │   ├── theme.js      Floating dark-mode toggle; remembers the choice per browser
 │   ├── pagination.js Shared page slicing + prev/next/numbered nav
-│   ├── main.js       Homepage — loads posts.json, builds the grid
+│   ├── home.js       Homepage — loads posts.json, renders the carousel preview
+│   ├── main.js       Posts page — loads posts.json, builds the filterable grid
 │   ├── post.js       Post page — loads one post by its id and renders it
 │   ├── tag.js        Tag page — filters posts by tag, reuses the grid
 │   ├── tags.js       Tags page — tallies tags across posts, renders pills

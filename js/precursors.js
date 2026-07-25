@@ -1623,6 +1623,32 @@ function initTuningPanel() {
 }
 initTuningPanel();
 
+// --- "last updated" stamp -------------------------------------------------
+// Ask the GitHub API for the most recent commit that touched the graph data,
+// and show its date under the intro. Best-effort: any failure (offline, rate
+// limit, API down) just leaves the line hidden — the graph is unaffected.
+(function showLastUpdated() {
+  const el = document.getElementById("precursors-updated");
+  if (!el) return;
+  const url =
+    "https://api.github.com/repos/sourfruits/sourfruits.github.io/commits" +
+    "?path=data/precursors.json&per_page=1";
+  fetch(url)
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status))))
+    .then((commits) => {
+      const iso = commits && commits[0] && commits[0].commit &&
+        commits[0].commit.committer && commits[0].commit.committer.date;
+      if (!iso) return;
+      const d = new Date(iso);
+      const nice = d.toLocaleDateString(undefined, {
+        year: "numeric", month: "long", day: "numeric",
+      });
+      el.textContent = "Updated " + nice;
+      el.hidden = false;
+    })
+    .catch(() => { /* leave it hidden */ });
+})();
+
 // --- boot -----------------------------------------------------------------
 
 Promise.all([

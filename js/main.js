@@ -1,6 +1,7 @@
-// Homepage: load every post from data/posts.json and render the thumbnail grid,
-// with a multi-select tag filter (AND logic, synced to ?tags=) and a grid-density
-// toggle.
+// Posts page: load every post from data/posts.json and render the thumbnail
+// grid, with a multi-select tag filter (AND logic, synced to ?tags=) and a
+// grid-density toggle (normal 3-col ↔ compact 4-col), both paginated. (The
+// homepage shows a lightweight carousel preview of this via js/home.js.)
 
 const grid = document.getElementById("grid");
 const status = document.getElementById("status");
@@ -12,19 +13,15 @@ const tagLabel = document.getElementById("tag-dropdown-label");
 const densityToggle = document.querySelector(".density-toggle");
 const draftsToggle = document.getElementById("drafts-toggle");
 const draftsLabel = draftsToggle.querySelector(".drafts-label");
-const gridWrap = document.getElementById("grid-wrap");
-const carouselPrev = document.getElementById("carousel-prev");
-const carouselNext = document.getElementById("carousel-next");
 
 const DENSITY_KEY = "grid-density";
-const VIEWS = ["normal", "carousel"];
-const CAROUSEL_MAX = 6;        // most-recent posts shown in the carousel strip
+const VIEWS = ["normal", "compact"];
 
 let allPosts = [];
 let allTags = [];              // every tag, ordered by post count (ties alphabetical)
 let selectedTags = new Set();  // the tags currently checked
-let showDrafts = false;         // whether draft posts are revealed (hidden by default)
-let currentView = "normal";    // compact | normal | carousel
+let showDrafts = true;          // drafts revealed by default (for testing)
+let currentView = "normal";    // normal (3-col) | compact (4-col)
 
 // Selected tags parsed from ?tags= (comma-separated).
 function tagsFromURL() {
@@ -45,76 +42,28 @@ function pageHref(page) {
   if (tags) params.set("tags", tags);
   if (page > 1) params.set("page", page);
   const qs = params.toString();
-  return qs ? `index.html?${qs}` : "index.html";
+  return qs ? `posts.html?${qs}` : "posts.html";
 }
 
 function renderGrid(posts) {
   // Newest first, regardless of order in the JSON file.
   sortByDateDesc(posts);
 
-  if (currentView === "carousel") {
-    renderCarousel(posts);
-  } else {
-    // Fill each page based on the grid's live column count (which follows both
-    // the density toggle and the screen-width breakpoints).
-    Pagination.paginate({
-      items: posts,
-      perPage: Pagination.gridPerPage(grid),
-      container: pagination,
-      hrefFor: pageHref,
-      renderItems: (pagePosts) => {
-        grid.innerHTML = pagePosts.map(renderTile).join("");
-      },
-    });
-  }
+  // Fill each page based on the grid's live column count (which follows both
+  // the density toggle and the screen-width breakpoints).
+  Pagination.paginate({
+    items: posts,
+    perPage: Pagination.gridPerPage(grid),
+    container: pagination,
+    hrefFor: pageHref,
+    renderItems: (pagePosts) => {
+      grid.innerHTML = pagePosts.map(renderTile).join("");
+    },
+  });
 
   status.textContent = posts.length
     ? ""
     : (selectedTags.size ? "No posts match these tags." : "No posts here yet.");
-}
-
-// Carousel view: the newest posts as a single horizontal filmstrip (no
-// pagination), capped at CAROUSEL_MAX, with a "See all posts" card at the end
-// that drops back to the normal grid.
-function renderCarousel(posts) {
-  const strip = posts.slice(0, CAROUSEL_MAX);
-  // The first post beyond the strip (if any) previews behind the "See all" card.
-  const nextPost = posts[CAROUSEL_MAX];
-  grid.innerHTML =
-    strip.map(renderTile).join("") +
-    renderSeeAll(nextPost);
-  // No pager in carousel mode.
-  pagination.innerHTML = "";
-  updateCarouselArrows();
-}
-
-// The "See all posts" card at the end of the strip. If there are more posts than
-// the strip shows, the next one's image sits blurred behind the label as a
-// teaser; otherwise it's a plain card.
-function renderSeeAll(nextPost) {
-  const label = `<span class="carousel-seeall-inner">See all posts <span aria-hidden="true">&rarr;</span></span>`;
-  if (!nextPost) {
-    return `<a class="tile carousel-seeall" href="index.html" data-seeall>${label}</a>`;
-  }
-  const img = escapeHTML(nextPost.thumb || nextPost.image);
-  return `<a class="tile carousel-seeall carousel-seeall--preview" href="index.html" data-seeall>
-       <img src="${img}" alt="" aria-hidden="true" loading="lazy">
-       ${label}
-     </a>`;
-}
-
-// Scroll the filmstrip roughly one viewport of tiles in the given direction.
-function scrollCarousel(direction) {
-  grid.scrollBy({ left: direction * grid.clientWidth * 0.8, behavior: "smooth" });
-}
-
-// Grey out (disable) the prev arrow at the start of the strip and the next
-// arrow at the end. The 1px tolerance absorbs sub-pixel scroll rounding.
-function updateCarouselArrows() {
-  if (currentView !== "carousel") return;
-  const maxScroll = grid.scrollWidth - grid.clientWidth;
-  carouselPrev.disabled = grid.scrollLeft <= 1;
-  carouselNext.disabled = grid.scrollLeft >= maxScroll - 1;
 }
 
 // The pool the grid and tag menu work from: all posts, minus drafts unless the
@@ -179,7 +128,7 @@ function updateURL() {
   else params.delete("tags");
   params.delete("page");
   const qs = params.toString();
-  history.replaceState(null, "", qs ? `index.html?${qs}` : "index.html");
+  history.replaceState(null, "", qs ? `posts.html?${qs}` : "posts.html");
 }
 
 function applyFilter() {
@@ -227,15 +176,12 @@ tagMenu.addEventListener("click", (e) => {
   }
 });
 
-// Switch the grid between the compact (4-col), normal (3-col), and carousel
-// (horizontal filmstrip) views, highlighting the active button, remembering the
-// choice, and re-rendering. Skips the re-render before posts load.
+// Switch the grid between the normal (3-col) and compact (4-col) views,
+// highlighting the active button, remembering the choice, and re-rendering.
+// Skips the re-render before posts load.
 function setDensity(next) {
   currentView = next;
-  const carousel = next === "carousel";
   grid.classList.toggle("is-compact", next === "compact");
-  grid.classList.toggle("is-carousel", carousel);
-  gridWrap.classList.toggle("is-carousel", carousel);
   densityToggle.querySelectorAll(".density-btn").forEach((btn) => {
     const active = btn.dataset.density === next;
     btn.classList.toggle("is-active", active);
@@ -250,20 +196,6 @@ densityToggle.addEventListener("click", (e) => {
   if (btn) setDensity(btn.dataset.density);
 });
 
-// Carousel arrows scroll the strip; the "See all posts" card drops back to the
-// normal grid (rather than following its href).
-carouselPrev.addEventListener("click", () => scrollCarousel(-1));
-carouselNext.addEventListener("click", () => scrollCarousel(1));
-// Keep the arrows' enabled/greyed state in sync with the scroll position.
-grid.addEventListener("scroll", updateCarouselArrows);
-window.addEventListener("resize", updateCarouselArrows);
-grid.addEventListener("click", (e) => {
-  if (e.target.closest("[data-seeall]")) {
-    e.preventDefault();
-    setDensity("normal");
-  }
-});
-
 // Drafts toggle: flip whether drafts are included, then rebuild the tag menu
 // (its counts follow the visible pool) and re-render the grid.
 draftsToggle.addEventListener("click", () => {
@@ -273,7 +205,7 @@ draftsToggle.addEventListener("click", () => {
   applyFilter();
 });
 
-let initialView = "carousel";
+let initialView = "normal";
 try {
   const saved = localStorage.getItem(DENSITY_KEY);
   if (VIEWS.includes(saved)) initialView = saved;
