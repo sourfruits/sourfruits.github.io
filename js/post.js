@@ -49,16 +49,9 @@ function renderPost(post) {
   document.title = `${post.title} — Sourfruits`;
   setPostMeta(post);
 
-  // Show the content-type tag first ("writeup" or "blurb"), then the rest in
-  // their original order (Array.sort is stable, so ties are left untouched).
-  const LEAD_TAGS = ["writeup", "blurb"];
-  const leadRank = (t) => {
-    const i = LEAD_TAGS.indexOf(t);
-    return i === -1 ? LEAD_TAGS.length : i;
-  };
-  const orderedTags = Array.isArray(post.tags)
-    ? [...post.tags].sort((a, b) => leadRank(a) - leadRank(b))
-    : [];
+  // Content-type tags ("writeup"/"blurb") lead; the rest keep their order.
+  // (orderTags is shared so this ordering is consistent across the site.)
+  const orderedTags = orderTags(post.tags);
   const tags = orderedTags.length
     ? orderedTags.map((t) => `<a class="post-tag" href="tag.html?tag=${encodeURIComponent(t)}">${escapeHTML(t)}</a>`).join("")
     : "";
@@ -186,7 +179,9 @@ function renderRelated(posts, current) {
     // They sit on a single line; CSS clips whatever overflows the row.
     const matchedSet = new Set(matched);
     const rest = post.tags.filter((t) => !matchedSet.has(t));
-    const ordered = [...matched, ...rest];
+    // Shared tags first (highlighted), then the rest — and within each group,
+    // type tags (writeup/blurb) lead, matching the ordering used elsewhere.
+    const ordered = [...orderTags(matched), ...orderTags(rest)];
     const tags = ordered
       .map((t) => `<span class="related-tag${matchedSet.has(t) ? " is-shared" : ""}">${escapeHTML(t)}</span>`)
       .join("");

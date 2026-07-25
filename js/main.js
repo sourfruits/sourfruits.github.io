@@ -46,8 +46,8 @@ function pageHref(page) {
 }
 
 function renderGrid(posts) {
-  // Newest first, regardless of order in the JSON file.
-  sortByDateDesc(posts);
+  // Pinned first, then newest-first, regardless of order in the JSON file.
+  sortPosts(posts);
 
   // Fill each page based on the grid's live column count (which follows both
   // the density toggle and the screen-width breakpoints).
@@ -111,7 +111,7 @@ function syncMenu(matchCount) {
     cb.checked = selectedTags.has(cb.value);
   });
   const n = selectedTags.size;
-  if (n === 0) tagLabel.textContent = "All tags";
+  if (n === 0) tagLabel.textContent = `All tags (${matchCount})`;
   else if (n === 1) tagLabel.textContent = `${selectedParam()} (${matchCount})`;
   else tagLabel.textContent = `${n} tags (${matchCount})`;
   // Underline the toggle while a filter is applied.

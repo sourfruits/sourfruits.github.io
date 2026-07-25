@@ -31,6 +31,7 @@
   },
   {
   "id": "stranger-than-paradise-heidegger",
+  "pinned": true,
   "title": "Heidegger and Boredom in Stranger Than Paradise (1984)",
   "subtitle": "Sitting with boredom and the journey to authentic living",
   "date": "2099-07-21",
@@ -41,6 +42,7 @@
   },
   {
   "id": "kafka-the-trial",
+  "pinned": true, "pinOrder": 1,
   "title": "The Trial by Franz Kafka",
   "subtitle": "The absurd humor of existence",
   "date": "2026-07-21",

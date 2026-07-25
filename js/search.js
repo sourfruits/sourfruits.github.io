@@ -75,7 +75,7 @@ function renderResults(posts) {
     hrefFor: pageHref,
     renderItems: (pagePosts) => {
       resultsEl.innerHTML = pagePosts.map((post) => {
-        const tags = Array.isArray(post.tags) ? post.tags : [];
+        const tags = orderTags(post.tags);   // type tags (writeup/blurb) first
         const tagsHTML = tags.length
           ? `<div class="tag-list result-tags">${tags
               .map((t) => `<span class="post-tag">${escapeHTML(t)}</span>`)

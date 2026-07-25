@@ -254,26 +254,6 @@ body.wide main { max-width: var(--maxw-wide); }
 }
 .dot-wrap.is-shuddering { animation: lemon-shudder 0.4s ease-in-out; }
 
-/* 50-click milestone: a quick, harder shake of the whole lemon before the dots
-   fall away. */
-@keyframes logo-finale-shudder {
-  0%, 100% { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(0, 0) rotate(0deg); }
-  12%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(-2.5px, 1px) rotate(-11deg); }
-  24%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(2.5px, -1px) rotate(11deg); }
-  36%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(-2.5px, 1px) rotate(-10deg); }
-  48%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(2.5px, -1px) rotate(10deg); }
-  62%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(-2px, 1px) rotate(-7deg); }
-  78%      { transform: scale(calc(var(--grow,1) * var(--hs,1))) translate(2px, 0) rotate(5deg); }
-}
-.dot-wrap.is-finale-shudder { animation: logo-finale-shudder 0.5s ease-in-out; }
-
-/* A dot detached from the logo, falling freely off the bottom of the viewport. */
-.falling-dot {
-  position: fixed;
-  z-index: 50;
-  border-radius: 50%;
-  pointer-events: none;
-}
 /* Approximate rolled resting transform, applied with no animation as a fallback
    when restoring saved (session) state that predates the physics-saved transform
    (see the note below). */
@@ -493,6 +473,20 @@ body.wide main { max-width: var(--maxw-wide); }
     box-shadow: none;
   }
   .header-search-input { display: none; }
+
+  /* Tapped-open state: expand the field inline so it can be typed into (see the
+     submit handler in header.js), instead of collapsing to just the icon. */
+  .header-search.is-expanded {
+    width: min(55vw, 180px);
+    padding: 0 4px 0 12px;
+    background: var(--bg);
+    border-color: var(--line);
+  }
+  .header-search.is-expanded .header-search-input { display: block; }
+  .header-search.is-expanded:focus-within {
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 0.25);
+  }
 
   .mobile-nav {
     display: flex;
@@ -828,6 +822,9 @@ body.wide main { max-width: var(--maxw-wide); }
   color: var(--bg);
 }
 
+/* Pinned posts sort to the front but intentionally have NO visual indicator on
+   the tile (no badge) — see renderTile in js/utils.js. */
+
 /* ---------- Carousel (filmstrip) view ---------- */
 /* Only the carousel runs full-bleed — edge to edge across the viewport — while
    the compact/normal grid stays in main's centered 1040px column. main's
@@ -900,7 +897,7 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
 .grid.is-carousel .tile {
   flex: 0 0 auto;
   /* Tiles are square, so this size is also the strip's height. Bigger divisor
-     → smaller (shorter) tiles; tune the 3.2 to grow/shrink the carousel. */
+     → smaller (shorter) tiles; tune the 2.5 to grow/shrink the carousel. */
   --carousel-tile: calc((min(100vw, var(--carousel-maxw)) - 40px) / 2.5);
   width: var(--carousel-tile);
   height: var(--carousel-tile);
@@ -1493,18 +1490,18 @@ a.post-tag:focus-visible { color: var(--accent); }
   margin-left: auto;
   margin-right: auto;
   margin-top: var(--header-gap-sub);   /* first element on tags.html */
-  margin-bottom: 4px;    /* subtitle sits close under the title... */
+  margin-bottom: 10px;   /* room for the green bar + the summary below */
 }
-/* Summary count line ("N tags across M posts") — a small subtitle directly
-   under the title, above the index, with equal spacing on both sides. */
-.status.tags-summary {
-  max-width: var(--post-width);   /* align the divider with the index column */
-  margin: 0 auto 14px;
-  padding: 0 0 18px;    /* ...and further from the divider below it */
-  border-bottom: 1px solid var(--line);
-  font-size: var(--text-small);
+/* Green accent bar under the title (before the summary), matching the other
+   page headings' 10px-below-the-text spacing. */
+.tags-heading::after {
+  content: "";
+  display: block;
+  width: 44px;
+  height: 5px;
+  margin: 10px auto 0;
+  background: var(--accent);
 }
-
 /* The full tag list (tags.html): an editorial index — tag name, dotted leader,
    post count — in two columns (one below 600px). Quiet by design: no boxes,
    shadows, or pills; the dotted leader is the only structural device. Distinct
@@ -1675,8 +1672,6 @@ a.post-tag:focus-visible { color: var(--accent); }
 /* 1. Hero/intro fades in immediately on load (no upward drift). */
 .site-intro { animation: fadeIn 0.9s ease both; }
 
-/* Home controls (tag filter + density toggle) fade in just after the hero. */
-.controls { animation: fadeIn 0.4s ease both; animation-delay: 0.45s; }
 
 /* 2. Grid tiles stagger in (fade only, no drift); per-tile animation-delay is
    set inline in JS (0.3s base + 0.05s per tile, left-to-right, top-to-bottom). */
@@ -2104,7 +2099,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 .graph-wrap.is-faux-fullscreen {
   position: fixed;
   inset: 0;
-  z-index: 60;   /* above the theme toggle (10) and any falling-dot (50) */
+  z-index: 60;   /* above the theme toggle (10) */
   height: 100dvh;   /* fill the visual viewport on mobile, accounting for browser chrome */
 }
 body.is-graph-faux-fs { overflow: hidden; }

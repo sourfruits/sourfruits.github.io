@@ -38,12 +38,52 @@ function isDraft(post) {
   return year >= 2099;
 }
 
+// A post is pinned if it's flagged "pinned": true. Pinned posts sort ahead of
+// everything else regardless of date (drafts can be pinned too).
+function isPinned(post) {
+  return post && post.pinned === true;
+}
+
+// Display order for a list of posts: pinned first, then everyone else. Within
+// the pinned group an optional numeric "pinOrder" sets the order (lower first);
+// pinned posts without one fall to the end of the pinned group. Ties, and all
+// non-pinned posts, use the normal newest-first date order. Mutates + returns.
+function sortPosts(posts) {
+  return posts.sort((a, b) => {
+    const pa = isPinned(a), pb = isPinned(b);
+    if (pa !== pb) return pa ? -1 : 1;                 // pinned ahead of the rest
+    if (pa && pb) {                                     // both pinned → by pinOrder
+      const oa = Number.isFinite(a.pinOrder) ? a.pinOrder : Infinity;
+      const ob = Number.isFinite(b.pinOrder) ? b.pinOrder : Infinity;
+      if (oa !== ob) return oa - ob;
+    }
+    return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;   // newest first
+  });
+}
+
+// Content-type tags that mark what a post *is* (a writeup vs. a quick blurb)
+// always lead the tag list, wherever a post's tags are shown. Everything else
+// keeps its given order.
+const LEAD_TAGS = ["writeup", "blurb"];
+function orderTags(tags) {
+  if (!Array.isArray(tags)) return [];
+  const rank = (t) => {
+    const i = LEAD_TAGS.indexOf(t);
+    return i === -1 ? LEAD_TAGS.length : i;
+  };
+  // Stable sort: ties (same rank) keep their original order.
+  return [...tags].sort((a, b) => rank(a) - rank(b));
+}
+
 // One homepage/tag grid tile. `i` is the item's index on the page, driving the
 // staggered load-in animation delay (see the .tile rule in the CSS).
 function renderTile(post, i) {
   const draft = isDraft(post);
+  const pinned = isPinned(post);
+  // Pinned posts sort to the front (see sortPosts) but have NO visual indicator
+  // on the tile — just the is-pinned class as a hook. Only drafts get a badge.
   return `
-    <a class="tile${draft ? " is-draft" : ""}" href="post.html?id=${encodeURIComponent(post.id)}" style="animation-delay: ${(0.3 + i * 0.05).toFixed(2)}s">
+    <a class="tile${draft ? " is-draft" : ""}${pinned ? " is-pinned" : ""}" href="post.html?id=${encodeURIComponent(post.id)}" style="animation-delay: ${(0.3 + i * 0.05).toFixed(2)}s">
       ${draft ? '<span class="draft-badge">DRAFT</span>' : ""}
       <img src="${escapeHTML(post.thumb || post.image)}" alt="${escapeHTML(post.title)}" loading="lazy">
       <div class="tile-overlay">

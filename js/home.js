@@ -47,7 +47,8 @@ window.addEventListener("resize", updateCarouselArrows);
 fetchPosts()
   .then((posts) => {
     // Drafts are included in the homepage preview (for testing); renderTile
-    // tags them with the DRAFT badge. Newest first.
+    // tags them with the DRAFT badge. Newest first — pinning is a Posts-page
+    // concept and doesn't apply to the carousel.
     const all = posts.slice();
     sortByDateDesc(all);
 

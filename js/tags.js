@@ -26,10 +26,8 @@ fetchPosts()
       `</a>`
     ).join("");
 
-    const postCount = posts.filter((p) => !isDraft(p)).length;
-    status.textContent = tags.length
-      ? `${tags.length} tags across ${postCount} posts`
-      : "No tags yet.";
+    // No summary line — just clear the loading text (":empty" hides the box).
+    status.textContent = tags.length ? "" : "No tags yet.";
   })
   .catch((err) => {
     status.textContent = "Couldn't load tags. If you opened this file directly, run a local server (see the README).";
