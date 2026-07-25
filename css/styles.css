@@ -521,7 +521,7 @@ body.wide main { max-width: var(--maxw-wide); }
   margin: 0;   /* reset the default h1 margin */
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: var(--text-display);
+  font-size: var(--text-hero);
   font-weight: 700;
   letter-spacing: 0.02em;   /* spaced out a touch */
   color: var(--ink);
@@ -537,14 +537,15 @@ body.wide main { max-width: var(--maxw-wide); }
   background: var(--accent);
 }
 
-/* Homepage hero subtitle: a muted serif italic line under the title, followed
-   by the divider that separates the hero from the content. */
-.site-subtitle {
-  margin: 14px 0 0;
-  font-family: var(--font-serif);
-  font-style: italic;
+/* Homepage hero eyebrow: a small-caps bold line above the title. Extra space
+   above (from the header) + a tight gap below groups it with the title. */
+.site-eyebrow {
+  margin: 10px 0 3px;
+  font-variant: small-caps;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   color: var(--muted);
-  font-size: var(--text-medium);
+  font-size: var(--text-base);
 }
 .hero-rule {
   max-width: var(--maxw-wide);   /* follows the wide content frame */

@@ -49,8 +49,8 @@
   const intro = isHome
     ? `
     <div class="site-intro">
+      <p class="site-eyebrow">a visual archive of taste</p>
       <h1 class="site-title">${SITE_NAME}</h1>
-      <p class="site-subtitle">Documenting what I read, watch, and create.</p>
       <hr class="hero-rule">
     </div>`
     : "";
