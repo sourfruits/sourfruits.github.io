@@ -74,15 +74,18 @@ function renderPost(post) {
     : "";
 
   article.innerHTML = `
+    <h1 class="post-title">${escapeHTML(post.title)}</h1>
+    ${subtitle}
+    <hr class="post-rule">
     <div class="post-image-frame" style="--post-bg: url('${encodeURI(src)}')">
       <img class="post-image" src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}">
     </div>
-    <h1 class="post-title">${escapeHTML(post.title)}</h1>
-    ${subtitle}
+    <p class="post-byline">By <a href="about.html">Sourfruits</a></p>
     <div class="post-meta">
       <p class="post-date">${escapeHTML(formatDate(post.date, "long"))}</p>
       ${tags}
     </div>
+    <hr class="post-rule">
     <div class="post-body">${renderContent(post.content)}</div>
   `;
   status.textContent = "";

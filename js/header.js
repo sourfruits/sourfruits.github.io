@@ -28,7 +28,7 @@
   const intro = isHome
     ? `
     <div class="site-intro">
-      <a class="site-title" href="index.html">${SITE_NAME}</a>
+      <h1 class="site-title">${SITE_NAME}</h1>
     </div>`
     : "";
 

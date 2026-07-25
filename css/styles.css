@@ -6,6 +6,7 @@
   --ink: #1c1c1a;
   --muted: #76766e;
   --line: #d8d7ce;
+  --line-light: #ebebeb;   /* softer divider for decorative rules (dark mode overrides below) */
   --header-bg: #f1eeec;    /* soft warm greige navbar (warm, not yellow) */
   --accent: #67b35d;       /* medium green */
   --accent-ink: #163a25;   /* dark green — legible as text on an --accent fill */
@@ -21,7 +22,12 @@
   --rel-discovery:  #4a72b0;      /* steel blue (Discovery view edges) */
   --radius: 14px;
   --radius-pill: 5px;      /* was a full pill (999px); now a soft 5px on all controls */
-  --maxw: 1040px;
+  /* Content-frame scale. --maxw is the normal frame; --maxw-wide is an opt-in
+     wider frame for pages that need room (e.g. the Precursors graph); posts use
+     the narrower --post-width. A page opts into wide via `<body class="wide">`. */
+  --maxw: 1040px;          /* normal frame — header + content align everywhere */
+  --maxw-wide: 1200px;     /* wider frame for "larger" pages (Precursors) — tunable */
+  --carousel-maxw: 1040px; /* width the carousel tiles size against — tune to grow/shrink tiles */
   --post-width: 700px;     /* reading column for post/search/tag content */
 
   /* Font stacks */
@@ -57,6 +63,7 @@
   --text-heading-sm: 1.4rem;
   --text-heading-lg: 2rem;
   --text-display: 2.4rem;
+  --text-hero: 2.9rem;      /* homepage centered title */
 }
 
 /* Dark mode: override only the color variables — every element reads from these,
@@ -71,6 +78,7 @@
   --ink: #e8e4dc;
   --muted: #9a9288;
   --line: #37312a;
+  --line-light: #2d2822;   /* softer divider — a touch quieter than --line on dark */
   --contrast-ink: var(--accent-ink);  /* dark green in dark mode, matching accent-ink */
   /* --accent and --accent-ink are intentionally NOT overridden here — the accent
      treatment is identical in both modes (accent-ink only ever sits on an
@@ -83,6 +91,11 @@
   --rel-discovery:  #6f9bd6;
   --grid-dot: #302b23;            /* faint dot-grid backdrop (dark mode) */
 }
+
+/* Pages opt into the wider frame with <body class="wide"> — only the main
+   content widens; the header/nav stays on the normal --maxw so it's identical
+   across every page. */
+body.wide main { max-width: var(--maxw-wide); }
 
 * { box-sizing: border-box; }
 
@@ -456,7 +469,7 @@ main {
   color: var(--muted);
   text-decoration: none;
   font-size: var(--text-base);
-  font-weight: 600;
+  font-weight: 400;
   transition: color 0.2s ease;
 }
 .nav-link:hover,
@@ -507,11 +520,11 @@ main {
 
 .site-title {
   display: inline-block;
-  font-size: var(--text-display);
+  margin: 0;   /* reset the default h1 margin */
+  font-size: var(--text-hero);
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--ink);
-  text-decoration: none;
 }
 
 .site-title::after {
@@ -540,12 +553,11 @@ main {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  /* Pull the toolbar up a little, tightening the gap below the hero's green
-     divider line (homepage-only, since .controls only exists here). */
-  margin-top: -6px;
+  /* Divider sits ABOVE the toolbar (between the hero and the controls). */
+  margin-top: 16px;
   margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--line);
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 
 /* Left cluster of the controls row: the tag dropdown and the drafts toggle,
@@ -712,6 +724,7 @@ main {
   .grid.is-compact { grid-template-columns: repeat(3, 1fr); }
 }
 
+
 .tile {
   position: relative;
   display: block;
@@ -858,7 +871,7 @@ body:has(.grid.is-carousel) { overflow-x: hidden; }
    2 on mobile (matching the grid's column counts). Images stay lazy-loaded. */
 .grid.is-carousel .tile {
   flex: 0 0 auto;
-  --carousel-tile: calc((min(100vw, var(--maxw)) - 40px) / 2.2);
+  --carousel-tile: calc((min(100vw, var(--carousel-maxw)) - 40px) / 2.2);
   width: var(--carousel-tile);
   height: var(--carousel-tile);
   aspect-ratio: 1 / 1;
@@ -1247,6 +1260,7 @@ a.page-link:focus-visible {
   max-height: 60vh;
   overflow: hidden;
   background: transparent;
+  margin: 24px 0;   /* breathing room from the title/subtitle above and the meta below */
 }
 
 .post-image-frame::before {
@@ -1276,10 +1290,14 @@ a.page-link:focus-visible {
    (About, tag, search, tags list) use the smaller shared --heading-size,
    centered. */
 .post-title {
+  font-family: var(--font-serif);
   font-size: var(--text-heading-lg);
-  font-weight: 800;
+  font-weight: 700;
+  font-style: italic;
   letter-spacing: -0.02em;
-  margin: 28px 0 6px;
+  /* Top 0 so the back link's bottom margin owns the gap above — aligning the
+     title with the tag/search headings on the other back-button pages. */
+  margin: 0 0 6px;
 }
 
 /* Utility-page heading (About): centered, shared size, with breathing room
@@ -1306,10 +1324,10 @@ a.page-link:focus-visible {
   background: var(--accent);
 }
 
-/* Optional post subtitle: a smaller italic line under the title. */
+/* Optional post subtitle: a smaller serif line under the title. */
 .post-subtitle {
+  font-family: var(--font-serif);
   font-size: var(--text-heading-sm);
-  font-style: italic;
   color: var(--muted);
   margin: 0 0 10px;
 }
@@ -1333,6 +1351,23 @@ a.page-link:focus-visible {
   font-size: var(--text-base);
 }
 .post-meta .post-date { margin: 0; }
+
+/* Hairline dividers on the post page — below the title/subtitle block and below
+   the meta. */
+.post-rule {
+  border: 0;
+  border-top: 1px solid var(--line-light);
+  margin: 20px 0;
+}
+/* "By Elia C." byline above the meta; the name links to About. */
+.post-byline {
+  margin: 0 0 4px;
+  color: var(--muted);
+  font-size: var(--text-base);
+  font-weight: 600;
+}
+.post-byline a { color: var(--ink); text-decoration: none; }
+.post-byline a:hover { color: var(--accent); }
 
 /* Shared tag style, used everywhere a tag appears (post meta, tags page, search
    results). Links get a hover state; plain spans (e.g. inside a search card,
@@ -1611,17 +1646,20 @@ a.post-tag:focus-visible { color: var(--accent); }
 #post .post-image-frame,
 #post .post-title,
 #post .post-subtitle,
+#post .post-rule,
+#post .post-byline,
 #post .post-meta,
 #post .post-body { opacity: 0; }
 
-/* 3. Image fades in on load. */
-#post.is-loaded .post-image-frame { animation: fadeIn 0.4s ease both; }
-
-/* 4. Content cascades in after the image, each element just after the last. */
-#post.is-loaded .post-title    { animation: fadeIn 0.3s ease both; animation-delay: 0.10s; }
-#post.is-loaded .post-subtitle { animation: fadeIn 0.3s ease both; animation-delay: 0.15s; }
-#post.is-loaded .post-meta     { animation: fadeIn 0.3s ease both; animation-delay: 0.20s; }
-#post.is-loaded .post-body     { animation: fadeIn 0.3s ease both; animation-delay: 0.40s; }
+/* Content cascades in top-to-bottom once the image has loaded: title → subtitle
+   → rule → image → byline → meta → rule → body. */
+#post.is-loaded .post-title      { animation: fadeIn 0.3s ease both; animation-delay: 0.10s; }
+#post.is-loaded .post-subtitle   { animation: fadeIn 0.3s ease both; animation-delay: 0.15s; }
+#post.is-loaded .post-rule       { animation: fadeIn 0.3s ease both; animation-delay: 0.20s; }
+#post.is-loaded .post-image-frame { animation: fadeIn 0.4s ease both; animation-delay: 0.22s; }
+#post.is-loaded .post-byline     { animation: fadeIn 0.3s ease both; animation-delay: 0.28s; }
+#post.is-loaded .post-meta       { animation: fadeIn 0.3s ease both; animation-delay: 0.32s; }
+#post.is-loaded .post-body       { animation: fadeIn 0.3s ease both; animation-delay: 0.42s; }
 
 /* Respect reduced-motion: show everything at rest, no animation. */
 @media (prefers-reduced-motion: reduce) {
@@ -1630,6 +1668,8 @@ a.post-tag:focus-visible { color: var(--accent); }
   #post .post-image-frame,
   #post .post-title,
   #post .post-subtitle,
+  #post .post-rule,
+  #post .post-byline,
   #post .post-meta,
   #post .post-body {
     animation: none;
@@ -1802,20 +1842,6 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 .mode-btn:focus-visible { outline: none; color: var(--ink); }
 
-.graph-fs-btn {
-  padding: 6px 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  background: var(--surface);   /* solid, so it stays legible over the graph */
-  color: var(--muted);
-  font-family: var(--font-sans);
-  font-size: var(--text-small);
-  cursor: pointer;
-  white-space: nowrap;
-}
-.graph-fs-btn:hover { color: var(--ink); }
-.graph-fs-btn:focus-visible { outline: none; color: var(--ink); }
-
 /* Square icon button (Reset) — same look as the full-screen icon, minus its
    corner positioning, so it sits in the top-right group next to Tuning. */
 .graph-icon-btn {
@@ -1840,7 +1866,6 @@ a.post-tag:focus-visible { color: var(--accent); }
 @media (max-width: 560px) {
   #graph-tuning-btn { display: none; }
   .mode-btn { padding: 5px 9px; font-size: var(--text-tiny); }
-  .graph-fs-btn { padding: 5px 9px; font-size: var(--text-tiny); }
 }
 
 /* Full-screen toggle: an icon button pinned to the graph's bottom-right. */
@@ -2316,7 +2341,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* Precursors nav link — hover easter egg. Letters shift out of alignment and
    turn green (staggered), then a faint node-graph of lines + dots fades in
    between them a beat later. No glow/text-shadow — just colour, shift, lines. */
-.nav-precursors { position: relative; }
+.nav-precursors { position: relative; color: var(--accent); font-weight: 600; }
 .np-letter {
   /* Kept as inline (not inline-block) so each letter sits on the exact text
      baseline of the adjacent nav links — no taller line box to misalign. The
