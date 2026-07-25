@@ -22,6 +22,7 @@
       "kind": "book",
       "post_ids": [],
       "discovered_via": [
+        { "strength": "aware", "source": "soren-kierkegaard", "date": "2024" },
         { "source": "dis-philosophy", "date": "2026-03", "note": "Read excerpt: The Unhappiest One" }
       ],
       "connections": [
@@ -34,7 +35,7 @@
       "kind": "book",
       "post_ids": [],
       "discovered_via": [
-        { "source": "the-stranger", "date": "2026-04", "note": "Existential fiction thread" }
+        { "source": "the-stranger", "date": "2026-04", "thread": "existential fiction" }
       ]
     },
     {
@@ -53,9 +54,10 @@
       "id": "the-trial",
       "label": "The Trial",
       "kind": "book",
+      "creator": "Franz Kafka",
       "post_ids": ["kafka-the-trial"],
       "discovered_via": [
-        { "source": "the-stranger", "date": "2026-06", "note": "Existential fiction thread" }
+        { "source": "the-stranger", "date": "2026-06", "thread": "existential fiction" }
       ],
       "connections": [
         { "to": "the-trial-film", "relationship": "adaptation" },
@@ -68,7 +70,7 @@
       "id": "the-trial-film",
       "label": "The Trial (1962)",
       "kind": "film",
-      "author": "Orson Welles",
+      "creator": "Orson Welles",
       "discovered_via": [
         { "source": "the-trial", "date": "2026-06" }
       ]
@@ -77,7 +79,7 @@
       "id": "after-hours",
       "label": "After Hours (1985)",
       "kind": "film",
-      "author": "Martin Scorsese",
+      "creator": "Martin Scorsese",
       "discovered_via": [
         { "source": "letterboxd", "date": "2026-03" }
       ]
@@ -95,6 +97,7 @@
       "id": "the-stranger",
       "label": "The Stranger",
       "kind": "book",
+      "creator": "Alfred Camus",
       "post_ids": [],
       "discovered_via": [
         { "source": "dis-philosophy", "date": "2026-03", "note": "Borrowed from the DIS library." }
@@ -104,6 +107,7 @@
       "id": "the-myth-of-sisyphus",
       "label": "The Myth of Sisyphus",
       "kind": "book",
+      "creator": "Alfred Camus",
       "post_ids": [],
       "discovered_via": [
         { "source": "the-stranger", "date": "2026-04" }
@@ -146,7 +150,7 @@
       "kind": "book",
       "post_ids": [],
       "discovered_via": [
-        { "source": "the-stranger", "date": "2026-05", "note": "Existential fiction thread" }
+        { "source": "the-stranger", "date": "2026-05", "thread": "existential fiction" }
       ],
       "connections": [
         { "to": "the-stranger", "relationship": "influence" }
@@ -200,16 +204,17 @@
       "kind": "film",
       "post_ids": [],
       "discovered_via": [
-        { "source": "le-samourai", "date": "2026-04", "note": "Ascetic style and influences" }
+        { "source": "le-samourai", "date": "2026-04", "thread": "lone operator", "note": "Bresson/Melville ascetic dialogue" }
       ]
     },
     {
       "id": "le-samourai",
       "label": "Le Samouraï (1967)",
       "kind": "film",
+      "creator": "Jean-Pierre Melville",
       "post_ids": [],
       "discovered_via": [
-        { "source": "the-parallax-view", "mechanism": "letterboxd", "date": "2026-03", "note": "70s paranoia deep dive" }
+        { "source": "the-parallax-view", "mechanism": "letterboxd", "date": "2026-03", "thread": "70s paranoia" }
       ],
       "connections": [
         { "to": "ghost-dog", "relationship": "influence", "note": "Jarmusch built Ghost Dog on Le Samouraï's lone-hitman code and stillness." },
@@ -247,17 +252,19 @@
       "kind": "film",
       "post_ids": [],
       "discovered_via": [
-        { "source": "le-samourai", "date": "2026-04" }
+        { "source": "le-samourai", "date": "2026-04", "thread": "lone operator"}
       ]
     },
     {
       "id": "chan-is-missing",
       "label": "Chan Is Missing (1982)",
       "kind": "film",
+      "creator": "Wayne Wang",
       "discovered_via": [
         { "source": "letterboxd", "date": "2026-05" }
       ],
-      "connections": []
+      "connections": [],
+      "post_ids": ["chan-is-missing"]      
     },
     {
       "id": "blow-up",
@@ -276,9 +283,9 @@
       "id": "the-conversation",
       "label": "The Conversation (1974)",
       "kind": "film",
-      "post_ids": [],
+      "creator": "Francis Ford Coppola",
       "discovered_via": [
-        { "source": "the-parallax-view", "date": "2023-04", "note": "70s paranoia deep dive" }
+        { "source": "the-parallax-view", "date": "2023-04", "thread": "70s paranoia" }
       ],
       "connections": [
         { "to": "the-parallax-view", "relationship": "thematic" }
@@ -288,9 +295,10 @@
       "id": "blow-out",
       "label": "Blow Out (1981)",
       "kind": "film",
+      "creator": "Brian de Palma",
       "post_ids": [],
       "discovered_via": [
-        { "source": "the-parallax-view", "date": "2023-04", "note": "70s paranoia deep dive" }
+        { "source": "the-parallax-view", "date": "2023-04", "thread": "70s paranoia" }
       ],
       "connections": []
     },
@@ -298,6 +306,7 @@
       "id": "the-parallax-view",
       "label": "The Parallax View (1974)",
       "kind": "film",
+      "creator": "Alan J. Pakula",
       "discovered_via": [
         { "date": "2023-04", "note": "General interest in spy/paranoia thrillers around this time; no specific trigger." }
       ]
@@ -306,7 +315,7 @@
       "id": "mahjong",
       "label": "Mahjong (1996)",
       "kind": "film",
-      "author": "Edward Yang",
+      "creator": "Edward Yang",
       "discovered_via": [
         { "source": "letterboxd", "date": "2026-05" }
       ]
@@ -315,27 +324,27 @@
       "id": "cold-water",
       "label": "Cold Water (1994)",
       "kind": "film",
-      "author": "Olivier Assayas",
+      "creator": "Olivier Assayas",
       "discovered_via": [
-        { "source": "mahjong", "note": "Virginie Ledoyen" }
+        { "source": "mahjong", "thread": "Virginie Ledoyen" }
       ]
     },
     {
       "id": "purple-noon",
       "label": "Purple Noon (1960)",
       "kind": "film",
-      "author": "René Clément",
+      "creator": "René Clément",
       "discovered_via": [
-        { "source": "le-samourai", "date": "2026-05", "note": "Alain Delon" }
+        { "source": "le-samourai", "date": "2026-05", "thread": "Alain Delon" }
       ]
     },
     {
       "id": "thief",
       "label": "Thief (1981)",
       "kind": "film",
-      "author": "Michael Mann",
+      "creator": "Michael Mann",
       "discovered_via": [
-        { "source": "le-samourai", "date": "2026-05", "note": "Looking for lone operator movies" }
+        { "source": "le-samourai", "date": "2026-05", "thread": "lone operator" }
       ]
     },
     {

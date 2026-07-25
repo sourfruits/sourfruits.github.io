@@ -369,14 +369,16 @@ function buildDiscovery(data) {
         return;
       }
       const note = dv.note || "";
+      const thread = dv.thread || "";
       // "aware" (just heard of it) vs "engaged" (sat down with it); defaults to
       // engaged. Aware edges draw dashed. Every entry draws its own edge — a
       // node can have two (a distinct earlier "aware" and a later "engaged").
       const strength = dv.strength === "aware" ? "aware" : "engaged";
       include(src);
       links.push({ source: src, target: n.id, type: "discovery", directional: true, note, strength });
+      // The source's "Led to" row shows the thread (the pull), not the story note.
       if (!ledTo.has(src)) ledTo.set(src, []);
-      ledTo.get(src).push({ to: n.id, note });
+      ledTo.get(src).push({ to: n.id, thread });
       // Only "consciousness" (engaged) discoveries count toward size.
       if (strength === "engaged") consciousnessOut.set(src, (consciousnessOut.get(src) || 0) + 1);
     });
@@ -642,17 +644,21 @@ function edgeEnd(d) {
 // Hover card: just title, kind, and the connection counts — a quick glance.
 // Posts and the full connection list live in the click-to-open detail card.
 function nodeTooltipHTML(d) {
-  let html = `<strong>${escapeHTML(d.label)}</strong>`;
-  if (d.kind) html += `<span class="tip-kind">${escapeHTML(d.kind)}</span>`;
-  const author = authorInfo(d);
-  if (author) html += `<span class="tip-by">by ${escapeHTML(author.name)}</span>`;
+  // Same shape as the card: kind eyebrow → serif title → creator byline →
+  // hairline → the connection counts.
+  const creator = creatorInfo(d);
+  let html = "";
+  if (d.kind) html += `<span class="tip-eyebrow">${escapeHTML(d.kind)}</span>`;
+  html += `<strong class="tip-title">${escapeHTML(d.label)}</strong>`;
+  if (creator) html += `<span class="tip-by">${creatorCredit(creator.role)} ${escapeHTML(creator.name)}</span>`;
+  html += `<hr class="tip-rule">`;
   const n = d.degree || 0;
   let meta = `${n} connection${n === 1 ? "" : "s"}`;
   // Downstream influence originating here — things it influenced / adapted, plus
   // (via authorship, one hop) what its authored works influenced. Same number
   // that drives node size. Only shown when there is any.
   const out = d.growth || 0;
-  if (out) meta += ` · ${out} outgoing →`;
+  if (out) meta += ` · ${out} outgoing`;
   html += `<span class="tip-degree">${meta}</span>`;
   return html;
 }
@@ -723,9 +729,9 @@ function hideTooltip() {
 // pannable/hoverable around it. Escape or the × dismisses it; clicking the same
 // node toggles it shut.
 
-// The authoring node (author/director) whose authorship connection points at
-// this node, or null. Authorship is written on the author, aimed at the work.
-function authorOf(node) {
+// The creator node (author/director) whose authorship connection points at this
+// node, or null. Authorship is written on the creator, aimed at the work.
+function creatorOf(node) {
   for (const n of rawData.nodes) {
     for (const c of n.connections || []) {
       const to = typeof c === "string" ? c : c && c.to;
@@ -735,18 +741,25 @@ function authorOf(node) {
   return null;
 }
 
-// The author/director for a node: a real node linked by an authorship
-// connection if there is one (role from that node's kind), else the node's own
-// plain `author` string (role from this node's kind — Director for a film,
-// Author otherwise). Returns { name, role } or null. Shared by the hover and card.
-function authorInfo(node) {
-  const authorNode = authorOf(node);
-  if (authorNode) {
-    return { name: authorNode.label, role: authorNode.kind === "director" ? "Director" : "Author" };
-  }
-  if (typeof node.author === "string" && node.author.trim()) {
-    return { name: node.author.trim(), role: node.kind === "film" ? "Director" : "Author" };
-  }
+// The label for a work's creator, decided by the *work's* kind (not the maker's).
+// One place to extend later (e.g. album → "Musician").
+function creatorRole(kind) {
+  return kind === "film" ? "Director" : "Author";
+}
+// The short credit prefix for a role — "dir." for a Director, "by" otherwise.
+// Shared by the card's kind line and the hover tooltip so they stay in sync.
+function creatorCredit(role) {
+  return role === "Director" ? "dir." : "by";
+}
+
+// The creator for a node: a real node linked by an authorship connection if there
+// is one, else the node's own plain `creator` string. Either way the role comes
+// from this work's kind (see creatorRole). Returns { name, role } or null.
+function creatorInfo(node) {
+  const role = creatorRole(node.kind);
+  const creatorNode = creatorOf(node);
+  if (creatorNode) return { name: creatorNode.label, role };
+  if (typeof node.creator === "string" && node.creator.trim()) return { name: node.creator.trim(), role };
   return null;
 }
 
@@ -782,6 +795,19 @@ function connectionsFor(node) {
   return out;
 }
 
+// Capitalize the first letter (thread values are stored lowercase but display
+// as "Thread: Existential fiction").
+function capFirst(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+// The "↳ Thread: X" sub-line, shown under a source's "Led to" rows. The ↳ is
+// nudged up in CSS so it aligns with the text.
+function threadLine(thread) {
+  if (!thread) return "";
+  return `<div class="detail-conn-thread"><span class="thread-arrow">↳</span> Thread: ${escapeHTML(capFirst(thread))}</div>`;
+}
+
 // One connection row: relationship label (coloured to match its edge) with a
 // direction glyph for directional types, the other node's name, and any note.
 function connectionRowHTML(c) {
@@ -804,13 +830,18 @@ function connectionRowHTML(c) {
     ? `leads to ${onward} more discover${onward === 1 ? "y" : "ies"} downstream`
     : `${onward} downstream influence${onward === 1 ? "" : "s"}`;
   let html = `<div class="detail-conn">`;
+  // The relationship label + the name together are the link (opens the other
+  // node's card). The "+N"/"→N" badge and any sub-lines stay outside it, so only
+  // "Discovery → The Stranger" is clickable — not the trailing count.
+  html += `<span class="detail-conn-main" data-node-id="${escapeHTML(c.other.id)}" role="button" tabindex="0" title="Open ${escapeHTML(c.other.label)}">`;
   html += `<span class="detail-conn-rel" style="color:${relColor}">${escapeHTML(relLabel)}${glyph}</span>`;
-  // Only the name is the link — it opens the other node's card (always a real
-  // node in the current view; see connectionsFor / cardConnections). The rel
-  // label and note stay inert.
-  html += `<span class="detail-conn-name detail-link" data-node-id="${escapeHTML(c.other.id)}" role="button" tabindex="0" title="Open ${escapeHTML(c.other.label)}">${escapeHTML(c.other.label)}</span>`;
-  // The onward marker sits after the title.
+  html += `<span class="detail-conn-name">${escapeHTML(c.other.label)}</span>`;
+  html += `</span>`;
+  // The onward marker sits after the link, not part of it.
   if (onward) html += ` <span class="detail-conn-onward" title="${escapeHTML(onwardTitle)}">${onwardText}</span>`;
+  // Discovery rows show the thread (the pull); Connections rows show the
+  // connection note. (A row only ever carries one of the two.)
+  html += threadLine(c.thread);
   if (c.note) html += `<div class="detail-conn-note">${escapeHTML(c.note)}</div>`;
   html += `</div>`;
   return html;
@@ -829,34 +860,53 @@ function onwardOf(c) {
 function byOnwardDesc(a, b) {
   return onwardOf(b) - onwardOf(a);
 }
+// Connections list order — by relationship type *and* direction. Untyped/plain
+// links last. Within a group, the "+N" (downstream reach) still sorts descending.
+const CONN_ORDER = [
+  { type: "authorship" },              // always outgoing ("authored X")
+  { type: "adaptation", dir: "in" },   // "adaptation of ←"
+  { type: "influence",  dir: "out" },  // "influenced →"
+  { type: "adaptation", dir: "out" },  // "adapted into →"
+  { type: "influence",  dir: "in" },   // "influenced by ←"
+  { type: "thematic" },                // non-directional
+];
+function connRank(c) {
+  for (let i = 0; i < CONN_ORDER.length; i++) {
+    const o = CONN_ORDER[i];
+    if (o.type === c.rel && (!o.dir || o.dir === c.dir)) return i;
+  }
+  return CONN_ORDER.length;   // untyped / anything else, last
+}
+function byConnOrder(a, b) {
+  return connRank(a) - connRank(b) || onwardOf(b) - onwardOf(a);
+}
 function cardConnections(node) {
   if (currentMode === "discovery") {
     const rows = (node.discoveryOut || [])
-      .map((d) => ({ other: nodeById[d.to], rel: "discovery", note: d.note || "", dir: "out" }))
+      .map((d) => ({ other: nodeById[d.to], rel: "discovery", thread: d.thread || "", dir: "out" }))
       .filter((r) => r.other)
       .sort(byOnwardDesc);
     return { rows, label: `Led to (${rows.length})` };
   }
-  const rows = connectionsFor(node).sort(byOnwardDesc);
+  const rows = connectionsFor(node).sort(byConnOrder);
   let label = `Connections (${rows.length})`;
   // Same downstream-influence count as node size / the hover card.
   const out = growthById[node.id] || node.growth || 0;
-  if (out) label += ` · ${out} outgoing →`;
+  if (out) label += ` · ${out} outgoing`;
   return { rows, label };
 }
 
 function openDetail(node, event) {
   detailNodeId = node.id;
 
-  // Header — always visible; the connections list below it scrolls, not this.
+  // Header block: kind as a small uppercase eyebrow above the serif title, then
+  // the creator as a byline on its own line, then a hairline before the meta.
   let html = `<button type="button" class="detail-close" aria-label="Close detail">×</button>`;
+  if (node.kind) html += `<div class="detail-eyebrow">${escapeHTML(node.kind)}</div>`;
   html += `<h2 class="detail-title">${escapeHTML(node.label)}</h2>`;
-  if (node.kind) html += `<div class="detail-kind">${escapeHTML(node.kind)}</div>`;
-
-  // Author/director line (see authorInfo for how it's resolved).
-  const author = authorInfo(node);
-  if (author) {
-    html += `<div class="detail-meta-row"><span class="detail-meta-label">${author.role}</span> ${escapeHTML(author.name)}</div>`;
+  const creator = creatorInfo(node);
+  if (creator) {
+    html += `<div class="detail-byline">${creatorCredit(creator.role)} ${escapeHTML(creator.name)}</div>`;
   }
 
   // "Discovered via" is a Discovery-mode section — omitted in Connections. One
@@ -873,22 +923,22 @@ function openDetail(node, event) {
     const label = escapeHTML(other.label);
     return `<span class="detail-source-link" data-node-id="${escapeHTML(d.source)}" role="button" tabindex="0" title="Open ${label}">${label}</span>`;
   };
-  // Optional mechanism metadata (a platform/method, not a node):
-  // "platform-letterboxd" → "· found on Letterboxd".
-  const dvMech = (d) => {
-    if (!d.mechanism) return "";
-    const name = humanizeId(d.mechanism);
-    const phrase = String(d.mechanism).startsWith("platform-") ? `found on ${name}` : name;
-    return ` <span class="detail-dv-mech">· ${escapeHTML(phrase)}</span>`;
-  };
+  // Date and thread both ride inline on the "Discovered via" (origin) line; the
+  // story note is the line below. NOTE: `mechanism` (e.g. "letterboxd") is kept
+  // in the data but NOT displayed anywhere right now — it used to render as
+  // "· found on X".
   const dvDate = (d) => (d.date ? ` <span class="detail-dv-date">· ${escapeHTML(formatDiscoveryDate(d.date))}</span>` : "");
+  const dvThread = (d) => (d.thread ? ` <span class="detail-dv-thread">· Thread: ${escapeHTML(capFirst(d.thread))}</span>` : "");
+  // Hairline separating the title block from the metadata (Discovery only — in
+  // Connections the connections section's own top border does the separating).
+  if (currentMode === "discovery" && dvs.length) html += `<hr class="detail-rule">`;
   if (currentMode === "discovery" && dvs.length === 1) {
     const d = dvs[0];
-    html += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvMech(d)}${dvDate(d)}</div>`;
+    html += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvDate(d)}${dvThread(d)}</div>`;
     if (d.note) html += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
   } else if (currentMode === "discovery" && dvs.length > 1) {
     const items = dvs.map((d) => {
-      let li = `<li>${dvLabel(d)}${dvMech(d)}${dvDate(d)}`;
+      let li = `<li>${dvLabel(d)}${dvDate(d)}${dvThread(d)}`;
       if (d.note) li += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
       return li + `</li>`;
     }).join("");

@@ -165,7 +165,7 @@ node automatically). Each node carries its *own* connections:
       "id": "the-trial",                       // stable, unique, hand-picked slug
       "label": "The Trial",                    // display name on the graph
       "kind": "book",                          // free string: film, book, person, platform…
-      "author": "Franz Kafka",                 // optional — shown as the Author/Director line
+      "creator": "Franz Kafka",                // optional — shown as the Author/Director line
       "post_ids": ["kafka-the-trial"],         // 0, 1, or many post ids (optional link-out)
       "connections": [                         // bare id, or { to, relationship, note }
         { "to": "after-hours", "relationship": "influence" }
@@ -175,7 +175,8 @@ node automatically). Each node carries its *own* connections:
           "source": "class-dis-philosophy",   // another node's id (sources are ordinary nodes)
           "strength": "engaged",              // "engaged" (default) or "aware"
           "date": "2026-03",                  // optional — year / year-month / full date
-          "note": "Read for a philosophy class."  // optional, shown on hover + card
+          "thread": "existential fiction",    // optional — the through-line you were pulling
+          "note": "Read for a philosophy class."  // optional story; shown on its own card
         }
       ]
     },
@@ -204,10 +205,10 @@ node automatically). Each node carries its *own* connections:
   nodes do this — `soren-kierkegaard` → "Soren Kierkegaard").
 - `kind` — an open string, not a fixed list (`film`, `book`, `philosopher`,
   `person`, `platform`, `class`, `podcast`, …). New kinds need no code change.
-- `author` — optional string. Shown on hover and in the detail card as the
-  "Director" line (for a `film`) or "Author" line (otherwise). If instead another
-  node points at this one with an `authorship` connection, that node is used as the
-  author automatically and you can omit this field.
+- `creator` — optional string: who made it. Shown on hover and in the detail card
+  as the "Director" line (for a `film`) or "Author" line (otherwise). If instead
+  another node points at this one with an `authorship` connection, that node is
+  used automatically and you can omit this field.
 - `post_ids` — array of `posts.json` ids this node maps to. Usually empty (a
   graph-only node with no write-up yet); can point to one or several. The detail
   card lists the linked post title(s) as links.
@@ -238,11 +239,23 @@ node automatically). Each node carries its *own* connections:
     (it just draws no edge).
   - `strength` — `"engaged"` (default; a solid edge, *Consciousness*) or `"aware"`
     (a dashed edge, *Awareness*, for something you'd only heard of).
-  - `mechanism` — optional. The platform/means you actually found it through, as a
-    `{type}-{descriptor}` string; a `platform-*` value renders as "found on X"
-    (e.g. `platform-letterboxd` → "found on Letterboxd") in the detail card.
+  - `mechanism` — optional. The platform/means you actually found it through
+    (e.g. `letterboxd`). Renders as "· found on X" in the detail card (the id is
+    humanized, so `letterboxd` → "found on Letterboxd").
   - `date` — optional, at any precision: `"2024"`, `"2026-03"`, or `"2026-03-14"`.
-  - `note` — optional free text, shown on hover and in the card.
+  - `thread` — optional. The through-line you were pulling **when you found this
+    thing** (`"70s paranoia"`, `"Alain Delon"`). Tag an entry with it only if you
+    discovered that thing *while following* the thread — the origin that *started*
+    a thread stays untagged (it wasn't found through it). A thing can be found in
+    one thread and kick off another: the second thread lives on the entries of the
+    things *it* leads to. Rendered as "↳ thread: X" both in the source's "Led to"
+    rows (the pull it produced) and on the thing's own "Discovered via". Not a
+    node/edge — just a caption for now, to visualize later. Example: The Parallax
+    View is untagged (it seeded "70s paranoia"); Le Samouraï's entry is
+    `thread: "70s paranoia"` (found via that hunt); Le Samouraï's own children get
+    `thread: "lone operator"` (the thread *it* kicked off).
+  - `note` — optional free text: the one-off story/circumstance (`"Danish
+    bookstore"`). Shown only on the thing's *own* card, not in "Led to" rows.
 
   (The older single-object form — `"discovered_via": { "source": … }` — is still
   read and treated as a one-element array, so existing data keeps working.)

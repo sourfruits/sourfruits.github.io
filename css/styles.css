@@ -2035,24 +2035,36 @@ body.is-graph-faux-fs { overflow: hidden; }
   z-index: 5;
 }
 .graph-tooltip[hidden] { display: none; }
-.graph-tooltip .tip-kind {
+/* Kind eyebrow above the title (uppercase, small, muted). */
+.graph-tooltip .tip-eyebrow {
   display: block;
   color: var(--muted);
   font-size: var(--text-tiny);
-  letter-spacing: 0.03em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-top: 2px;
+  margin-bottom: 3px;
 }
+/* Title — serif, like the card. */
+.graph-tooltip .tip-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+}
+/* Creator byline on its own line below the title. */
 .graph-tooltip .tip-by {
   display: block;
-  color: var(--muted);
   margin-top: 3px;
+  color: var(--muted);
+}
+/* Hairline between the title block and the connection counts. */
+.graph-tooltip .tip-rule {
+  margin: 8px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
 }
 .graph-tooltip .tip-degree {
   display: block;
   color: var(--muted);
   font-size: var(--text-tiny);
-  margin-top: 6px;
 }
 .graph-tooltip .tip-note { display: block; }
 .graph-tooltip .tip-rel {
@@ -2076,7 +2088,7 @@ body.is-graph-faux-fs { overflow: hidden; }
   padding: 16px 18px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-pill);
   color: var(--ink);
   font-size: var(--text-small);
   line-height: 1.4;
@@ -2117,30 +2129,55 @@ body.is-graph-faux-fs { overflow: hidden; }
 }
 .detail-close:hover { color: var(--ink); }
 
+/* Small uppercase eyebrow (the kind/category) above the title. */
+.detail-eyebrow {
+  margin: 0 22px 4px 0;
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+/* Title — serif, the one place (with the note) that isn't sans. */
 .detail-title {
   margin: 0 22px 0 0;   /* clear the close button; title wraps naturally */
+  font-family: var(--font-serif);
   font-size: var(--text-medium);
   font-weight: 700;
+  line-height: 1.25;
   color: var(--ink);
   overflow-wrap: anywhere;
 }
-.detail-kind {
-  margin-top: 3px;
+/* Creator byline on its own line below the title. */
+.detail-byline {
+  margin-top: 4px;
   color: var(--muted);
-  font-size: var(--text-tiny);
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  font-size: var(--text-small);
 }
-.detail-meta-row { margin-top: 8px; color: var(--ink); }
+/* Hairline between the title block and the metadata. */
+.detail-rule {
+  margin: 10px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+/* Metadata line — small and muted. */
+.detail-meta-row { color: var(--muted); font-size: var(--text-small); }
 .detail-meta-label { color: var(--muted); }
-.detail-meta-note { margin-top: 3px; color: var(--muted); }
+/* Personal note as a pull-quote: serif italic, primary text, accent left edge. */
+.detail-meta-note {
+  margin-top: 10px;
+  padding-left: 12px;
+  border-left: 2px solid var(--accent);
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--ink);
+}
 
 /* "Discovered via" list when a node has more than one discovery path. */
 .detail-discovered { margin-top: 8px; }
-.detail-dv-list { list-style: none; margin: 4px 0 0; padding: 0; color: var(--ink); }
+.detail-dv-list { list-style: none; margin: 4px 0 0; padding: 0; color: var(--muted); font-size: var(--text-tiny); }
 .detail-dv-list li + li { margin-top: 6px; }
-.detail-dv-date { color: var(--muted); font-size: var(--text-tiny); }
-.detail-dv-mech { color: var(--muted); font-size: var(--text-tiny); }
+.detail-dv-date { color: var(--muted); }
+.detail-dv-thread { color: var(--muted); }
 
 /* Connections: a stats label that stays put over the scrolling list. The list
    is capped to 3 rows in JS; this keeps it bounded even before that runs. */
@@ -2166,21 +2203,22 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* The node name sits inline, right after the relationship label ("Discovery →
    The Stranger"), not on its own line. Only the name is the link. */
 .detail-conn-name { display: inline; margin-left: 6px; color: var(--ink); }
-/* Row-name link (the title): stays ink so it doesn't fight the relationship
-   colours; only underlines on hover/focus. Just the title is clickable. */
-.detail-link {
+/* The rel label + name together are the row's link. The whole unit underlines on
+   hover/focus so it's clearly one clickable target (the colour on the rel label
+   is just its type, not a link cue). */
+.detail-conn-main {
   cursor: pointer;
-  color: var(--ink);
   text-decoration: none;
 }
+.detail-conn-main:hover,
+.detail-conn-main:focus-visible { text-decoration: underline; outline: none; }
 /* The inline discovery source ("Discovered via"): green is its resting cue. */
 .detail-source-link {
   cursor: pointer;
   color: var(--accent);
+  font-weight: 600;
   text-decoration: none;
 }
-.detail-link:hover,
-.detail-link:focus-visible,
 .detail-source-link:hover,
 .detail-source-link:focus-visible { text-decoration: underline; outline: none; }
 /* Compact "+N" tag: how much this outgoing target influenced on its own. */
@@ -2190,6 +2228,10 @@ body.is-graph-faux-fs { overflow: hidden; }
   font-weight: 600;
 }
 .detail-conn-note { margin-top: 3px; color: var(--muted); }
+/* Thread line ("↳ THREAD: x"). Muted like the note, its own line: uppercase key,
+   lowercase value. The ↳ glyph sits low, so nudge it up to align with the text. */
+.detail-conn-thread { margin-top: 3px; color: var(--muted); font-size: var(--text-tiny); }
+.detail-conn-thread .thread-arrow { position: relative; top: -4px; }
 
 .detail-posts {
   margin-top: 12px;
