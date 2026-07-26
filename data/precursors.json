@@ -40,6 +40,27 @@
       ]
     },
     {
+      "id": "camus-the-myth-of-sisyphus",
+      "label": "The Myth of Sisyphus",
+      "kind": "book",
+      "creator": "Alfred Camus",
+      "discovered_via": [
+        { "source": "camus-the-stranger", "date": "2026-04" }
+      ],
+      "connections": [
+        { "to": "camus-the-stranger", "relationship": "thematic" }
+      ]
+    },
+    {
+      "id": "camus-the-stranger",
+      "label": "The Stranger",
+      "kind": "book",
+      "creator": "Alfred Camus",
+      "discovered_via": [
+        { "source": "dis-philosophy", "date": "2026-03", "note": "Borrowed from the DIS library." }
+      ]
+    },
+    {
       "id": "chan-is-missing-1982",
       "label": "Chan Is Missing (1982)",
       "kind": "film",
@@ -48,14 +69,6 @@
         { "source": "letterboxd", "date": "2026-05" }
       ],
       "connections": []
-    },
-    {
-      "id": "criterion-channel",
-      "label": "The Criterion Channel",
-      "kind": "platform",
-      "discovered_via": [
-        { "source": "", "date": "2026-05" }
-      ]
     },
     {
       "id": "cold-water-1994",
@@ -67,14 +80,11 @@
       ]
     },
     {
-      "id": "dostoevsky-crime-and-punishment",
-      "label": "Crime and Punishment",
-      "kind": "book",
+      "id": "criterion-channel",
+      "label": "The Criterion Channel",
+      "kind": "platform",
       "discovered_via": [
-        { "strength": "aware", "source": "fyodor-dostoevsky", "date": "2026-05" }
-      ],
-      "connections": [
-        { "to": "pickpocket-1959", "relationship": "influence" }
+        { "source": "", "date": "2026-05" }
       ]
     },
     {
@@ -91,15 +101,37 @@
       ]
     },
     {
-      "id": "kierkegaard-either-or",
-      "label": "Either/Or",
+      "id": "dostoevsky-crime-and-punishment",
+      "label": "Crime and Punishment",
       "kind": "book",
       "discovered_via": [
-        { "strength": "aware", "source": "soren-kierkegaard", "date": "2024" },
-        { "source": "dis-philosophy", "date": "2026-03", "note": "Read excerpt: The Unhappiest One" }
+        { "strength": "aware", "source": "fyodor-dostoevsky", "date": "2026-05" }
       ],
       "connections": [
-        { "to": "melancholia-2011", "relationship": "thematic" }
+        { "to": "pickpocket-1959", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "dostoevsky-notes-from-underground",
+      "label": "Notes From Underground",
+      "kind": "book",
+      "discovered_via": [
+        { "source": "camus-the-stranger", "date": "2026-05", "thread": "existential fiction" }
+      ],
+      "connections": [
+        { "to": "camus-the-stranger", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "dostoevsky-white-nights",
+      "label": "White Nights",
+      "kind": "book",
+      "discovered_via": [
+        { "source": "fyodor-dostoevsky", "date": "2026-05", "note": "Picked it up in a bookstore in Denmark for the flight home." }
+      ],
+      "connections": [
+        { "to": "four-nights-of-a-dreamer-1971", "relationship": "adaptation" },
+        { "to": "le-notti-bianche-1957", "relationship": "adaptation" }
       ]
     },
     {
@@ -154,6 +186,33 @@
       ]
     },
     {
+      "id": "kafka-the-trial",
+      "label": "The Trial",
+      "kind": "book",
+      "creator": "Franz Kafka",
+      "discovered_via": [
+        { "source": "camus-the-stranger", "date": "2026-06", "thread": "existential fiction" }
+      ],
+      "connections": [
+        { "to": "kafka-the-trial-film", "relationship": "adaptation" },
+        { "to": "camus-the-stranger", "relationship": "influence" },
+        { "to": "after-hours-1985", "relationship": "influence" },
+        { "to": "brazil-1985", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "kierkegaard-either-or",
+      "label": "Either/Or",
+      "kind": "book",
+      "discovered_via": [
+        { "strength": "aware", "source": "soren-kierkegaard", "date": "2024" },
+        { "source": "dis-philosophy", "date": "2026-03", "note": "Read excerpt: The Unhappiest One" }
+      ],
+      "connections": [
+        { "to": "melancholia-2011", "relationship": "thematic" }
+      ]
+    },
+    {
       "id": "le-notti-bianche-1957",
       "label": "Le Notti Bianche (1957)",
       "kind": "film",
@@ -167,10 +226,11 @@
       "kind": "film",
       "creator": "Jean-Pierre Melville",
       "discovered_via": [
-        { "source": "the-parallax-view-1974", "date": "2026-03", "mechanism": "letterboxd", "note": "this movie is soooooooooooooo cool and awesome and it inspired to want to be a better man honestly", "thread": "70s paranoia" }
+        { "source": "the-parallax-view-1974", "date": "2026-03", "mechanism": "letterboxd", "note": "this movie is soooooooooooooo cool and awesome and it inspired me to want to be a better man honestly", "thread": "70s paranoia" }
       ],
       "connections": [
         { "to": "ghost-dog-1999", "relationship": "influence", "note": "Jarmusch built Ghost Dog on Le Samouraï's lone-hitman code and stillness." },
+        { "to": "the-conformist-1970", "relationship": "influence", "note": "Main character is a Jef Costello cosplayer." },
         { "to": "pickpocket-1959", "relationship": "thematic" },
         { "to": "the-conversation-1974", "relationship": "thematic", "note": "Existentialist studies of lone operators who build their identity around mastery of their craft" }
       ]
@@ -201,14 +261,12 @@
       ]
     },
     {
-      "id": "dostoevsky-notes-from-underground",
-      "label": "Notes From Underground",
+      "id": "percy-the-moviegoer",
+      "label": "The Moviegoer",
       "kind": "book",
+      "creator": "Walker Percy",
       "discovered_via": [
-        { "source": "camus-the-stranger", "date": "2026-05", "thread": "existential fiction" }
-      ],
-      "connections": [
-        { "to": "camus-the-stranger", "relationship": "influence" }
+        { "source": "camus-the-stranger", "date": "2026-04", "thread": "existential fiction" }
       ]
     },
     {
@@ -268,6 +326,15 @@
       ]
     },
     {
+      "id": "the-conformist-1970",
+      "label": "The Conformist (1970)",
+      "kind": "film",
+      "creator": "Bernardo Bertolucci",
+      "discovered_via": [
+        { "source": "the-parallax-view-1974", "date": "2026-05", "thread": "70s paranoia" }
+      ]
+    },
+    {
       "id": "the-conversation-1974",
       "label": "The Conversation (1974)",
       "kind": "film",
@@ -280,57 +347,12 @@
       ]
     },
     {
-      "id": "percy-the-moviegoer",
-      "label": "The Moviegoer",
-      "kind": "book",
-      "creator": "Walker Percy",
-      "discovered_via": [
-        { "source": "camus-the-stranger", "date": "2026-04", "thread": "existential fiction" }
-      ]
-    },
-    {
-      "id": "camus-the-myth-of-sisyphus",
-      "label": "The Myth of Sisyphus",
-      "kind": "book",
-      "creator": "Alfred Camus",
-      "discovered_via": [
-        { "source": "camus-the-stranger", "date": "2026-04" }
-      ],
-      "connections": [
-        { "to": "camus-the-stranger", "relationship": "thematic" }
-      ]
-    },
-    {
       "id": "the-parallax-view-1974",
       "label": "The Parallax View (1974)",
       "kind": "film",
       "creator": "Alan J. Pakula",
       "discovered_via": [
         { "date": "2023-04", "note": "General interest in spy/paranoia thrillers around this time; no specific trigger." }
-      ]
-    },
-    {
-      "id": "camus-the-stranger",
-      "label": "The Stranger",
-      "kind": "book",
-      "creator": "Alfred Camus",
-      "discovered_via": [
-        { "source": "dis-philosophy", "date": "2026-03", "note": "Borrowed from the DIS library." }
-      ]
-    },
-    {
-      "id": "kafka-the-trial",
-      "label": "The Trial",
-      "kind": "book",
-      "creator": "Franz Kafka",
-      "discovered_via": [
-        { "source": "camus-the-stranger", "date": "2026-06", "thread": "existential fiction" }
-      ],
-      "connections": [
-        { "to": "kafka-the-trial-film", "relationship": "adaptation" },
-        { "to": "camus-the-stranger", "relationship": "influence" },
-        { "to": "after-hours-1985", "relationship": "influence" },
-        { "to": "brazil-1985", "relationship": "influence" }
       ]
     },
     {
@@ -349,18 +371,6 @@
       "creator": "Michael Mann",
       "discovered_via": [
         { "source": "le-samourai-1967", "date": "2026-05", "thread": "lone operator" }
-      ]
-    },
-    {
-      "id": "dostoevsky-white-nights",
-      "label": "White Nights",
-      "kind": "book",
-      "discovered_via": [
-        { "source": "fyodor-dostoevsky", "date": "2026-05", "note": "Picked it up in a bookstore in Denmark for the flight home." }
-      ],
-      "connections": [
-        { "to": "four-nights-of-a-dreamer-1971", "relationship": "adaptation" },
-        { "to": "le-notti-bianche-1957", "relationship": "adaptation" }
       ]
     }
   ]

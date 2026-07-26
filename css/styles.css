@@ -1729,6 +1729,19 @@ a.post-tag:focus-visible { color: var(--accent); }
    set inline in JS (0.3s base + 0.05s per tile, left-to-right, top-to-bottom). */
 .tile { animation: fadeIn 0.5s ease both; }
 
+/* Pinned posts (sorted to the front) drop in first with a gentle pop, ahead of
+   the rest of the grid cascade. !important beats the inline per-tile delay and
+   the base .tile fade above. (Transform is safe here — the hover scale lives on
+   .tile img, not .tile.) */
+@keyframes tile-pin-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.tile.is-pinned {
+  animation: tile-pin-in 0.55s ease both !important;
+  animation-delay: 0.08s !important;
+}
+
 /* Post page: hidden until the image loads (JS adds .is-loaded to #post). */
 #post .post-image-frame,
 #post .post-title,
@@ -1763,6 +1776,8 @@ a.post-tag:focus-visible { color: var(--accent); }
     opacity: 1;
     transform: none;
   }
+  /* is-pinned uses !important above, so match it here to stay still. */
+  .tile.is-pinned { animation: none !important; opacity: 1; transform: none; }
 }
 
 /* ---------- Precursors (force-directed graph) ---------- */
@@ -1933,15 +1948,25 @@ a.post-tag:focus-visible { color: var(--accent); }
    (reuses .graph-icon-btn). aria-pressed marks it accent when the row is open. */
 .timeline-btn[hidden] { display: none; }
 .timeline-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+/* Push the Threads / clock / tuning cluster to the right of the toolbar. */
+.thread-filter { margin-left: auto; }
+/* Threads dropdown as a boxed control, matching the clock/tuning icon buttons. */
+.graph-toolbar .tag-dropdown-toggle {
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+}
+.graph-toolbar .tag-dropdown-toggle:hover,
+.graph-toolbar .tag-dropdown-toggle[aria-expanded="true"] { border-color: var(--muted); }
 
-/* Scrubber: a floating bar on top of the graph. Pinned to the top of the canvas
-   and inset on the right so it clears both the docked card (--graph-panel-w) and
-   the top-right controls (~84px for the two icon buttons). */
+/* Scrubber: a floating bar spanning the full graph width, pinned to the top of
+   the canvas and inset on the right only enough to clear the docked card. */
 .timeline-row {
   position: absolute;
   top: 12px;
   left: 12px;
-  right: calc(var(--graph-panel-w) + 96px);
+  right: calc(var(--graph-panel-w) + 12px);
   z-index: 3;
   display: flex;
   align-items: center;
@@ -2174,6 +2199,21 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 .graph-fs-icon:hover { color: var(--ink); }
 .graph-fs-icon:focus-visible { outline: none; color: var(--ink); }
+
+/* Reset lives at the bottom-right, just to the left of the full-screen button
+   (40px = the 32px button + its 8px gap), so it's visible at the bottom in
+   full screen too. */
+.graph-reset-corner {
+  position: absolute;
+  bottom: 12px;
+  right: calc(12px + var(--graph-panel-w) + 40px);
+  z-index: 2;
+}
+.graph-frame:fullscreen .graph-reset-corner,
+.graph-frame.is-faux-fullscreen .graph-reset-corner {
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  right: calc(12px + var(--graph-panel-w) + env(safe-area-inset-right, 0px) + 40px);
+}
 .graph-fs-icon .fs-icon { display: block; }
 /* Show the "expand" icon normally, the "collapse" icon only in full screen. */
 .graph-fs-icon .fs-collapse { display: none; }
@@ -2255,12 +2295,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 /* Live tuning panel (troubleshooting) — positioned into the right margin beside
    the graph, so it never shrinks the graph. Shown only when toggled. */
 .tuning-panel {
-  position: absolute;
-  top: 0;
-  left: calc(100% + 12px);   /* just past the graph's right edge, into the gutter */
-  width: 260px;
-  max-height: 70vh;
-  overflow-y: auto;
+  margin-top: 12px;   /* a bar below the graph */
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -2270,9 +2305,20 @@ a.post-tag:focus-visible { color: var(--accent); }
   background: var(--surface);
   font-size: var(--text-small);
 }
-/* Tier-specific controls live in the left margin instead of the right. */
-.tuning-panel--left { left: auto; right: calc(100% + 12px); }
 .tuning-panel[hidden] { display: none; }
+/* Overall / Hub / Leaf as equal-width columns across the bottom bar. */
+.tuning-sections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+}
+.tuning-section {
+  flex: 1 1 200px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .tuning-group-title {
   color: var(--muted);
   font-size: var(--text-tiny);
@@ -2281,14 +2327,13 @@ a.post-tag:focus-visible { color: var(--accent); }
   border-bottom: 1px solid var(--line);
   padding-bottom: 4px;
 }
-.tuning-group-title:not(:first-child) { margin-top: 6px; }
 .tuning-row { display: flex; flex-direction: column; gap: 4px; }
 .tuning-head { display: flex; justify-content: space-between; gap: 8px; }
 .tuning-name { color: var(--ink); }
 .tuning-val { color: var(--muted); font-variant-numeric: tabular-nums; }
 .tuning-row input[type="range"] { width: 100%; margin: 0; }
 .tuning-reset {
-  margin-top: 2px;
+  align-self: flex-start;   /* button-sized, not stretched across the bar */
   padding: 7px 10px;
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
@@ -2300,8 +2345,6 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 .tuning-reset:hover { color: var(--ink); }
 
-/* The graph stays full-width; the tuning panel is positioned into the right
-   margin beside it (see .tuning-panel), so opening it never shrinks the graph. */
 .graph-area {
   position: relative;
 }
@@ -2371,7 +2414,22 @@ body.is-graph-faux-fs { overflow: hidden; }
 .graph-frame:fullscreen .graph-fs-icon,
 .graph-frame.is-faux-fullscreen .graph-fs-icon {
   bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-  right: calc(12px + env(safe-area-inset-right, 0px));
+  right: calc(12px + var(--graph-panel-w) + env(safe-area-inset-right, 0px));
+}
+/* In full screen, pin the bottom controls (reset + full-screen) to the VIEWPORT
+   so they stay visible even if .graph-wrap overflows the frame — otherwise the
+   absolute-in-wrap buttons ride past the bottom edge and vanish. */
+.graph-frame:fullscreen .graph-fs-icon,
+.graph-frame:fullscreen .graph-reset-corner,
+.graph-frame.is-faux-fullscreen .graph-fs-icon,
+.graph-frame.is-faux-fullscreen .graph-reset-corner {
+  position: fixed;
+  z-index: 61;
+}
+.graph-frame:-webkit-full-screen .graph-fs-icon,
+.graph-frame:-webkit-full-screen .graph-reset-corner {
+  position: fixed;
+  z-index: 61;
 }
 #graph {
   display: block;
@@ -2527,7 +2585,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 }
 .detail-conn { padding: 8px 0; }
 .detail-conn:first-child { padding-top: 0; }
-.detail-conn + .detail-conn { border-top: 1px solid var(--line); }
+.detail-conn + .detail-conn { border-top: 1px solid var(--line-light); }
 .detail-conn-rel {
   font-size: var(--text-tiny);
   font-weight: 600;
@@ -2536,6 +2594,13 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* The node name sits inline, right after the relationship label ("Discovery →
    The Stranger"), not on its own line. Only the name is the link. */
 .detail-conn-name { display: inline; margin-left: 6px; color: var(--ink); }
+/* Discovery rows: no "Discovery →" prefix, so the name itself carries the
+   discovery blue + bold and sits flush (no label to offset from). */
+.detail-conn.is-discovery .detail-conn-name {
+  margin-left: 0;
+  color: var(--rel-discovery);
+  font-weight: 700;
+}
 /* The rel label + name together are the row's link. The whole unit underlines on
    hover/focus so it's clearly one clickable target (the colour on the rel label
    is just its type, not a link cue). */

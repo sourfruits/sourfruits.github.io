@@ -73,8 +73,7 @@ const threadMenu = document.getElementById("thread-dropdown-menu");
 const threadLabel = document.getElementById("thread-dropdown-label");
 const fsBtn = document.getElementById("graph-fs");
 const tuningBtn = document.getElementById("graph-tuning-btn");
-const tuningPanel = document.getElementById("tuning-panel");            // right: shared controls
-const tuningPanelLeft = document.getElementById("tuning-panel-left");   // left: tier-specific controls
+const tuningPanel = document.getElementById("tuning-panel");            // bottom bar: Overall / Hub / Leaf
 const resetBtn = document.getElementById("graph-reset");
 // Timeline scrubber (Discovery only)
 const timelineBtn = document.getElementById("timeline-btn");
@@ -275,7 +274,9 @@ function size() {
 }
 
 const FIT_PADDING = 100;   // generous breathing room around the graph, world units
+const PLAY_FIT_PADDING = 240; // extra breathing room while the timeline plays
 const MAX_FIT_SCALE = 1.75; // don't zoom a small/sparse graph in too aggressively
+let fitPad = FIT_PADDING;  // current padding (bumped up during timeline playback)
 
 // Frame the camera on the nodes' actual bounding box — expanded by each node's
 // radius (hub nodes are larger, so their centre isn't enough) plus generous
@@ -296,8 +297,8 @@ function fitView(animate, subset) {
   }
   if (!isFinite(minX)) return;
   const { w, h } = size();
-  const boxW = (maxX - minX) + FIT_PADDING * 2;
-  const boxH = (maxY - minY) + FIT_PADDING * 2;
+  const boxW = (maxX - minX) + fitPad * 2;
+  const boxH = (maxY - minY) + fitPad * 2;
   const scale = Math.max(0.1, Math.min(MAX_FIT_SCALE, w / boxW, h / boxH));
   if (!(subset && subset.length)) lastFitScale = scale;   // remember the base (whole-graph) zoom
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
@@ -325,7 +326,7 @@ function nodeInView(node, margin) {
 // chain). Only zooms IN toward this — if you're already closer it keeps your
 // zoom — so repeated hops don't keep zooming in or ever zoom out.
 const PAN_ZOOM = 1.3;            // absolute zoom floor when following a connection from the card
-const DIRECT_ZOOM_FACTOR = 1.8; // a direct graph click frames at this × the base fit zoom
+const DIRECT_ZOOM_FACTOR = 2; // a direct graph click frames at this × the base fit zoom
 
 // Center a node in the viewport at absolute zoom `targetK` (defaults to the
 // current zoom = recenter only). Callers decide the zoom level.
@@ -791,12 +792,16 @@ function connectionRowHTML(c) {
   const onwardTitle = currentMode === "discovery"
     ? `leads to ${onward} more discover${onward === 1 ? "y" : "ies"} downstream`
     : `${onward} downstream influence${onward === 1 ? "" : "s"}`;
-  let html = `<div class="detail-conn">`;
+  // Discovery rows drop the "Discovery →" relationship prefix — it's redundant
+  // under the "Led to N discoveries" heading — and instead show the name itself
+  // in the discovery blue + bold (see .detail-conn.is-discovery in the CSS).
+  const isDiscovery = c.rel === "discovery";
+  let html = `<div class="detail-conn${isDiscovery ? " is-discovery" : ""}">`;
   // The relationship label + the name together are the link (opens the other
-  // node's card). The "→N" badge and any sub-lines stay outside it, so only
-  // "Discovery → The Stranger" is clickable — not the trailing count.
+  // node's card). The "→N" badge and any sub-lines stay outside it, so only the
+  // relationship + name is clickable — not the trailing count.
   html += `<span class="detail-conn-main" data-node-id="${escapeHTML(c.other.id)}" role="button" tabindex="0" title="Open ${escapeHTML(c.other.label)}">`;
-  html += `<span class="detail-conn-rel" style="color:${relColor}">${escapeHTML(relLabel)}${glyph}</span>`;
+  if (!isDiscovery) html += `<span class="detail-conn-rel" style="color:${relColor}">${escapeHTML(relLabel)}${glyph}</span>`;
   html += `<span class="detail-conn-name">${escapeHTML(c.other.label)}</span>`;
   html += `</span>`;
   // The onward marker sits after the link, not part of it.
@@ -848,7 +853,7 @@ function cardConnections(node) {
       .map((d) => ({ other: nodeById[d.to], rel: "discovery", thread: d.thread || "", dir: "out" }))
       .filter((r) => r.other)
       .sort(byOnwardDesc);
-    return { rows, label: `Led to (${rows.length})` };
+    return { rows, label: `Led to (${rows.length}) discover${rows.length === 1 ? "y" : "ies"}` };
   }
   const rows = connectionsFor(node).sort(byConnOrder);
   let label = `Connections (${rows.length})`;
@@ -1563,7 +1568,7 @@ function collectTimeline() {
 // Fade every node discovered after the current stop; keep undated + on-or-before
 // nodes full colour. Reuses threadKeep + .is-thread-dim, and reframes the camera
 // on the visible set (like a thread selection).
-function applyScrub() {
+function applyScrub(skipCamera) {
   if (!scrubStops.length || !simulation) return;
   const cutoff = scrubStops[scrubIndex].key;
   const keep = new Set();
@@ -1582,8 +1587,11 @@ function applyScrub() {
   });
   updateLabelVisibility();
   autoFit = false;
-  const subset = simulation.nodes().filter((n) => keep.has(n.id));
-  if (subset.length) fitView(true, subset);
+  // Only drag/playback moves the camera; opening the scrubber leaves it put.
+  if (!skipCamera) {
+    const subset = simulation.nodes().filter((n) => keep.has(n.id));
+    if (subset.length) fitView(true, subset);
+  }
   updateScrubUI();
 }
 
@@ -1621,7 +1629,7 @@ function openTimeline() {
   if (timelineMinEl) timelineMinEl.textContent = Math.floor(scrubStops[0].key / 12);
   if (timelineMaxEl) timelineMaxEl.textContent = Math.floor(scrubStops[scrubStops.length - 1].key / 12);
   scrubIndex = scrubStops.length - 1;   // start at the latest date (everything visible)
-  applyScrub();
+  applyScrub(true);                     // reveal the scrubber without moving the camera
 }
 
 function closeTimeline() {
@@ -1630,8 +1638,7 @@ function closeTimeline() {
   if (timelineRow) timelineRow.hidden = true;
   if (timelineBtn) timelineBtn.setAttribute("aria-pressed", "false");
   clearScrubFade();
-  autoFit = false;
-  fitView(true);   // reframe the whole graph
+  autoFit = false;   // leave the camera where it is (closing shouldn't jump it)
 }
 
 // Fade the legend back while the timeline is actively playing or being dragged,
@@ -1646,6 +1653,7 @@ function startPlay() {
   scrubPlaying = true;
   if (timelineRow) timelineRow.classList.add("is-playing");
   setLegendDim(true);
+  fitPad = PLAY_FIT_PADDING;   // more breathing room while it plays
   // Resume from where the scrubber sits; only replay from the start if we're
   // already parked at the end.
   if (scrubIndex >= scrubStops.length - 1) { scrubIndex = 0; applyScrub(); }
@@ -1662,6 +1670,7 @@ function stopPlay() {
   if (timelineRow) timelineRow.classList.remove("is-playing");
   if (scrubPlayTimer) { clearInterval(scrubPlayTimer); scrubPlayTimer = null; }
   setLegendDim(false);
+  fitPad = FIT_PADDING;
 }
 
 if (timelineBtn && timelineRow) {
@@ -1760,7 +1769,7 @@ if (fsBtn) {
 // panel, the tier-specific (Hub/Leaf) groups in the right. Each row is
 // [key, label, min, max, step, description] — the description is a hover tooltip.
 const TUNING_GROUPS = [
-  { side: "left", title: "Shared", controls: [
+  { side: "left", title: "Overall", controls: [
     ["charge", "Charge (repulsion)", -800, 0, 10, "How hard nodes push apart — more negative spreads the graph out."],
     ["linkDistance", "Link distance", 20, 240, 5, "Preferred length of each connection line."],
     ["collidePad", "Collision padding", 0, 80, 1, "Extra empty space kept around every node so they don't overlap."],
@@ -1791,9 +1800,8 @@ const LAYOUT_KEYS = new Set(["charge", "linkDistance", "collidePad"]);
 const TUNING_DEFAULTS = { ...TUNING };
 
 function initTuningPanel() {
-  if (!tuningPanel || !tuningPanelLeft || !tuningBtn) return;
+  if (!tuningPanel || !tuningBtn) return;
   tuningPanel.innerHTML = "";
-  tuningPanelLeft.innerHTML = "";
 
   const rows = [];  // { key, input, val } for the Reset button
   const buildRow = (parent, [key, label, min, max, step, desc]) => {
@@ -1826,16 +1834,23 @@ function initTuningPanel() {
     rows.push({ key, input, val });
   };
 
+  // One column per group (Overall / Hub / Leaf), laid out as a row along the
+  // bottom of the graph.
+  const sections = document.createElement("div");
+  sections.className = "tuning-sections";
   TUNING_GROUPS.forEach((group) => {
-    const parent = group.side === "left" ? tuningPanelLeft : tuningPanel;
+    const section = document.createElement("div");
+    section.className = "tuning-section";
     const title = document.createElement("div");
     title.className = "tuning-group-title";
     title.textContent = group.title;
-    parent.appendChild(title);
-    group.controls.forEach((ctrl) => buildRow(parent, ctrl));
+    section.appendChild(title);
+    group.controls.forEach((ctrl) => buildRow(section, ctrl));
+    sections.appendChild(section);
   });
+  tuningPanel.appendChild(sections);
 
-  // Reset every control back to the baked-in defaults (lives under the shared group).
+  // Reset every control back to the baked-in defaults.
   const reset = document.createElement("button");
   reset.type = "button";
   reset.className = "tuning-reset";
@@ -1848,12 +1863,11 @@ function initTuningPanel() {
     });
     if (rawData) render(currentMode);
   });
-  tuningPanelLeft.appendChild(reset);
+  tuningPanel.appendChild(reset);
 
   tuningBtn.addEventListener("click", () => {
     const show = tuningPanel.hidden;
     tuningPanel.hidden = !show;
-    tuningPanelLeft.hidden = !show;
     tuningBtn.setAttribute("aria-pressed", show ? "true" : "false");
   });
 }
