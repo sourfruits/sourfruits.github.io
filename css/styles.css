@@ -1929,22 +1929,48 @@ a.post-tag:focus-visible { color: var(--accent); }
    Shares the graph's border and rounds only its top corners; the graph-wrap
    below squares its top corners so the two read as one connected container. */
 .graph-toolbar {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 8px 12px;
+  /* Reserve the card-zone width on the right (plus a small gap) so the flex
+     controls (Threads + clock) stop just short of the boundary divider rather
+     than touching it; tuning is pinned into the card zone. */
+  padding: 8px calc(var(--graph-panel-w) + 12px) 8px 12px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-bottom: none;
   border-radius: var(--radius-pill) var(--radius-pill) 0 0;
+}
+/* Short vertical divider marking where the graph ends and the docked card
+   begins — same colour/weight as the borders, a partial-height line. */
+.graph-toolbar::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: var(--graph-panel-w);
+  transform: translateY(-50%);
+  width: 1px;
+  height: 28px;
+  background: var(--line);
+  pointer-events: none;
 }
 
 /* Timeline scrubber toggle: a clock icon sitting next to the Threads dropdown
    (reuses .graph-icon-btn). aria-pressed marks it accent when the row is open. */
 .timeline-btn[hidden] { display: none; }
 .timeline-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
-/* Push the Threads / clock / tuning cluster to the right of the toolbar. */
+/* Push Threads + clock to the right; the toolbar's right padding stops them at
+   the graph's right edge (the boundary divider). */
 .thread-filter { margin-left: auto; }
+/* Tuning is pinned in the card zone at the far right — out of the flex flow so
+   it never shifts with the other controls or the mode. */
+.tuning-toolbar-btn {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+}
 /* Threads dropdown as a boxed control, matching the clock/tuning icon buttons. */
 .graph-toolbar .tag-dropdown-toggle {
   padding: 6px 11px;
@@ -2342,12 +2368,13 @@ a.post-tag:focus-visible { color: var(--accent); }
 
 .graph-area {
   position: relative;
+  /* Width of the docked detail card on the right; the usable graph canvas is
+     everything left of it. Defined here (not on .graph-wrap) so the toolbar can
+     use it too — to line its controls up with the graph's right edge. */
+  --graph-panel-w: min(320px, 45%);
 }
 .graph-wrap {
   position: relative;
-  /* Width of the docked detail panel on the right; the usable graph canvas is
-     everything left of it. */
-  --graph-panel-w: min(320px, 45%);
   width: 100%;
   height: 70vh;
   min-height: 420px;

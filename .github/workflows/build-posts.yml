@@ -1,0 +1,52 @@
+name: Build posts.json
+
+# Regenerate data/posts.json from the Markdown files in data/posts/ on every
+# push to main, then commit it back — so adding/editing a post is just editing a
+# .md file and pushing; the JSON the site reads is always rebuilt automatically.
+
+on:
+  push:
+    branches: [main]
+    # Only run when something that affects the output changes.
+    paths:
+      - "data/posts/**"
+      - "scripts/build-posts.mjs"
+      - ".github/workflows/build-posts.yml"
+
+# Needed so the workflow's GITHUB_TOKEN can push the regenerated file back.
+permissions:
+  contents: write
+
+# If several pushes land quickly, let a newer run supersede an in-flight one.
+concurrency:
+  group: build-posts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Fails the job (non-zero exit) if any .md is malformed / missing a field,
+      # so a broken post never gets committed as a broken posts.json.
+      - name: Build posts.json
+        run: node scripts/build-posts.mjs
+
+      - name: Commit regenerated posts.json (only if it changed)
+        run: |
+          if git diff --quiet -- data/posts.json; then
+            echo "posts.json already up to date — nothing to commit."
+            exit 0
+          fi
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/posts.json
+          git commit -m "chore: rebuild posts.json from data/posts/*.md [skip ci]"
+          git push
