@@ -60,23 +60,23 @@
         </svg>
       </button>
     </div>
-    <!-- Timeline scrubber row: revealed below the toolbar when the clock is on.
-         Steps through the actual discovered_via dates; nodes discovered after the
-         current position fade. -->
-    <div class="timeline-row" id="timeline-row" hidden>
-      <button type="button" class="timeline-play" id="timeline-play" aria-label="Play timeline" title="Play">
-        <svg class="tl-play-icon" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><polygon points="6 4 20 12 6 20"></polygon></svg>
-        <svg class="tl-pause-icon" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14"></rect><rect x="14" y="5" width="4" height="14"></rect></svg>
-      </button>
-      <span class="timeline-year" id="timeline-min"></span>
-      <div class="timeline-track" id="timeline-track">
-        <div class="timeline-fill" id="timeline-fill"></div>
-        <div class="timeline-thumb" id="timeline-thumb" role="slider" tabindex="0" aria-label="Timeline position"></div>
-      </div>
-      <span class="timeline-year" id="timeline-max"></span>
-      <span class="timeline-current" id="timeline-current"></span>
-    </div>
     <div class="graph-wrap" id="graph-wrap">
+      <!-- Timeline scrubber: floats on top of the graph when the clock is on
+           (inset on the right so it clears the docked card + top-right controls).
+           Steps through every month between the first and last discovery. -->
+      <div class="timeline-row" id="timeline-row" hidden>
+        <button type="button" class="timeline-play" id="timeline-play" aria-label="Play timeline" title="Play">
+          <svg class="tl-play-icon" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><polygon points="6 4 20 12 6 20"></polygon></svg>
+          <svg class="tl-pause-icon" viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14"></rect><rect x="14" y="5" width="4" height="14"></rect></svg>
+        </button>
+        <span class="timeline-year" id="timeline-min"></span>
+        <div class="timeline-track" id="timeline-track">
+          <div class="timeline-fill" id="timeline-fill"></div>
+          <div class="timeline-thumb" id="timeline-thumb" role="slider" tabindex="0" aria-label="Timeline position"></div>
+        </div>
+        <span class="timeline-year" id="timeline-max"></span>
+        <span class="timeline-current" id="timeline-current"></span>
+      </div>
       <!-- Corner overlays: top-right utilities, bottom-left legend,
            bottom-right full-screen. -->
       <div class="graph-controls graph-controls--tr">

@@ -785,16 +785,15 @@ function connectionRowHTML(c) {
   // (e.g. an authored work's own influence), so the number is explained without
   // listing every derivative. Shown on the relationship row.
   const onward = c.dir === "out" ? (growthById[c.other.id] || 0) : 0;
-  // After the title: the target's own downstream count. Connections prefixes it
-  // with "+" (influence added); Discovery prefixes it with an arrow (leads
-  // onward to that many more discoveries).
-  const onwardText = currentMode === "discovery" ? `→ ${onward}` : `+ ${onward}`;
+  // After the title: the target's own downstream count. Both modes prefix it with
+  // an arrow — Connections = downstream influence, Discovery = onward discoveries.
+  const onwardText = `→ ${onward}`;
   const onwardTitle = currentMode === "discovery"
     ? `leads to ${onward} more discover${onward === 1 ? "y" : "ies"} downstream`
     : `${onward} downstream influence${onward === 1 ? "" : "s"}`;
   let html = `<div class="detail-conn">`;
   // The relationship label + the name together are the link (opens the other
-  // node's card). The "+N"/"→N" badge and any sub-lines stay outside it, so only
+  // node's card). The "→N" badge and any sub-lines stay outside it, so only
   // "Discovery → The Stranger" is clickable — not the trailing count.
   html += `<span class="detail-conn-main" data-node-id="${escapeHTML(c.other.id)}" role="button" tabindex="0" title="Open ${escapeHTML(c.other.label)}">`;
   html += `<span class="detail-conn-rel" style="color:${relColor}">${escapeHTML(relLabel)}${glyph}</span>`;

@@ -785,6 +785,14 @@ body.wide main { max-width: var(--maxw-wide); }
 @media (max-width: 720px) {
   .grid { grid-template-columns: repeat(2, 1fr); gap: 1px; }
   .grid.is-compact { grid-template-columns: repeat(3, 1fr); }
+  /* Bleed the grid to the screen edges (cancel main's 20px side padding). */
+  #grid-wrap { margin-inline: -20px; }
+}
+
+/* Phones: the regular grid drops to a single photo per row so you scroll through
+   them one at a time. Compact keeps its multi-column layout. */
+@media (max-width: 560px) {
+  .grid { grid-template-columns: 1fr; }
 }
 
 
@@ -1926,23 +1934,27 @@ a.post-tag:focus-visible { color: var(--accent); }
 .timeline-btn[hidden] { display: none; }
 .timeline-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 
-/* Scrubber row: a quiet bar between the toolbar and the graph. Its border-top is
-   the divider from the toolbar; the graph-wrap's border-top divides it from the
-   graph below — so the [toolbar · scrubber · graph] stack still reads as one box. */
+/* Scrubber: a floating bar on top of the graph. Pinned to the top of the canvas
+   and inset on the right so it clears both the docked card (--graph-panel-w) and
+   the top-right controls (~84px for the two icon buttons). */
 .timeline-row {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: calc(var(--graph-panel-w) + 96px);
+  z-index: 3;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 7px 12px;
+  padding: 6px 12px;
   background: var(--surface);
-  border-left: 1px solid var(--line);
-  border-right: 1px solid var(--line);
-  border-top: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
   font-size: var(--text-tiny);
   color: var(--muted);
 }
 .timeline-row[hidden] { display: none; }
-.graph-frame.is-faux-fullscreen .timeline-row { border-left: none; border-right: none; }
 
 /* Play / pause: a quiet icon button; the row's .is-playing class swaps the icon. */
 .timeline-play {
