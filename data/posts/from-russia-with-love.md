@@ -1,5 +1,4 @@
 ---
-id: "from-russia-with-love"
 title: "From Russia with Love (1963)"
 date: "2026-06-29"
 tags: ["movies", "blurb"]

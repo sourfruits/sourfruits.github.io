@@ -5,8 +5,8 @@ posts as square thumbnails — either a horizontal carousel of the most recent o
 (the default) or a full paginated grid, switched with a view toggle. Clicking a
 thumbnail opens a post with the full image, optional subtitle, date, tags, and text.
 You can filter the homepage by one or more tags, browse a dedicated tag page, or
-search across every post. All posts live in a single JSON file so adding a new one
-is a one-block edit.
+search across every post. Each post is a Markdown file with a little frontmatter;
+a small build step compiles them all into the JSON the site reads.
 
 Extras baked in: a multi-select tag filter on the homepage (AND logic, synced to
 the URL via `?tags=`), draft posts that stay hidden until you reveal them, a
@@ -45,14 +45,21 @@ sourfruits-blog/
 │   ├── precursors.js Precursors page — builds the D3 graph from precursors.json
 │   └── about.js      About page — footer year + back button
 ├── data/
-│   ├── posts.json    ← Your content lives here. Add posts here.
+│   ├── posts/        ← Your posts: one Markdown file per post (the source of truth)
+│   ├── posts.json    ← GENERATED from data/posts/ by the build — don't edit by hand
 │   └── precursors.json  ← The Precursors graph: nodes + connections.
+├── scripts/
+│   └── build-posts.mjs  Compiles data/posts/*.md → data/posts.json (Node, no deps)
+├── .github/workflows/
+│   └── build-posts.yml  Runs the build on every push to main, commits posts.json back
 ├── images/           Post images (see images/README.md)
 └── README.md
 ```
 
-There is no build step and no framework — just HTML, CSS, and a little vanilla
-JavaScript. Each page loads `utils.js`, `header.js`, and `theme.js`; the list pages
+The site itself has no framework or bundler — just HTML, CSS, and a little vanilla
+JavaScript. The one build step is a tiny dependency-free Node script that compiles
+the post Markdown files into `data/posts.json` (run automatically on push — see
+*Adding a new post*). Each page loads `utils.js`, `header.js`, and `theme.js`; the list pages
 (home, tag, search) also load `pagination.js`, then their own page script. Scripts
 talk to each other through a few plain globals (`formatDate`, `escapeHTML`,
 `fetchPosts`, `sortByDateDesc`, `renderTile`, `Pagination`) — no modules or bundler
@@ -86,42 +93,80 @@ after pushing.
 
 ## Adding a new post
 
-Open `data/posts.json` and add an object to the array:
+Each post is a Markdown file in `data/posts/`, and **the filename is the post's
+id**: `data/posts/my-first-lemon.md` is the post `my-first-lemon` (its URL is
+`post.html?id=my-first-lemon`). To re-slug a post, just rename the file — there's
+no `id` field to keep in sync. The pages don't read these files directly — the
+build compiles them all into `data/posts.json`, which is what the site fetches.
+**Don't edit `data/posts.json` by hand — it's generated and gets overwritten.**
 
-```json
-{
-  "id": "unique-slug",                         // used in the URL: post.html?id=unique-slug
-  "title": "Post Title",
-  "subtitle": "An optional italic line",       // optional — omit it to show nothing
-  "date": "2026-06-29",                        // YYYY-MM-DD — used for sorting (newest first)
-  "tags": ["citrus", "kitchen"],
-  "thumb": "images/my-photo-square.jpg",       // square image for the grid
-  "image": "images/my-photo-full.jpg",         // full image for the post page
-  "content": "Your text.\n\n## A heading\n\nSome **bold** and *italic* text, plus a list:\n\n- first item\n- second item",
-  "draft": true                                // optional — hides the post until drafts are revealed
-}
+A post file is YAML frontmatter (the metadata, between `---` fences) followed by
+the post's text as normal Markdown:
+
+```markdown
+---
+title: "My First Lemon"
+subtitle: "An optional italic line"
+date: "2026-06-29"
+tags: ["citrus", "kitchen"]
+workId: "my-first-lemon"
+thumb: "images/my-photo-square.jpg"
+image: "images/my-photo-full.jpg"
+draft: false
+---
+
+Your text, as normal Markdown.
+
+## A heading
+
+Some **bold** and *italic* text, plus a list:
+
+- first item
+- second item
 ```
 
-Notes:
-- `id` must be unique — it's how the post page finds the right entry.
-- `subtitle` is optional: when present it appears in italics under the title, above
-  the date. Omit the field (or leave it empty) and nothing is shown.
-- Posts are sorted by `date` automatically, so order in the file doesn't matter.
-- The post page automatically adds previous/next links and a "More like this" row
-  (up to 3 posts sharing the most tags) — no configuration needed.
-- `content` supports Markdown, rendered on the post page: headings (`## Heading`),
-  **bold** (`**text**`), *italics* (`*text*`), and lists (`- item`). Blank lines
-  still create paragraph breaks. (Write it as one JSON string, using `\n` for line
-  breaks and `\n\n` between paragraphs.)
-- `draft` is optional. Set `"draft": true` (or date the post `2099-01-01` or later)
-  to keep it out of the homepage and tag counts. A "Drafts (N)" toggle appears on the
-  homepage whenever drafts exist; clicking it reveals them, each marked with a DRAFT
-  badge. Drafts are hidden by default.
-- Tip: for longer posts, draft in Google Docs and use the "Docs to Markdown"
-  add-on to convert your formatting to Markdown, then paste the result into the
-  `content` field.
-- `thumb` and `image` can be local paths (e.g. `images/lemon.jpg`) or full URLs.
-  If you omit `thumb`, the grid falls back to `image`, and vice versa.
+Then regenerate the JSON:
+
+```bash
+node scripts/build-posts.mjs
+```
+
+Or don't — on every push to `main`, a GitHub Action runs the build for you and
+commits the regenerated `posts.json` back. So the everyday workflow is just: add or
+edit a `.md` file, commit, push. (You only need the local command to preview before
+pushing.)
+
+Fields (same names/shape as before — they just live in frontmatter now):
+- The **filename** (`<slug>.md`) is the post's `id` — there's no `id:` field.
+  Rename the file to re-slug the post.
+- `title` — required.
+- `subtitle` — optional; italic line under the title. Omit it to show nothing.
+- `date` — `YYYY`, `YYYY-MM`, or `YYYY-MM-DD`; posts sort newest-first. To order
+  posts that share the *same* date, append a number: `date: "2026-06-29 1"` (lower
+  first). The build splits that into a clean `date` plus a `dateOrder` the sorts use.
+- `tags` — a list, e.g. `["citrus", "kitchen"]`.
+- `workId` — required; ties the post to a Precursors node (the graph's detail card
+  lists posts whose `workId` equals its node id). If the post isn't tied to a node,
+  just set it to the same value as `id`.
+- `thumb` / `image` — square grid image and full post image (local path or URL);
+  omit one and it falls back to the other.
+- `draft` — optional; `draft: true` (or a date `2099-…` or later) hides the post
+  until the Drafts toggle reveals it.
+- The Markdown **body** is the post's `content` — write it normally (real line
+  breaks, a blank line between paragraphs). No escaping, no `\n` — that's the whole
+  point of the move. Headings (`## …`), **bold**, *italics*, and `- lists` all work.
+
+The build **fails loudly** (clear message, non-zero exit — so nothing broken gets
+committed) if a file is malformed, missing a required field
+(`id, title, date, tags, workId, thumb, image`), or has an `id` that doesn't match
+its filename.
+
+**Editing / deleting:** edit a post by editing its `.md`; delete one by deleting its
+`.md`; then rebuild (or push). The post page still adds previous/next links and a
+"More like this" row automatically — no configuration needed.
+
+Tip: for longer posts, draft in Google Docs and use the "Docs to Markdown" add-on,
+then paste the Markdown straight into the body — no escaping needed anymore.
 
 ## Using your own images
 

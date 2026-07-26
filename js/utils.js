@@ -24,10 +24,20 @@ function fetchPosts() {
   });
 }
 
-// Sort posts newest-first by ISO date. Mutates and returns the array. Ties
-// (same date) return 0, so the stable sort keeps their order from posts.json.
+// Tiebreak for posts sharing the same date: an optional numeric `dateOrder`
+// (lower first). Posts without one sort after those with one, and keep their
+// existing order relative to each other (return 0 → stable sort).
+function byDateOrder(a, b) {
+  const oa = Number.isFinite(a.dateOrder) ? a.dateOrder : Infinity;
+  const ob = Number.isFinite(b.dateOrder) ? b.dateOrder : Infinity;
+  return oa === ob ? 0 : oa - ob;
+}
+
+// Sort posts newest-first by ISO date. Mutates and returns the array. Same-date
+// ties fall back to `dateOrder` (set by appending a number to a post's date,
+// e.g. "2025-03 2"), then to their existing order.
 function sortByDateDesc(posts) {
-  return posts.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  return posts.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : byDateOrder(a, b)));
 }
 
 // A post is a draft if it's flagged "draft": true, or dated in 2099 or later
@@ -46,8 +56,9 @@ function isPinned(post) {
 
 // Display order for a list of posts: pinned first, then everyone else. Within
 // the pinned group an optional numeric "pinOrder" sets the order (lower first);
-// pinned posts without one fall to the end of the pinned group. Ties, and all
-// non-pinned posts, use the normal newest-first date order. Mutates + returns.
+// pinned posts without one fall to the end of the pinned group. Otherwise it's
+// newest-first by date, and same-date posts break by `dateOrder` (see
+// byDateOrder). Mutates + returns.
 function sortPosts(posts) {
   return posts.sort((a, b) => {
     const pa = isPinned(a), pb = isPinned(b);
@@ -57,7 +68,7 @@ function sortPosts(posts) {
       const ob = Number.isFinite(b.pinOrder) ? b.pinOrder : Infinity;
       if (oa !== ob) return oa - ob;
     }
-    return a.date < b.date ? 1 : a.date > b.date ? -1 : 0;   // newest first
+    return a.date < b.date ? 1 : a.date > b.date ? -1 : byDateOrder(a, b);   // newest first, then dateOrder
   });
 }
 

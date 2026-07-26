@@ -1,5 +1,4 @@
 ---
-id: "casts-of-a-dreamer"
 title: "454: Casts of a Dreamer"
 subtitle: "floridian greatness"
 date: "2099-07-22"

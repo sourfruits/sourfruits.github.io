@@ -1,5 +1,4 @@
 ---
-id: "stranger-than-paradise-heidegger"
 pinned: true
 title: "Heidegger and Boredom in Stranger Than Paradise (1984)"
 subtitle: "Sitting with boredom and the journey to authentic living"

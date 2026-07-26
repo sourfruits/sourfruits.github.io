@@ -1,5 +1,4 @@
 ---
-id: "kafka-the-trial"
 title: "The Trial by Franz Kafka"
 subtitle: "The absurd humor of existence"
 date: "2026-07-21"

@@ -1,5 +1,4 @@
 ---
-id: "enter-the-dragon"
 title: "Enter the Dragon (1973)"
 subtitle: "I am literally Bruce Lee"
 date: "2099-07-22"

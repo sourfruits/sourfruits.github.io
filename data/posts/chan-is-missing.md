@@ -1,5 +1,4 @@
 ---
-id: "chan-is-missing"
 title: "Chan Is Missing (1982)"
 subtitle: "xx"
 date: "2099-07-22"

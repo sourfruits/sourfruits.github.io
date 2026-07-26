@@ -25,15 +25,26 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const POSTS_DIR = join(ROOT, "data", "posts");
 const OUT_FILE = join(ROOT, "data", "posts.json");
 
-// Fields every post must carry (present in all current posts). Optional extras
-// (subtitle, pinned, pinOrder, draft, …) are passed through when present.
-const REQUIRED = ["id", "title", "date", "tags", "workId", "thumb", "image"];
+// Fields every post must carry in frontmatter. `id` is NOT here — it comes from
+// the filename (<id>.md), so renaming a post is just renaming the file. Optional
+// extras (subtitle, pinned, pinOrder, draft, …) are passed through when present.
+const REQUIRED = ["title", "date", "tags", "workId", "thumb", "image"];
 // Preferred key order in the output objects (tidy, stable diffs). `content`
 // always comes last; any unlisted frontmatter keys are appended before it.
 const KEY_ORDER = [
-  "id", "pinned", "pinOrder", "title", "subtitle", "date",
+  "id", "pinned", "pinOrder", "title", "subtitle", "date", "dateOrder",
   "tags", "postType", "category", "workId", "thumb", "image", "draft",
 ];
+
+// A post's date may carry an optional trailing integer that orders posts sharing
+// the SAME date (lower first): "2025-03" (no order) or "2025-03 2" / "2025-03, 2"
+// (order 2). Splits into the clean date + the order (or undefined). Throws on a
+// date that isn't a year / year-month / full ISO date with an optional integer.
+function splitDate(raw, file) {
+  const m = /^(\d{4}(?:-\d{2}){0,2})(?:[\s,]+(\d+))?$/.exec(String(raw).trim());
+  if (!m) throw new Error(`${file}: invalid date "${raw}" (expected e.g. "2025-03" or "2025-03 2")`);
+  return { date: m[1], order: m[2] === undefined ? undefined : Number(m[2]) };
+}
 
 // Parse one frontmatter scalar. JSON first (what the migration writes), then
 // lenient fallbacks so a hand-edited file with bare YAML values still works.
@@ -71,12 +82,13 @@ function parseFile(raw, file) {
   return { data, body: m[2] };
 }
 
-// Enforce the shape: required fields, types, id↔filename match, non-empty body.
-function validate(data, body, file, expectedId, seenIds) {
+// Enforce the shape: required fields, types, non-empty body. (The id isn't
+// validated here — it's the filename, so it can't be missing or duplicated.)
+function validate(data, body, file) {
   const missing = REQUIRED.filter((k) => !(k in data));
   if (missing.length) throw new Error(`${file}: missing required field(s): ${missing.join(", ")}`);
 
-  for (const k of ["id", "title", "date", "workId", "thumb", "image"]) {
+  for (const k of ["title", "date", "workId", "thumb", "image"]) {
     if (typeof data[k] !== "string") throw new Error(`${file}: "${k}" must be a string`);
   }
   if (!Array.isArray(data.tags) || data.tags.some((t) => typeof t !== "string")) {
@@ -86,21 +98,18 @@ function validate(data, body, file, expectedId, seenIds) {
   if ("pinned" in data && typeof data.pinned !== "boolean") throw new Error(`${file}: "pinned" must be true/false`);
   if ("pinOrder" in data && typeof data.pinOrder !== "number") throw new Error(`${file}: "pinOrder" must be a number`);
   if ("draft" in data && typeof data.draft !== "boolean") throw new Error(`${file}: "draft" must be true/false`);
-
-  if (data.id !== expectedId) {
-    throw new Error(`${file}: frontmatter id "${data.id}" must match the filename ("${expectedId}.md")`);
-  }
   if (!body.trim()) throw new Error(`${file}: post body (content) is empty`);
-  if (seenIds.has(data.id)) throw new Error(`${file}: duplicate id "${data.id}"`);
-  seenIds.add(data.id);
 }
 
 // Assemble one post object: frontmatter fields in KEY_ORDER, unknown keys after,
 // then content (the trimmed body) last.
-function toPost(data, body) {
+function toPost(id, data, body, file) {
+  const { date, order } = splitDate(data.date, file);
+  const merged = { id, ...data, date };   // id (from the filename) always leads
+  if (order !== undefined) merged.dateOrder = order;
   const post = {};
-  for (const k of KEY_ORDER) if (k in data) post[k] = data[k];
-  for (const k of Object.keys(data)) if (!KEY_ORDER.includes(k)) post[k] = data[k];
+  for (const k of KEY_ORDER) if (k in merged) post[k] = merged[k];
+  for (const k of Object.keys(merged)) if (!KEY_ORDER.includes(k)) post[k] = merged[k];
   post.content = body.trim();
   return post;
 }
@@ -114,20 +123,31 @@ function main() {
   }
   if (files.length === 0) throw new Error(`no .md files found in ${POSTS_DIR}`);
 
-  const seenIds = new Set();
   const posts = [];
   for (const file of files) {
-    const expectedId = basename(file, ".md");
+    const id = basename(file, ".md");   // the filename IS the id
     const raw = readFileSync(join(POSTS_DIR, file), "utf8");
     const { data, body } = parseFile(raw, file);
-    validate(data, body, file, expectedId, seenIds);
-    posts.push(toPost(data, body));
+    // A stray frontmatter `id` is ignored (the filename wins) — warn if it would
+    // have meant something different, so a rename doesn't silently confuse.
+    if ("id" in data && data.id !== id) {
+      console.warn(`  note: ${file} has "id: ${JSON.stringify(data.id)}" in frontmatter — ignoring it; the id is the filename ("${id}").`);
+    }
+    delete data.id;
+    validate(data, body, file);
+    posts.push(toPost(id, data, body, file));
   }
 
-  // Deterministic array order: newest date first, ties by id. (The site re-sorts
-  // on load — pinned first, then date — so this only sets a stable file order.)
-  posts.sort((a, b) =>
-    a.date < b.date ? 1 : a.date > b.date ? -1 : a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+  // Deterministic array order: newest date first, then dateOrder (lower first),
+  // then id. (The site re-sorts on load — pinned first, then date, then
+  // dateOrder — so this only sets a stable file order.)
+  posts.sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+    const oa = Number.isFinite(a.dateOrder) ? a.dateOrder : Infinity;
+    const ob = Number.isFinite(b.dateOrder) ? b.dateOrder : Infinity;
+    if (oa !== ob) return oa - ob;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+  });
 
   writeFileSync(OUT_FILE, JSON.stringify(posts, null, 2) + "\n", "utf8");
   console.log(`✓ built data/posts.json from ${posts.length} post${posts.length === 1 ? "" : "s"}`);
