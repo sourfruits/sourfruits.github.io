@@ -1,6 +1,6 @@
 // Precursors: a force-directed graph of where things were discovered and how
-// they personally connect. Reads data/precursors.json (the graph) and, for
-// hover labels, data/posts.json (to resolve post_ids to real post titles).
+// they personally connect. Reads data/precursors.json (the graph) and
+// data/posts.json — a node lists every post whose workId equals the node's id.
 //
 // Two views are computed from the *same* dataset at render time:
 //   Discovery   — every node that has a discovered_via, plus the nodes named as
@@ -63,16 +63,29 @@ const TUNING = {
 
 const svg = d3.select("#graph");
 const wrap = document.getElementById("graph-wrap");
-const tooltip = document.getElementById("graph-tooltip");
 const detail = document.getElementById("node-detail");
 const legend = document.getElementById("graph-legend");
 const status = document.getElementById("status");
 const modeButtons = document.querySelectorAll(".mode-btn");
+const threadFilter = document.getElementById("thread-filter");
+const threadToggle = document.getElementById("thread-dropdown-toggle");
+const threadMenu = document.getElementById("thread-dropdown-menu");
+const threadLabel = document.getElementById("thread-dropdown-label");
 const fsBtn = document.getElementById("graph-fs");
 const tuningBtn = document.getElementById("graph-tuning-btn");
 const tuningPanel = document.getElementById("tuning-panel");            // right: shared controls
 const tuningPanelLeft = document.getElementById("tuning-panel-left");   // left: tier-specific controls
 const resetBtn = document.getElementById("graph-reset");
+// Timeline scrubber (Discovery only)
+const timelineBtn = document.getElementById("timeline-btn");
+const timelineRow = document.getElementById("timeline-row");
+const timelinePlay = document.getElementById("timeline-play");
+const timelineTrack = document.getElementById("timeline-track");
+const timelineThumb = document.getElementById("timeline-thumb");
+const timelineFill = document.getElementById("timeline-fill");
+const timelineMinEl = document.getElementById("timeline-min");
+const timelineMaxEl = document.getElementById("timeline-max");
+const timelineCurEl = document.getElementById("timeline-current");
 
 // Fill the "Learn more" cards from LEARN_MORE_CARDS (see top of file). Each
 // card is a green uppercase label plus serif paragraphs split on blank lines.
@@ -99,7 +112,7 @@ const resetBtn = document.getElementById("graph-reset");
 })();
 
 let rawData = null;      // parsed precursors.json
-let postTitles = {};     // post id -> title, for hover labels
+let allPosts = [];       // every post, for matching a node's workId to its posts
 let nodeById = {};        // node id -> raw node, for the detail card's lookups
 let growthById = {};      // node id -> growth in the current view (nodeById holds
                           // raw nodes, which never carry the computed growth)
@@ -187,11 +200,22 @@ svg.append("rect")
 // so we don't fight the user; resize, full screen, mode switch, and
 // double-click turn it back on.
 let autoFit = true;
+let lastFitScale = 1;      // the zoom the whole graph frames at (base for click zoom)
+let activeThread = null;   // the thread currently highlighted (null = none)
+let threadKeep = null;     // Set of node ids kept lit for the active thread/scrub (else null)
+// Timeline scrubber state (shares threadKeep + the .is-thread-dim fade — the two
+// are mutually exclusive overlays).
+let scrubOpen = false;
+let scrubStops = [];       // [{ key, label }] — sorted distinct discovery months
+let scrubIndex = 0;        // current position into scrubStops
+let scrubPlaying = false;
+let scrubPlayTimer = null;
 let currentScale = 1;  // live zoom scale, drives size-based label visibility
-// interpolate(d3.interpolate): plain linear camera transitions instead of d3's
-// default fly-over (interpolateZoom), which arcs out-then-in on long pans even
-// when the zoom level doesn't change.
-const zoom = d3.zoom().scaleExtent([0.1, 4]).interpolate(d3.interpolate).on("zoom", (event) => {
+// Camera transitions use interpolateZoom — the "flyover" that zooms out, arcs
+// across, and zooms back in on longer moves. rho controls how aggressive that
+// arc is (default √2 ≈ 1.41); a lower rho flattens it. Tune rho below, or swap
+// to .interpolate(d3.interpolate) for plain linear transitions.
+const zoom = d3.zoom().scaleExtent([0.1, 4]).interpolate(d3.interpolateZoom.rho(0.75)).on("zoom", (event) => {
   zoomLayer.attr("transform", event.transform);
   // Pan/scale the dot grid with the graph so the backdrop moves with the content.
   gridPattern.attr("patternTransform",
@@ -228,32 +252,40 @@ svg.on("dblclick", () => {
 // means panning the canvas doesn't count as a click, and node taps are left to
 // the node's own toggle handler.
 document.addEventListener("pointerup", (e) => {
-  if (detailNodeId === null || !bgDownXY) return;
+  if (!bgDownXY) return;
   const moved = Math.hypot(e.clientX - bgDownXY[0], e.clientY - bgDownXY[1]);
   bgDownXY = null;
+  if (detailNodeId === null && !activeThread) return;  // nothing to dismiss
   if (moved > 6) return;                             // a drag/pan, not a tap
   const t = e.target;
   if (!wrap.contains(t)) return;                     // outside the graph entirely
   if (detail.contains(t)) return;                    // inside the card
   if (t.closest && t.closest("g.node")) return;      // a node — it toggles itself
-  closeDetail();
+  if (detailNodeId !== null) closeDetail();
+  if (activeThread) selectThread(null);              // empty tap clears the thread
 }, true);
 
 function size() {
   const rect = wrap.getBoundingClientRect();
-  return { w: rect.width, h: rect.height };
+  // The detail panel is docked on the right and always present; the usable
+  // canvas is everything left of it, so auto-fit/centering never frames nodes
+  // into the panel's reserved space.
+  const panelW = detail ? detail.getBoundingClientRect().width : 0;
+  return { w: rect.width - panelW, h: rect.height };
 }
 
-const FIT_PADDING = 60;    // generous breathing room around the graph, world units
+const FIT_PADDING = 100;   // generous breathing room around the graph, world units
 const MAX_FIT_SCALE = 1.75; // don't zoom a small/sparse graph in too aggressively
 
 // Frame the camera on the nodes' actual bounding box — expanded by each node's
 // radius (hub nodes are larger, so their centre isn't enough) plus generous
 // padding — so nothing clips at the edge. Applied through d3.zoom so the pan/zoom
 // state stays consistent.
-function fitView(animate) {
+function fitView(animate, subset) {
   if (!simulation) return;
-  const nodes = simulation.nodes();
+  // `subset` (optional) frames only those nodes — used to zoom in on a thread's
+  // highlighted members + origin; otherwise the whole graph is framed.
+  const nodes = (subset && subset.length) ? subset : simulation.nodes();
   if (!nodes.length) return;
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const n of nodes) {
@@ -267,6 +299,7 @@ function fitView(animate) {
   const boxW = (maxX - minX) + FIT_PADDING * 2;
   const boxH = (maxY - minY) + FIT_PADDING * 2;
   const scale = Math.max(0.1, Math.min(MAX_FIT_SCALE, w / boxW, h / boxH));
+  if (!(subset && subset.length)) lastFitScale = scale;   // remember the base (whole-graph) zoom
   const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2;
   const t = d3.zoomIdentity.translate(w / 2 - scale * cx, h / 2 - scale * cy).scale(scale);
   (animate ? svg.transition().duration(400) : svg).call(zoom.transform, t);
@@ -288,10 +321,17 @@ function nodeInView(node, margin) {
   return s.x >= margin && s.x <= w - margin && s.y >= margin && s.y <= h - margin;
 }
 
-// Pan (keeping the current zoom) so a node ends up centred in the viewport.
-function panToNode(node, animate) {
+// Zoom level to settle at when moving to a node (e.g. following a discovery
+// chain). Only zooms IN toward this — if you're already closer it keeps your
+// zoom — so repeated hops don't keep zooming in or ever zoom out.
+const PAN_ZOOM = 1.3;            // absolute zoom floor when following a connection from the card
+const DIRECT_ZOOM_FACTOR = 1.8; // a direct graph click frames at this × the base fit zoom
+
+// Center a node in the viewport at absolute zoom `targetK` (defaults to the
+// current zoom = recenter only). Callers decide the zoom level.
+function panToNode(node, animate, targetK) {
   const { w, h } = size();
-  const k = d3.zoomTransform(svg.node()).k;
+  const k = targetK != null ? targetK : d3.zoomTransform(svg.node()).k;
   const t = d3.zoomIdentity.translate(w / 2 - k * node.x, h / 2 - k * node.y).scale(k);
   (animate ? svg.transition().duration(400) : svg).call(zoom.transform, t);
   autoFit = false;  // the user drove the camera here; don't auto-reframe over it
@@ -534,7 +574,12 @@ function labelVisible(d) {
 }
 function updateLabelVisibility() {
   labelLayer.selectAll("text.node-label")
-    .style("opacity", (d) => (labelVisible(d) ? 1 : 0));
+    .style("opacity", (d) => {
+      const base = labelVisible(d) ? 1 : 0;
+      // Off-thread labels fade with the rest of the graph (kept here rather than
+      // in CSS because this inline opacity is re-applied on every zoom).
+      return (threadKeep && !threadKeep.has(d.id)) ? base * 0.12 : base;
+    });
 }
 
 // Re-apply label text/size/width/position in place (no simulation restart), so
@@ -576,8 +621,7 @@ function measureTextWidth(s, fs) {
 }
 
 // Cut a label to `max` *pixels* (not characters) with an ellipsis, trimming from
-// the end until it fits. The full name is still available on hover (the tooltip
-// uses the untruncated d.label).
+// the end until it fits. The full, untruncated name shows in the detail card.
 function truncateLabel(s, fs, max) {
   s = String(s);
   if (measureTextWidth(s, fs) <= max) return s;
@@ -641,86 +685,6 @@ function edgeEnd(d) {
   return { x: d.target.x - (dx / dist) * gap, y: d.target.y - (dy / dist) * gap };
 }
 
-// Hover card: just title, kind, and the connection counts — a quick glance.
-// Posts and the full connection list live in the click-to-open detail card.
-function nodeTooltipHTML(d) {
-  // Same shape as the card: kind eyebrow → serif title → creator byline →
-  // hairline → the connection counts.
-  const creator = creatorInfo(d);
-  let html = "";
-  if (d.kind) html += `<span class="tip-eyebrow">${escapeHTML(d.kind)}</span>`;
-  html += `<strong class="tip-title">${escapeHTML(d.label)}</strong>`;
-  if (creator) html += `<span class="tip-by">${creatorCredit(creator.role)} ${escapeHTML(creator.name)}</span>`;
-  html += `<hr class="tip-rule">`;
-  const n = d.degree || 0;
-  let meta = `${n} connection${n === 1 ? "" : "s"}`;
-  // Downstream influence originating here — things it influenced / adapted, plus
-  // (via authorship, one hop) what its authored works influenced. Same number
-  // that drives node size. Only shown when there is any.
-  const out = d.growth || 0;
-  if (out) meta += ` · ${out} outgoing`;
-  html += `<span class="tip-degree">${meta}</span>`;
-  return html;
-}
-
-function showTooltip(html, event) {
-  tooltip.innerHTML = html;
-  tooltip.hidden = false;
-  moveTooltip(event);
-}
-
-// Place a floating element (tooltip or detail card) just off the cursor, on the
-// same side of it as the cursor sits in the frame: cursor in the left half →
-// card to its left, right half → to its right (likewise top/bottom). Flip to the
-// other side only when that side would run past the wall. A final clamp keeps it
-// fully inside the frame.
-function placeNearCursor(el, event, gap, pad) {
-  const p = wrap.getBoundingClientRect();
-  const w = el.offsetWidth, h = el.offsetHeight;
-  const cx = event.clientX - p.left, cy = event.clientY - p.top;
-
-  let left;
-  if (cx < p.width / 2) {
-    left = cx - gap - w;                                   // same side: left
-    if (left < pad) left = cx + gap;                       // no room → flip right
-  } else {
-    left = cx + gap;                                       // same side: right
-    if (left + w > p.width - pad) left = cx - gap - w;     // no room → flip left
-  }
-
-  let top;
-  if (cy < p.height / 2) {
-    top = cy - gap - h;                                    // same side: above
-    if (top < pad) top = cy + gap;                         // no room → flip below
-  } else {
-    top = cy + gap;                                        // same side: below
-    if (top + h > p.height - pad) top = cy - gap - h;      // no room → flip above
-  }
-
-  left = Math.max(pad, Math.min(left, p.width - w - pad));
-  top = Math.max(pad, Math.min(top, p.height - h - pad));
-  el.style.left = left + "px";
-  el.style.top = top + "px";
-}
-
-// Nudge an already-positioned card back fully inside the graph — so when its
-// content changes height (following a link), a taller card that would spill off
-// the bottom is shifted up instead of staying pinned by its top edge.
-function clampCardIntoView(el, pad) {
-  const left = parseFloat(el.style.left), top = parseFloat(el.style.top);
-  if (isNaN(left) || isNaN(top)) return;   // no explicit position yet (CSS corner)
-  const p = wrap.getBoundingClientRect();
-  el.style.left = Math.max(pad, Math.min(left, p.width - el.offsetWidth - pad)) + "px";
-  el.style.top = Math.max(pad, Math.min(top, p.height - el.offsetHeight - pad)) + "px";
-}
-
-function moveTooltip(event) {
-  placeNearCursor(tooltip, event, 14, 8);
-}
-
-function hideTooltip() {
-  tooltip.hidden = true;
-}
 
 // --- node detail card ------------------------------------------------------
 // Click a node to open a persistent card with its full details. It's a plain
@@ -747,7 +711,6 @@ function creatorRole(kind) {
   return kind === "film" ? "Director" : "Author";
 }
 // The short credit prefix for a role — "dir." for a Director, "by" otherwise.
-// Shared by the card's kind line and the hover tooltip so they stay in sync.
 function creatorCredit(role) {
   return role === "Director" ? "dir." : "by";
 }
@@ -896,18 +859,22 @@ function cardConnections(node) {
   return { rows, label };
 }
 
-function openDetail(node, event) {
+function openDetail(node, event, skipCamera) {
   detailNodeId = node.id;
 
   // Header block: kind as a small uppercase eyebrow above the serif title, then
   // the creator as a byline on its own line, then a hairline before the meta.
-  let html = `<button type="button" class="detail-close" aria-label="Close detail">×</button>`;
-  if (node.kind) html += `<div class="detail-eyebrow">${escapeHTML(node.kind)}</div>`;
-  html += `<h2 class="detail-title">${escapeHTML(node.label)}</h2>`;
+  let head = `<button type="button" class="detail-close" aria-label="Close detail">×</button>`;
+  if (node.kind) head += `<div class="detail-eyebrow">${escapeHTML(node.kind)}</div>`;
+  head += `<h2 class="detail-title">${escapeHTML(node.label)}</h2>`;
   const creator = creatorInfo(node);
   if (creator) {
-    html += `<div class="detail-byline">${creatorCredit(creator.role)} ${escapeHTML(creator.name)}</div>`;
+    head += `<div class="detail-byline">${creatorCredit(creator.role)} ${escapeHTML(creator.name)}</div>`;
   }
+
+  // Everything below the header goes in a scrollable body, so the header stays
+  // fixed while the content fills (and scrolls within) the panel's height.
+  let body = "";
 
   // "Discovered via" is a Discovery-mode section — omitted in Connections. One
   // entry reads as a single line; more than one becomes a small list (same
@@ -931,108 +898,82 @@ function openDetail(node, event) {
   const dvThread = (d) => (d.thread ? ` <span class="detail-dv-thread">· Thread: ${escapeHTML(capFirst(d.thread))}</span>` : "");
   // Hairline separating the title block from the metadata (Discovery only — in
   // Connections the connections section's own top border does the separating).
-  if (currentMode === "discovery" && dvs.length) html += `<hr class="detail-rule">`;
+  if (currentMode === "discovery" && dvs.length) head += `<hr class="detail-rule">`;
   if (currentMode === "discovery" && dvs.length === 1) {
     const d = dvs[0];
-    html += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvDate(d)}${dvThread(d)}</div>`;
-    if (d.note) html += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
+    body += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvDate(d)}${dvThread(d)}</div>`;
+    if (d.note) body += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
   } else if (currentMode === "discovery" && dvs.length > 1) {
     const items = dvs.map((d) => {
       let li = `<li>${dvLabel(d)}${dvDate(d)}${dvThread(d)}`;
       if (d.note) li += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
       return li + `</li>`;
     }).join("");
-    html += `<div class="detail-discovered"><div class="detail-section-label">Discovered via (${dvs.length})</div>` +
+    body += `<div class="detail-discovered"><div class="detail-section-label">Discovered via (${dvs.length})</div>` +
             `<ul class="detail-dv-list">${items}</ul></div>`;
   }
 
   // List section — "Led to" in Discovery, "Connections" in Connections (see
-  // cardConnections). The label stays put; the list is capped to 3 rows and
-  // scrolls internally.
+  // cardConnections).
   const { rows: conns, label: connLabel } = cardConnections(node);
   if (conns.length) {
-    html += `<div class="detail-conn-section">` +
+    body += `<div class="detail-conn-section">` +
             `<div class="detail-section-label">${connLabel}</div>` +
             `<div class="detail-connections">${conns.map(connectionRowHTML).join("")}</div>` +
             `</div>`;
   }
 
-  // Posts — always a labelled list when present (even a single one); each title
-  // its own link, truncated by rendered width via CSS ellipsis.
-  const postIds = node.post_ids || [];
-  if (postIds.length) {
-    const items = postIds.map((id) => {
-      const title = postTitles[id] || id;
-      return `<li><a class="detail-post-link" href="post.html?id=${encodeURIComponent(id)}" target="_blank" rel="noopener" title="${escapeHTML(title)}">${escapeHTML(title)}</a></li>`;
-    }).join("");
-    html += `<div class="detail-posts"><div class="detail-section-label">Posts (${postIds.length})</div>` +
+  // Posts — every post whose workId matches this node's id (the node id IS the
+  // work identifier; posts point back to it via their own data-only workId),
+  // newest first, each a link to the post.
+  const matchedPosts = allPosts
+    .filter((p) => p.workId === node.id)
+    .slice()
+    .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
+  if (matchedPosts.length) {
+    const items = matchedPosts.map((p) =>
+      `<li><a class="detail-post-link" href="post.html?id=${encodeURIComponent(p.id)}" target="_blank" rel="noopener" title="${escapeHTML(p.title)}">${escapeHTML(p.title)}</a></li>`
+    ).join("");
+    body += `<div class="detail-posts"><div class="detail-section-label">Posts</div>` +
             `<ul class="detail-post-list">${items}</ul></div>`;
   }
 
-  detail.innerHTML = html;
-  detail.classList.remove("is-closing");   // cancel any in-progress fade-out
-  detail.hidden = false;
+  detail.innerHTML = head + `<div class="detail-body">${body}</div>`;
 
-  // Restart the pop-in animation on every open — including node-to-node, where
-  // the card never leaves the DOM (toggling `hidden` alone wouldn't replay it).
-  detail.style.animation = "none";
-  void detail.offsetWidth;  // force reflow so the animation retriggers
-  detail.style.animation = "";
+  // The header stays fixed; the body fills the panel height and its connections
+  // list scrolls (CSS). The panel is docked, so there's no positioning to do.
 
-  // Cap the connections list at 3 rows, then let the rest scroll. Measured from
-  // the rendered rows (not a fixed height) so notes are counted too.
-  const connEl = detail.querySelector(".detail-connections");
-  if (connEl) {
-    connEl.style.maxHeight = "";
-    const rows = connEl.querySelectorAll(".detail-conn");
-    if (rows.length > 3) {
-      const top = connEl.getBoundingClientRect().top;
-      const cut = rows[2].getBoundingClientRect().bottom;
-      connEl.style.maxHeight = Math.ceil(cut - top) + "px";
-    }
-  }
-
-  // Position the card. Measured after layout so it uses the card's real size.
-  //  - From a node click: open just off the cursor, toward the roomier side.
-  //  - From a card link (no cursor): keep it roughly where it is, but re-clamp so
-  //    a taller card isn't left pinned by its top with its bottom off-screen.
-  //    Also pan an off-screen target node into view.
-  if (event) {
-    placeNearCursor(detail, event, 14, 12);
-  } else {
-    clampCardIntoView(detail, 12);
-    if (node.x != null && node.y != null && !nodeInView(node, 40)) panToNode(node, true);
+  // Recenter on the node when its card opens (skipped when the caller drives the
+  // camera, e.g. a thread selection). A direct graph click zooms to a fixed
+  // level a little above the base fit (absolute floor — first click nudges in,
+  // later clicks don't add more); following a connection from the card zooms in
+  // to at least PAN_ZOOM so the next node reads up close.
+  if (!skipCamera && node.x != null && node.y != null) {
+    const curK = d3.zoomTransform(svg.node()).k;
+    const clickZoom = Math.max(curK, lastFitScale * DIRECT_ZOOM_FACTOR);
+    panToNode(node, true, event ? clickZoom : Math.max(curK, PAN_ZOOM));
   }
 
   detail.querySelector(".detail-close").addEventListener("click", closeDetail);
   updateNodeSelection();
 }
 
-const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+// Empty-state shown in the docked panel when nothing is selected.
+function renderPlaceholder() {
+  if (!detail) return;
+  detail.innerHTML = `<div class="detail-placeholder">Select a node to see how it connects.</div>`;
+}
 
-// Close the card. By default it plays the pop-out animation and hides once the
-// animation ends; pass immediate=true (e.g. on a full graph rebuild) to hide at
-// once. Reduced-motion also hides immediately.
+// "Close" = deselect. The panel is permanent (docked), so this just clears the
+// selection and drops back to the placeholder — nothing is hidden. `immediate`
+// is kept for existing callers but no longer changes anything.
 function closeDetail(immediate) {
   if (!detail) return;
   detailNodeId = null;
+  renderPlaceholder();
   updateNodeSelection();
-  if (immediate || reduceMotion.matches) {
-    detail.classList.remove("is-closing");
-    detail.hidden = true;
-    return;
-  }
-  if (detail.hidden || detail.classList.contains("is-closing")) return;
-  detail.classList.add("is-closing");
 }
-if (detail) {
-  detail.addEventListener("animationend", (e) => {
-    if (e.animationName === "detail-pop-out" && detail.classList.contains("is-closing")) {
-      detail.hidden = true;
-      detail.classList.remove("is-closing");
-    }
-  });
-}
+renderPlaceholder();   // start empty
 
 // Highlight the node whose card is open (a gentle scale-up — see CSS), and clear
 // it from every other node.
@@ -1047,49 +988,19 @@ function toggleDetail(node, event) {
 }
 
 document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape" && detail && !detail.hidden) closeDetail();
+  if (e.key === "Escape" && detail) closeDetail();
 });
 
-// Drag the card by its header to move it out of the way — dragging over the
-// scrollable lists or a link/button does its normal thing instead. Position is
-// kept in the graph-wrap's own coordinates and clamped to stay inside it.
 if (detail) {
-  let cardDrag = null;
-  detail.addEventListener("pointerdown", (e) => {
-    if (e.button !== 0) return;
-    if (e.target.closest(".detail-connections, .detail-posts, a, button, [data-node-id]")) return;
-    const rect = detail.getBoundingClientRect();
-    cardDrag = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
-    detail.classList.add("is-dragging");
-    detail.setPointerCapture(e.pointerId);
-    e.preventDefault();
-  });
-  detail.addEventListener("pointermove", (e) => {
-    if (!cardDrag) return;
-    const p = wrap.getBoundingClientRect();
-    const left = Math.max(0, Math.min(e.clientX - p.left - cardDrag.dx, p.width - detail.offsetWidth));
-    const top = Math.max(0, Math.min(e.clientY - p.top - cardDrag.dy, p.height - detail.offsetHeight));
-    detail.style.left = left + "px";
-    detail.style.top = top + "px";
-  });
-  const endCardDrag = (e) => {
-    if (!cardDrag) return;
-    cardDrag = null;
-    detail.classList.remove("is-dragging");
-    if (detail.hasPointerCapture && detail.hasPointerCapture(e.pointerId)) detail.releasePointerCapture(e.pointerId);
-  };
-  detail.addEventListener("pointerup", endCardDrag);
-  detail.addEventListener("pointercancel", endCardDrag);
-
-  // Clicking a connection row (or a linked discovery source) opens that node's
-  // card in place. Delegated once here since the card's innerHTML is rebuilt on
-  // every open. Enter/Space activate keyboard focus too.
+  // Clicking a connection row (or a linked discovery source) opens that node in
+  // the docked panel. Delegated once here since the panel's innerHTML is rebuilt
+  // on every open. Enter/Space activate keyboard focus too.
   const openLinked = (el) => {
     const id = el.getAttribute("data-node-id");
     // Resolve the built view node (it carries growth / discoveryOut that the raw
     // node from nodeById doesn't), so the opened card renders in full.
     const other = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
-    if (other) openDetail(other);   // no event → keep the card where it is
+    if (other) openDetail(other);   // no event → pan the camera to trace to it
   };
   detail.addEventListener("click", (e) => {
     const link = e.target.closest("[data-node-id]");
@@ -1161,19 +1072,6 @@ function render(mode) {
     .style("stroke", "transparent")
     .style("stroke-width", 12)
     .merge(hit);
-  hitAll
-    .style("cursor", (d) => (edgeLabel(d) || d.note ? "help" : "default"))
-    .on("mouseenter", (event, d) => {
-      let html = "";
-      // Typed connections show their relationship label (coloured to match the
-      // line); untyped ones show nothing. Discovery edges may carry a note.
-      const label = edgeLabel(d);
-      if (label) html += `<span class="tip-rel" style="color:${edgeColor(d)}">${escapeHTML(label)}</span>`;
-      if (d.note) html += `<span class="tip-note">${escapeHTML(d.note)}</span>`;
-      if (html) showTooltip(html, event);
-    })
-    .on("mousemove", (event, d) => { if (edgeLabel(d) || d.note) moveTooltip(event); })
-    .on("mouseleave", hideTooltip);
 
   // --- nodes ---
   const node = nodeLayer.selectAll("g.node")
@@ -1181,7 +1079,7 @@ function render(mode) {
   node.exit().remove();
 
   const nodeEnter = node.enter().append("g").attr("class", "node");
-  nodeEnter.append("circle");
+  nodeEnter.append("circle").attr("class", "node-dot");
 
   const nodeAll = nodeEnter.merge(node)
     .attr("class", (d) => `node${isHub(d) ? " is-hub" : ""}`);
@@ -1191,7 +1089,7 @@ function render(mode) {
   // outline, in both modes. (The stroke follows the fill for leaves.)
   const contentFill = mode === "connections" ? "var(--accent2)" : "var(--accent)";
   const contentStroke = mode === "connections" ? "var(--accent2-ink)" : "var(--accent-ink)";
-  nodeAll.select("circle")
+  nodeAll.select("circle.node-dot")
     .attr("r", nodeRadius)
     .style("fill", (d) => (isHub(d) ? "var(--bg)" : contentFill))
     .style("stroke", (d) => (isHub(d) ? "var(--muted)" : contentStroke))
@@ -1211,12 +1109,10 @@ function render(mode) {
     .style("font-weight", (d) => (isHub(d) ? "700" : "400"));
 
   nodeAll
-    // Hover shows the small tooltip card; clicking a node opens the expanded
-    // detail card (toggle). Dragging dismisses both (see dragStart).
-    .on("mouseenter", (event, d) => { d.__hover = true; updateLabelVisibility(); showTooltip(nodeTooltipHTML(d), event); })
-    .on("mousemove", moveTooltip)
-    .on("mouseleave", (event, d) => { d.__hover = false; updateLabelVisibility(); hideTooltip(); })
-    .on("click", (event, d) => { event.stopPropagation(); hideTooltip(); toggleDetail(d, event); })
+    // Hovering reveals the node's own label; clicking opens the detail panel.
+    .on("mouseenter", (event, d) => { d.__hover = true; updateLabelVisibility(); })
+    .on("mouseleave", (event, d) => { d.__hover = false; updateLabelVisibility(); })
+    .on("click", (event, d) => { event.stopPropagation(); toggleDetail(d, event); })
     // clickDistance lets a tiny pointer jitter still register as a click (open the
     // card) rather than being swallowed as a drag gesture.
     .call(d3.drag()
@@ -1427,7 +1323,6 @@ function dragMove(event, d) {
   // the simulation once (a real drag suppresses the click event, so this won't
   // fight the toggle).
   if (!dragDismissed && dragDist > 6) {
-    hideTooltip();
     closeDetail();
     // Reheat once for a genuine drag. (No !event.active guard: event.active is
     // only 0 in start/end, so it would never be true here and the reheat would
@@ -1448,6 +1343,22 @@ function dragEnd(event, d) {
 
 function setMode(mode) {
   currentMode = mode;
+  // A rebuilt graph drops any thread highlight; clear the state and any classes
+  // lingering on reused elements (the node join resets node classes, but labels
+  // and links are merged and keep theirs).
+  activeThread = null;
+  threadKeep = null;
+  syncThreadMenu();
+  // Threads + timeline are Discovery-view concepts; hide them in Connections.
+  if (threadFilter) threadFilter.hidden = mode !== "discovery";
+  if (timelineBtn) timelineBtn.hidden = mode !== "discovery";
+  // Close the scrubber (state only — the dim/classes are cleared just below).
+  stopPlay();
+  scrubOpen = false;
+  if (timelineRow) timelineRow.hidden = true;
+  if (timelineBtn) timelineBtn.setAttribute("aria-pressed", "false");
+  nodeLayer.selectAll("g.node").classed("is-thread-dim", false).classed("is-thread-origin", false);
+  linkLayer.selectAll("line.link").classed("is-thread-dim", false);
   modeButtons.forEach((btn) => {
     const active = btn.dataset.mode === mode;
     btn.classList.toggle("is-active", active);
@@ -1459,6 +1370,331 @@ function setMode(mode) {
 modeButtons.forEach((btn) => {
   btn.addEventListener("click", () => setMode(btn.dataset.mode));
 });
+
+// --- Threads highlight -----------------------------------------------------
+// A "thread" is the through-line label on discovered_via entries. Selecting one
+// highlights every node tagged with it (plus the origin node those members were
+// discovered via), fading everything else, and frames the camera on that subset.
+
+// Distinct threads across all nodes, with a count of everything the thread lights
+// up (its tagged members PLUS the origin node, which needn't carry the thread),
+// most first.
+function collectThreads() {
+  const threads = new Set();
+  (rawData && rawData.nodes ? rawData.nodes : []).forEach((n) => {
+    discoveredVia(n).forEach((d) => { if (d.thread) threads.add(d.thread); });
+  });
+  return [...threads]
+    .map((thread) => {
+      const { members, origins } = threadSets(thread);
+      return { thread, count: new Set([...members, ...origins]).size };
+    })
+    .sort((a, b) => b.count - a.count || a.thread.localeCompare(b.thread, undefined, { sensitivity: "base" }));
+}
+
+// Members = nodes tagged with the thread. Origins = the source nodes those
+// members were discovered via (an origin needn't carry the thread itself).
+function threadSets(thread) {
+  const members = new Set();
+  const origins = new Set();
+  (rawData && rawData.nodes ? rawData.nodes : []).forEach((n) => {
+    const dvs = discoveredVia(n);
+    if (!dvs.some((d) => d.thread === thread)) return;
+    members.add(n.id);
+    dvs.forEach((d) => { if (d.source && nodeById[d.source]) origins.add(d.source); });
+  });
+  return { members, origins };
+}
+
+function buildThreadMenu() {
+  if (!threadMenu) return;
+  const threads = collectThreads();
+  const list = threads.length
+    ? threads.map(({ thread, count }) => `
+        <button type="button" class="thread-option" data-thread="${escapeHTML(thread)}">
+          <span class="thread-option-name">${escapeHTML(capFirst(thread))}</span>
+          <span class="thread-option-count">${count}</span>
+        </button>`).join("")
+    : `<div class="thread-empty">No threads yet.</div>`;
+  // "Clear all" pinned at the top (like the homepage tag filter); list scrolls.
+  threadMenu.innerHTML =
+    `<button type="button" class="tag-clear" id="thread-clear">Clear all</button>
+     <div class="tag-dropdown-divider"></div>
+     <div class="thread-dropdown-scroll">${list}</div>`;
+  syncThreadMenu();
+}
+
+function syncThreadMenu() {
+  if (threadMenu) {
+    threadMenu.querySelectorAll(".thread-option").forEach((btn) => {
+      btn.classList.toggle("is-selected", btn.dataset.thread === activeThread);
+    });
+    const clear = threadMenu.querySelector("#thread-clear");
+    if (clear) clear.disabled = !activeThread;
+  }
+  if (threadToggle) threadToggle.classList.toggle("is-active", !!activeThread);
+  if (threadLabel) threadLabel.textContent = activeThread ? capFirst(activeThread) : "Threads";
+}
+
+// Dim everything except the thread's members + origin; glow/outline the origin;
+// frame the camera on the kept subset. Passing null reverts to normal.
+function applyThreadHighlight() {
+  if (!activeThread) {
+    threadKeep = null;
+    nodeLayer.selectAll("g.node").classed("is-thread-dim", false).classed("is-thread-origin", false);
+    linkLayer.selectAll("line.link").classed("is-thread-dim", false);
+    updateLabelVisibility();
+    autoFit = false;
+    fitView(true);   // reframe the whole graph
+    return;
+  }
+  const { members, origins } = threadSets(activeThread);
+  const keep = new Set([...members, ...origins]);
+  threadKeep = keep;
+  nodeLayer.selectAll("g.node")
+    .classed("is-thread-dim", (d) => !keep.has(d.id))
+    .classed("is-thread-origin", (d) => origins.has(d.id));
+  // A link stays lit only if BOTH its endpoints are in the kept set (origin↔
+  // member or member↔member); any link touching a faded node fades.
+  linkLayer.selectAll("line.link").classed("is-thread-dim", (d) => {
+    const s = (d.source && d.source.id) || d.source;
+    const t = (d.target && d.target.id) || d.target;
+    return !(keep.has(s) && keep.has(t));
+  });
+  updateLabelVisibility();
+  autoFit = false;
+  const subset = simulation ? simulation.nodes().filter((n) => keep.has(n.id)) : [];
+  fitView(true, subset);
+}
+
+// Select a thread (or null to clear). Selecting the active one clears it.
+// On select, open the origin (source) node's card too — without moving the
+// camera, since applyThreadHighlight already frames the subset.
+function selectThread(thread) {
+  // The timeline scrubber and thread highlight share the same fade; close the
+  // scrubber row (state only) when a thread takes over.
+  if (thread && scrubOpen) {
+    stopPlay();
+    scrubOpen = false;
+    if (timelineRow) timelineRow.hidden = true;
+    if (timelineBtn) timelineBtn.setAttribute("aria-pressed", "false");
+  }
+  activeThread = thread || null;
+  syncThreadMenu();
+  applyThreadHighlight();
+  if (!activeThread) { closeDetail(); return; }
+  const originId = [...threadSets(activeThread).origins][0];
+  if (!originId) return;
+  const node = (simulation ? simulation.nodes().find((n) => n.id === originId) : null) || nodeById[originId];
+  if (node) openDetail(node, null, true);   // true = don't move the camera
+}
+
+if (threadToggle && threadMenu) {
+  const openMenu = () => { threadMenu.hidden = false; threadToggle.setAttribute("aria-expanded", "true"); };
+  const closeMenu = () => { threadMenu.hidden = true; threadToggle.setAttribute("aria-expanded", "false"); };
+  threadToggle.addEventListener("click", () => (threadMenu.hidden ? openMenu() : closeMenu()));
+  threadMenu.addEventListener("click", (e) => {
+    if (e.target.closest("#thread-clear")) { selectThread(null); closeMenu(); return; }
+    const btn = e.target.closest(".thread-option");
+    if (!btn) return;
+    const t = btn.dataset.thread;
+    selectThread(t === activeThread ? null : t);   // re-selecting clears it
+    closeMenu();                                    // close immediately after selecting
+  });
+  document.addEventListener("click", (e) => {
+    if (threadFilter && !threadFilter.contains(e.target)) closeMenu();
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
+}
+
+// --- Timeline scrubber -----------------------------------------------------
+// Discovery-only. Steps through the actual discovered_via dates (month
+// granularity): nodes discovered after the current position fade to gray (same
+// treatment as a thread highlight), and the camera reframes to the visible set.
+
+const PLAY_DURATION = 4500;   // total ms for the play button to sweep min→max
+
+// A month key for sorting/comparison: year*12 + (month-1). "2024" → January of
+// that year; "2026-03" / "2026-03-14" → that month. null if unparseable.
+function dateKey(s) {
+  const parts = String(s).split("-");
+  const y = parseInt(parts[0], 10);
+  if (isNaN(y)) return null;
+  const m = parts.length >= 2 ? parseInt(parts[1], 10) : 1;
+  return y * 12 + (m - 1);
+}
+
+// The month a node was first discovered (earliest date across its dv entries),
+// or null if it has no dated discovery (those stay visible at every position).
+function nodeDiscoveryKey(node) {
+  let min = Infinity;
+  discoveredVia(node).forEach((d) => {
+    if (!d.date) return;
+    const k = dateKey(d.date);
+    if (k != null && k < min) min = k;
+  });
+  return isFinite(min) ? min : null;
+}
+
+// Every calendar month from the earliest to the latest discovery, inclusive —
+// continuous, not just the months where something was discovered. Scrubbing
+// through an empty month simply produces the same visible set as the month
+// before it (no change), so the real pacing/gaps between discoveries show.
+function collectTimeline() {
+  let min = Infinity, max = -Infinity;
+  (rawData && rawData.nodes ? rawData.nodes : []).forEach((n) => {
+    discoveredVia(n).forEach((d) => {
+      if (!d.date) return;
+      const k = dateKey(d.date);
+      if (k == null) return;
+      if (k < min) min = k;
+      if (k > max) max = k;
+    });
+  });
+  if (!isFinite(min)) return [];
+  const stops = [];
+  for (let k = min; k <= max; k++) {
+    const y = Math.floor(k / 12);
+    const m = (k % 12) + 1;
+    stops.push({ key: k, label: formatDiscoveryDate(`${y}-${String(m).padStart(2, "0")}`) });
+  }
+  return stops;
+}
+
+// Fade every node discovered after the current stop; keep undated + on-or-before
+// nodes full colour. Reuses threadKeep + .is-thread-dim, and reframes the camera
+// on the visible set (like a thread selection).
+function applyScrub() {
+  if (!scrubStops.length || !simulation) return;
+  const cutoff = scrubStops[scrubIndex].key;
+  const keep = new Set();
+  simulation.nodes().forEach((n) => {
+    const k = nodeDiscoveryKey(nodeById[n.id] || n);
+    if (k == null || k <= cutoff) keep.add(n.id);
+  });
+  threadKeep = keep;
+  nodeLayer.selectAll("g.node")
+    .classed("is-thread-dim", (d) => !keep.has(d.id))
+    .classed("is-thread-origin", false);
+  linkLayer.selectAll("line.link").classed("is-thread-dim", (d) => {
+    const s = (d.source && d.source.id) || d.source;
+    const t = (d.target && d.target.id) || d.target;
+    return !(keep.has(s) && keep.has(t));
+  });
+  updateLabelVisibility();
+  autoFit = false;
+  const subset = simulation.nodes().filter((n) => keep.has(n.id));
+  if (subset.length) fitView(true, subset);
+  updateScrubUI();
+}
+
+// Reflect scrubIndex on the track fill, thumb position, and current-date label.
+function updateScrubUI() {
+  const n = scrubStops.length;
+  const frac = n > 1 ? scrubIndex / (n - 1) : 1;
+  const pct = (frac * 100) + "%";
+  if (timelineFill) timelineFill.style.width = pct;
+  if (timelineThumb) timelineThumb.style.left = pct;
+  if (timelineCurEl) timelineCurEl.textContent = scrubStops[scrubIndex] ? scrubStops[scrubIndex].label : "";
+}
+
+// Clear the scrub fade and reframe the whole graph (mirrors the thread clear).
+function clearScrubFade() {
+  threadKeep = null;
+  nodeLayer.selectAll("g.node").classed("is-thread-dim", false).classed("is-thread-origin", false);
+  linkLayer.selectAll("line.link").classed("is-thread-dim", false);
+  updateLabelVisibility();
+}
+
+function openTimeline() {
+  scrubStops = collectTimeline();
+  scrubOpen = true;
+  if (timelineRow) timelineRow.hidden = false;
+  if (timelineBtn) timelineBtn.setAttribute("aria-pressed", "true");
+  // Mutually exclusive with a thread highlight.
+  if (activeThread) { activeThread = null; syncThreadMenu(); }
+  if (!scrubStops.length) {
+    if (timelineCurEl) timelineCurEl.textContent = "No dated discoveries";
+    if (timelineMinEl) timelineMinEl.textContent = "";
+    if (timelineMaxEl) timelineMaxEl.textContent = "";
+    return;
+  }
+  if (timelineMinEl) timelineMinEl.textContent = Math.floor(scrubStops[0].key / 12);
+  if (timelineMaxEl) timelineMaxEl.textContent = Math.floor(scrubStops[scrubStops.length - 1].key / 12);
+  scrubIndex = scrubStops.length - 1;   // start at the latest date (everything visible)
+  applyScrub();
+}
+
+function closeTimeline() {
+  stopPlay();
+  scrubOpen = false;
+  if (timelineRow) timelineRow.hidden = true;
+  if (timelineBtn) timelineBtn.setAttribute("aria-pressed", "false");
+  clearScrubFade();
+  autoFit = false;
+  fitView(true);   // reframe the whole graph
+}
+
+// Fade the legend back while the timeline is actively playing or being dragged,
+// so it doesn't compete with the moving graph.
+function setLegendDim(on) {
+  const card = legend ? legend.closest(".graph-legend-card") : null;
+  if (card) card.classList.toggle("is-scrub-dim", on);
+}
+
+function startPlay() {
+  if (!scrubStops.length) return;
+  scrubPlaying = true;
+  if (timelineRow) timelineRow.classList.add("is-playing");
+  setLegendDim(true);
+  // Resume from where the scrubber sits; only replay from the start if we're
+  // already parked at the end.
+  if (scrubIndex >= scrubStops.length - 1) { scrubIndex = 0; applyScrub(); }
+  const steps = Math.max(1, scrubStops.length - 1);
+  scrubPlayTimer = setInterval(() => {
+    if (scrubIndex >= scrubStops.length - 1) { stopPlay(); return; }
+    scrubIndex++;
+    applyScrub();
+  }, PLAY_DURATION / steps);
+}
+
+function stopPlay() {
+  scrubPlaying = false;
+  if (timelineRow) timelineRow.classList.remove("is-playing");
+  if (scrubPlayTimer) { clearInterval(scrubPlayTimer); scrubPlayTimer = null; }
+  setLegendDim(false);
+}
+
+if (timelineBtn && timelineRow) {
+  timelineBtn.addEventListener("click", () => (scrubOpen ? closeTimeline() : openTimeline()));
+  if (timelinePlay) timelinePlay.addEventListener("click", () => (scrubPlaying ? stopPlay() : startPlay()));
+
+  // Drag anywhere on the track to scrub; snaps to the nearest discovery stop.
+  let scrubbing = false;
+  const scrubToPointer = (e) => {
+    if (scrubStops.length < 2) return;
+    const r = timelineTrack.getBoundingClientRect();
+    const frac = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    const idx = Math.round(frac * (scrubStops.length - 1));
+    if (idx !== scrubIndex) { scrubIndex = idx; applyScrub(); }
+  };
+  timelineTrack.addEventListener("pointerdown", (e) => {
+    if (!scrubStops.length) return;
+    stopPlay();
+    scrubbing = true;
+    setLegendDim(true);
+    try { timelineTrack.setPointerCapture(e.pointerId); } catch (_) {}
+    scrubToPointer(e);
+  });
+  timelineTrack.addEventListener("pointermove", (e) => { if (scrubbing) scrubToPointer(e); });
+  const endScrub = (e) => {
+    scrubbing = false;
+    setLegendDim(false);
+    try { timelineTrack.releasePointerCapture(e.pointerId); } catch (_) {}
+  };
+  timelineTrack.addEventListener("pointerup", endScrub);
+  timelineTrack.addEventListener("pointercancel", endScrub);
+}
 
 // Reset button: respawn the map — drop remembered positions so the layout
 // re-seeds and settles fresh, and re-enable auto-fit to reframe it.
@@ -1485,10 +1721,11 @@ window.addEventListener("resize", relayout);
 
 // Full-screen toggle for the graph canvas.
 if (fsBtn) {
-  // iOS Safari has no element Fullscreen API, so fall back to a fixed overlay
-  // that fills the viewport (see .is-faux-fullscreen in the CSS). webkit-prefixed
-  // methods cover older WebKit.
-  const reqFs = wrap.requestFullscreen || wrap.webkitRequestFullscreen;
+  // The full-screen target is the frame (toolbar + graph), so the mode toggle
+  // stays visible in full screen. iOS Safari has no element Fullscreen API, so
+  // fall back to a fixed overlay (see .is-faux-fullscreen in the CSS).
+  const frame = document.getElementById("graph-frame") || wrap;
+  const reqFs = frame.requestFullscreen || frame.webkitRequestFullscreen;
   const exitFs = document.exitFullscreen || document.webkitExitFullscreen;
   const fsEl = () => document.fullscreenElement || document.webkitFullscreenElement;
 
@@ -1504,16 +1741,16 @@ if (fsBtn) {
   fsBtn.addEventListener("click", () => {
     if (reqFs) {
       if (fsEl()) exitFs.call(document);
-      else reqFs.call(wrap);
+      else reqFs.call(frame);
     } else {
       // No Fullscreen API (iOS): toggle the CSS overlay ourselves.
-      const on = wrap.classList.toggle("is-faux-fullscreen");
+      const on = frame.classList.toggle("is-faux-fullscreen");
       document.body.classList.toggle("is-graph-faux-fs", on);
       setFsUI(on);
     }
   });
 
-  const onFsChange = () => setFsUI(fsEl() === wrap);
+  const onFsChange = () => setFsUI(fsEl() === frame);
   document.addEventListener("fullscreenchange", onFsChange);
   document.addEventListener("webkitfullscreenchange", onFsChange);
 }
@@ -1656,18 +1893,19 @@ Promise.all([
     if (!r.ok) throw new Error("HTTP " + r.status);
     return r.json();
   }),
-  // Posts are only needed for hover labels; a failure there shouldn't sink the
-  // whole graph, so swallow it and carry on with empty titles.
+  // Posts are only needed to list a node's matching posts in the card; a failure
+  // there shouldn't sink the whole graph, so swallow it and carry on.
   fetchPosts().catch(() => []),
 ])
   .then(([graph, posts]) => {
     rawData = graph;
+    allPosts = posts;
     // A node may omit `label`; derive it from the id so the label stays coupled
     // to the id (e.g. "class-dis-philosophy" → "Dis Philosophy").
     graph.nodes.forEach((n) => { if (!n.label) n.label = humanizeId(n.id); });
-    posts.forEach((p) => { postTitles[p.id] = p.title; });
     graph.nodes.forEach((n) => { nodeById[n.id] = n; });
     status.textContent = "";
+    buildThreadMenu();
     setMode(currentMode);
   })
   .catch((err) => {

@@ -50,7 +50,6 @@ function renderPost(post) {
   setPostMeta(post);
 
   // Content-type tags ("writeup"/"blurb") lead; the rest keep their order.
-  // (orderTags is shared so this ordering is consistent across the site.)
   const orderedTags = orderTags(post.tags);
   const tags = orderedTags.length
     ? orderedTags.map((t) => `<a class="post-tag" href="tag.html?tag=${encodeURIComponent(t)}">${escapeHTML(t)}</a>`).join("")
@@ -179,8 +178,6 @@ function renderRelated(posts, current) {
     // They sit on a single line; CSS clips whatever overflows the row.
     const matchedSet = new Set(matched);
     const rest = post.tags.filter((t) => !matchedSet.has(t));
-    // Shared tags first (highlighted), then the rest — and within each group,
-    // type tags (writeup/blurb) lead, matching the ordering used elsewhere.
     const ordered = [...orderTags(matched), ...orderTags(rest)];
     const tags = ordered
       .map((t) => `<span class="related-tag${matchedSet.has(t) ? " is-shared" : ""}">${escapeHTML(t)}</span>`)

@@ -25,10 +25,10 @@
   /* Content-frame scale. --maxw is the normal frame used everywhere; posts use
      the narrower --post-width. --maxw-wide is a wider cap for the nav bar's
      inner content (logo + links + search). */
-  --maxw: 1040px;          /* normal frame — header + content align everywhere */
-  --maxw-wide: 1200px;     /* wider cap for the nav inner content — tunable */
+  --maxw: 1040px;          /* Default width — normal frame — header + content align everywhere */
+  --maxw-wide: 1200px;     /* wider cap for bigger pages — Precursor — tunable */
   --post-width: 700px;     /* reading column for post/search/tag content */
-  --maxw-header: 1440px;     /* wider cap for the nav inner content — tunable */
+  --maxw-header: 1440px;     /* wider cap for the nav header inner content — tunable */
 
   /* Font stacks */
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -665,33 +665,47 @@ body.wide main { max-width: var(--maxw-wide); }
   z-index: 20;
   min-width: 170px;
   max-height: 240px;
-  overflow-y: auto;
-  padding: 4px;
-  background: var(--surface);
+  /* Flex column: the tag list scrolls, the divider + Clear all stay pinned at
+     the bottom. No horizontal padding so row hovers run edge to edge. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 4px 0;
+  /* Warm off-white (same as the search bar's resting fill) instead of stark
+     white, so it fits the page rather than clashing against it. */
+  background: var(--bg);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: var(--radius-pill);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
 }
 .tag-dropdown-menu[hidden] { display: none; }
+/* Only the tag list scrolls. */
+.tag-dropdown-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+/* Divider + Clear all: a pinned footer that never scrolls. */
+.tag-dropdown-divider,
+.tag-clear { flex-shrink: 0; }
 
 .tag-dropdown-divider {
   height: 1px;
-  margin: 4px 2px;
+  margin: 4px 0;
   background: var(--line);
 }
 
-/* "Clear all" action at the top of the menu. */
+/* "Clear all" action at the BOTTOM of the menu — full-width like a tag row. */
 .tag-clear {
   display: block;
   width: 100%;
-  padding: 5px 8px;
+  padding: 6px 12px;
   text-align: left;
   font-size: var(--text-tiny);
   font-weight: 600;
   color: var(--muted);
   background: none;
   border: none;
-  border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
@@ -701,23 +715,34 @@ body.wide main { max-width: var(--maxw-wide); }
 }
 .tag-clear:disabled { opacity: 0.5; cursor: default; }
 
-/* One checkbox row per tag. */
+/* One row per tag: an accent checkmark slot (shown when selected), the name,
+   then the count. The hover background spans the full width of the menu. */
 .tag-option {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 8px;
-  border-radius: 6px;
+  padding: 6px 12px;
   font-size: var(--text-small);
   color: var(--ink);
   cursor: pointer;
 }
 .tag-option:hover { background: rgb(from var(--accent) r g b / 0.12); }
+/* The real checkbox drives state but is hidden (out of flow so it adds no gap);
+   the .tag-check mark is what's shown. */
 .tag-option input {
-  accent-color: var(--accent);
-  cursor: pointer;
-  flex-shrink: 0;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
+.tag-check {
+  flex: 0 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  opacity: 0;   /* reserved space; revealed when the row is selected */
+}
+.tag-option input:checked ~ .tag-check { opacity: 1; }
 .tag-option-count {
   margin-left: auto;
   color: var(--muted);
@@ -1216,10 +1241,10 @@ a.page-link:focus-visible {
   color: var(--ink);
 }
 
-/* Square thumbnail with the same cover + hover-zoom as the homepage tiles. The
-   aspect-ratio lives on the image itself (not the span) so it stays square even
-   as a flex item, where min-height:auto would otherwise let a tall image grow
-   the box past the square and defeat object-fit. */
+/* Square thumbnail (cover, same as the homepage tiles). The aspect-ratio lives
+   on the image itself (not the span) so it stays square even as a flex item,
+   where min-height:auto would otherwise let a tall image grow the box past the
+   square and defeat object-fit. No hover effects. */
 .related-thumb {
   display: block;
   overflow: hidden;
@@ -1230,13 +1255,9 @@ a.page-link:focus-visible {
   aspect-ratio: 1 / 1;
   object-fit: cover;
   display: block;
-  transition: transform 0.4s ease;
 }
-.related-card:hover .related-thumb img,
-.related-card:focus-visible .related-thumb img { transform: scale(1.06); }
 
-/* Title below the thumbnail, capped at two lines. Hovering the card nudges the
-   title toward the accent and slides an underline in from the left. */
+/* Title below the thumbnail, capped at two lines. No hover styling. */
 .related-title {
   margin-top: 8px;
   font-size: var(--text-base);
@@ -1246,16 +1267,6 @@ a.page-link:focus-visible {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  background-image: linear-gradient(var(--accent), var(--accent));
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  background-size: 0% 2px;
-  transition: color 0.25s ease, background-size 0.3s ease;
-}
-.related-card:hover .related-title,
-.related-card:focus-visible .related-title {
-  color: var(--accent);
-  background-size: 100% 2px;
 }
 
 /* All of the post's tags on one line, dot-separated like the post meta row.
@@ -1275,7 +1286,7 @@ a.page-link:focus-visible {
   letter-spacing: var(--tag-letter-spacing);
   color: var(--muted);
 }
-.related-tag.is-shared { color: var(--accent); }
+.related-tag.is-shared { color: var(--muted); }
 /* Dot before every tag after the first — the same "·" separator as .post-meta. */
 .related-tags > * + *::before {
   content: "·";
@@ -1797,6 +1808,12 @@ a.post-tag:focus-visible { color: var(--accent); }
   gap: 0 8px;
   margin: 0 0 1.4rem;
 }
+/* Divider between the intro block and the graph. */
+.precursors-rule {
+  margin: 0 0 20px;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
 /* Quiet meta line: last-updated date pulled from the GitHub API. */
 .precursors-updated {
   color: var(--muted);
@@ -1890,10 +1907,176 @@ a.post-tag:focus-visible { color: var(--accent); }
   position: absolute;
   z-index: 2;
 }
-.graph-controls--tl { top: 12px; left: 12px; }
+/* Header bar attached to the top of the graph box, holding the mode toggle.
+   Shares the graph's border and rounds only its top corners; the graph-wrap
+   below squares its top corners so the two read as one connected container. */
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: var(--radius-pill) var(--radius-pill) 0 0;
+}
+
+/* Timeline scrubber toggle: a clock icon sitting next to the Threads dropdown
+   (reuses .graph-icon-btn). aria-pressed marks it accent when the row is open. */
+.timeline-btn[hidden] { display: none; }
+.timeline-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
+
+/* Scrubber row: a quiet bar between the toolbar and the graph. Its border-top is
+   the divider from the toolbar; the graph-wrap's border-top divides it from the
+   graph below — so the [toolbar · scrubber · graph] stack still reads as one box. */
+.timeline-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 12px;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  font-size: var(--text-tiny);
+  color: var(--muted);
+}
+.timeline-row[hidden] { display: none; }
+.graph-frame.is-faux-fullscreen .timeline-row { border-left: none; border-right: none; }
+
+/* Play / pause: a quiet icon button; the row's .is-playing class swaps the icon. */
+.timeline-play {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.timeline-play:hover { color: var(--accent); }
+.timeline-play svg { display: block; }
+.timeline-play .tl-pause-icon { display: none; }
+.timeline-row.is-playing .tl-play-icon { display: none; }
+.timeline-row.is-playing .tl-pause-icon { display: block; }
+
+/* Min/max year labels flanking the track. */
+.timeline-year { flex-shrink: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Thin track with an accent fill up to the current position and a round thumb. */
+.timeline-track {
+  position: relative;
+  flex: 1 1 auto;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  cursor: pointer;
+}
+.timeline-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.timeline-thumb {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;   /* center the dot on its position */
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--line);
+  cursor: grab;
+}
+.timeline-thumb:active { cursor: grabbing; }
+
+/* Current selected month/year readout, right-aligned. */
+.timeline-current {
+  flex-shrink: 0;
+  min-width: 5.5em;
+  text-align: right;
+  color: var(--ink);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Threads dropdown — same look as the homepage tag filter (same tokens), but a
+   plain single-select list: selected = bold accent-ink, others muted; subtle
+   background tint on hover; counts right-aligned in tabular numerals. */
+.thread-filter { position: relative; }
+.thread-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 20;
+  min-width: 180px;
+  max-height: 260px;
+  /* Flex column so "Clear all" stays pinned at the top and the list scrolls. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 4px 0;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+.thread-dropdown-menu[hidden] { display: none; }
+.thread-dropdown-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+.thread-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 12px;
+  text-align: left;
+  font-size: var(--text-small);
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.thread-option:hover { background: rgb(from var(--accent) r g b / 0.12); }
+.thread-option.is-selected { color: var(--accent); font-weight: 700; }
+.thread-option-count {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  font-variant-numeric: tabular-nums;
+}
+.thread-empty { padding: 6px 12px; color: var(--muted); font-size: var(--text-small); }
+
+/* Thread highlight on the graph: fade all but the thread's members + origin.
+   (Off-thread labels are faded via inline opacity in updateLabelVisibility,
+   since that opacity is re-applied on every zoom.) */
+.node.is-thread-dim { opacity: 0.13; }
+.link.is-thread-dim { opacity: 0.08; }
+/* Origin node: soft accent glow + a thicker solid outline (the !important beats
+   the per-node inline stroke set in JS). */
+.node.is-thread-origin { filter: drop-shadow(0 0 5px rgb(from var(--accent) r g b / 0.85)); }
+.node.is-thread-origin .node-dot {
+  stroke: var(--accent) !important;
+  stroke-width: 3 !important;
+  stroke-dasharray: none !important;
+}
 .graph-controls--tr {
   top: 12px;
-  right: 12px;
+  right: calc(12px + var(--graph-panel-w));   /* clear the docked panel */
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1963,7 +2146,7 @@ a.post-tag:focus-visible { color: var(--accent); }
 .graph-fs-icon {
   position: absolute;
   bottom: 12px;
-  right: 12px;
+  right: calc(12px + var(--graph-panel-w));   /* clear the docked panel */
   z-index: 2;
   display: inline-flex;
   align-items: center;
@@ -1982,10 +2165,10 @@ a.post-tag:focus-visible { color: var(--accent); }
 .graph-fs-icon .fs-icon { display: block; }
 /* Show the "expand" icon normally, the "collapse" icon only in full screen. */
 .graph-fs-icon .fs-collapse { display: none; }
-.graph-wrap:fullscreen .graph-fs-icon .fs-expand,
-.graph-wrap.is-faux-fullscreen .graph-fs-icon .fs-expand { display: none; }
-.graph-wrap:fullscreen .graph-fs-icon .fs-collapse,
-.graph-wrap.is-faux-fullscreen .graph-fs-icon .fs-collapse { display: block; }
+.graph-frame:fullscreen .graph-fs-icon .fs-expand,
+.graph-frame.is-faux-fullscreen .graph-fs-icon .fs-expand { display: none; }
+.graph-frame:fullscreen .graph-fs-icon .fs-collapse,
+.graph-frame.is-faux-fullscreen .graph-fs-icon .fs-collapse { display: block; }
 
 /* Legend: a collapsible card pinned to the graph's bottom-left. Muted, with a
    solid background so it reads over the graph. */
@@ -2006,7 +2189,10 @@ a.post-tag:focus-visible { color: var(--accent); }
   box-shadow: 0 2px 8px rgb(0 0 0 / 0.08);
   color: var(--muted);
   font-size: var(--text-tiny);
+  transition: opacity 0.25s ease;
 }
+/* Fade the legend back while the timeline is playing/being dragged. */
+.graph-legend-card.is-scrub-dim { opacity: 0.15; }
 .graph-legend-summary {
   cursor: pointer;
   list-style: none;   /* drop the default ▸ marker */
@@ -2109,11 +2295,16 @@ a.post-tag:focus-visible { color: var(--accent); }
 }
 .graph-wrap {
   position: relative;
+  /* Width of the docked detail panel on the right; the usable graph canvas is
+     everything left of it. */
+  --graph-panel-w: min(320px, 45%);
   width: 100%;
   height: 70vh;
   min-height: 420px;
   border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
+  /* Square top corners so it connects flush under .graph-toolbar; round the
+     bottom so the whole [toolbar + graph] reads as one box. */
+  border-radius: 0 0 var(--radius-pill) var(--radius-pill);
   background: var(--surface);
   overflow: hidden;
 }
@@ -2121,41 +2312,52 @@ a.post-tag:focus-visible { color: var(--accent); }
    surface background so it doesn't fall back to black. The .is-faux-fullscreen
    fallback (iOS, which lacks element fullscreen) fixes the wrap over the whole
    viewport itself. */
-.graph-wrap:fullscreen,
-.graph-wrap.is-faux-fullscreen {
+.graph-frame:fullscreen,
+.graph-frame.is-faux-fullscreen {
+  display: flex;
+  flex-direction: column;
   width: 100vw;
   height: 100vh;
-  border: none;
-  border-radius: 0;
   background: var(--surface);
 }
-.graph-wrap.is-faux-fullscreen {
+.graph-frame.is-faux-fullscreen {
   position: fixed;
   inset: 0;
   z-index: 60;   /* above the theme toggle (10) */
   height: 100dvh;   /* fill the visual viewport on mobile, accounting for browser chrome */
 }
+/* In full screen the toolbar keeps its natural height (with just a bottom
+   divider), and the graph fills the rest — no borders/rounding on the pieces. */
+.graph-frame:fullscreen .graph-toolbar,
+.graph-frame.is-faux-fullscreen .graph-toolbar {
+  border: none;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+}
+.graph-frame:fullscreen .graph-wrap,
+.graph-frame.is-faux-fullscreen .graph-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  border: none;
+  border-radius: 0;
+}
 body.is-graph-faux-fs { overflow: hidden; }
 /* In full screen, keep the corner controls clear of the device safe areas
    (notch / home indicator) — otherwise the bottom row gets clipped in landscape.
    env() is 0 on devices without insets, so this is a no-op elsewhere. */
-.graph-wrap:fullscreen .graph-controls--tl,
-.graph-wrap.is-faux-fullscreen .graph-controls--tl {
+.graph-frame:fullscreen .graph-controls--tr,
+.graph-frame.is-faux-fullscreen .graph-controls--tr {
   top: calc(12px + env(safe-area-inset-top, 0px));
-  left: calc(12px + env(safe-area-inset-left, 0px));
+  right: calc(12px + var(--graph-panel-w) + env(safe-area-inset-right, 0px));
 }
-.graph-wrap:fullscreen .graph-controls--tr,
-.graph-wrap.is-faux-fullscreen .graph-controls--tr {
-  top: calc(12px + env(safe-area-inset-top, 0px));
-  right: calc(12px + env(safe-area-inset-right, 0px));
-}
-.graph-wrap:fullscreen .graph-legend-card,
-.graph-wrap.is-faux-fullscreen .graph-legend-card {
+.graph-frame:fullscreen .graph-legend-card,
+.graph-frame.is-faux-fullscreen .graph-legend-card {
   bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   left: calc(12px + env(safe-area-inset-left, 0px));
 }
-.graph-wrap:fullscreen .graph-fs-icon,
-.graph-wrap.is-faux-fullscreen .graph-fs-icon {
+.graph-frame:fullscreen .graph-fs-icon,
+.graph-frame.is-faux-fullscreen .graph-fs-icon {
   bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   right: calc(12px + env(safe-area-inset-right, 0px));
 }
@@ -2182,105 +2384,51 @@ body.is-graph-faux-fs { overflow: hidden; }
   transform-origin: center;
   transition: transform 0.15s ease;
 }
-.node.is-selected circle { transform: scale(1.18); }
+/* Selected node (its card is open in the panel): a modest size bump plus a
+   thicker version of its own existing outline. Deselecting reverts both. */
+.node.is-selected circle { transform: scale(1.3); }
+.node.is-selected .node-dot { stroke-width: 3.5 !important; }
 
-.graph-tooltip {
-  position: absolute;
-  top: 0;
-  left: 0;
-  max-width: 260px;
-  padding: 8px 10px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  color: var(--ink);
-  font-size: var(--text-small);
-  line-height: 1.35;
-  pointer-events: none;
-  z-index: 5;
-}
-.graph-tooltip[hidden] { display: none; }
-/* Kind eyebrow above the title (uppercase, small, muted). */
-.graph-tooltip .tip-eyebrow {
-  display: block;
-  color: var(--muted);
-  font-size: var(--text-tiny);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-/* Title — serif, like the card. */
-.graph-tooltip .tip-title {
-  font-family: var(--font-serif);
-  font-size: var(--text-base);
-  font-weight: 700;
-}
-/* Creator byline on its own line below the title. */
-.graph-tooltip .tip-by {
-  display: block;
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: var(--text-small);
-}
-/* Hairline between the title block and the connection counts. */
-.graph-tooltip .tip-rule {
-  margin: 8px 0;
-  border: 0;
-  border-top: 1px solid var(--line);
-}
-.graph-tooltip .tip-degree {
-  display: block;
-  color: var(--muted);
-  font-size: var(--text-tiny);
-}
-.graph-tooltip .tip-note { display: block; }
-.graph-tooltip .tip-rel {
-  display: block;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-.graph-tooltip .tip-rel + .tip-note { margin-top: 5px; }
-
-/* Click-to-open node detail card. A quiet surface — thin dividers, no shadow —
-   floated in the graph's top-left corner. The header (title / kind / author /
-   discovery) stays put; only the connections list scrolls. */
+/* Docked detail panel: pinned to the right edge of the graph, full height,
+   always present as part of the layout (the graph canvas frames itself into the
+   space left of it — see size() in precursors.js). A flex column: the header
+   (kind / title / creator / discovery) stays fixed, and .detail-body fills the
+   rest of the panel's height and scrolls as one. */
 .node-detail {
   position: absolute;
-  top: 14px;
-  left: 14px;
+  top: 0;
+  right: 0;
+  bottom: 0;
   z-index: 6;
-  width: 300px;
-  max-width: calc(100% - 28px);
-  max-height: calc(100% - 28px);
+  display: flex;
+  flex-direction: column;
+  width: var(--graph-panel-w);
   padding: 16px 18px;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pill);
+  border-left: 1px solid var(--line);
   color: var(--ink);
   font-size: var(--text-small);
   line-height: 1.4;
-  cursor: move;   /* the header is a drag handle; inner regions reset below */
-  animation: detail-pop 0.18s ease both;
+  overflow: hidden;
 }
 .node-detail[hidden] { display: none; }
-.node-detail.is-dragging { cursor: grabbing; user-select: none; }
-/* Reverse of the pop-in: closeDetail() adds this, then hides the card once the
-   animation finishes (see precursors.js). */
-.node-detail.is-closing { animation: detail-pop-out 0.18s ease both; }
-
-/* Gentle pop-in so opening the card (and switching nodes) reads as an action. */
-@keyframes detail-pop {
-  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+/* Header stays put; the body takes the remaining height but never scrolls
+   itself — the sections inside it scroll. */
+.node-detail > :not(.detail-body) { flex-shrink: 0; }
+.detail-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
-/* Pop-out: the exact reverse, played on close. */
-@keyframes detail-pop-out {
-  from { opacity: 1; transform: translateY(0) scale(1); }
-  to   { opacity: 0; transform: translateY(-6px) scale(0.98); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .node-detail { animation: none; }
+/* Only the connections list grows/scrolls; the note, discovered-via and posts
+   keep their natural height. */
+.detail-body > :not(.detail-conn-section) { flex-shrink: 0; }
+/* Empty state when no node is selected. */
+.detail-placeholder {
+  color: var(--muted);
+  font-style: italic;
 }
 
 .detail-close {
@@ -2347,17 +2495,22 @@ body.is-graph-faux-fs { overflow: hidden; }
 .detail-dv-date { color: var(--muted); }
 .detail-dv-thread { color: var(--muted); }
 
-/* Connections: a stats label that stays put over the scrolling list. The list
-   is capped to 3 rows in JS; this keeps it bounded even before that runs. */
+/* Connections: a stats label above the list. The section grows to fill the
+   panel's remaining height; its label stays put and the list scrolls within. */
 .detail-conn-section {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--line);
   cursor: default;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
+.detail-conn-section .detail-section-label { flex-shrink: 0; }
 .detail-connections {
-  box-sizing: border-box;
-  max-height: 34vh;
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
 }
 .detail-conn { padding: 8px 0; }
@@ -2402,6 +2555,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 .detail-conn-thread .thread-arrow { position: relative; top: -4px; }
 
 .detail-posts {
+  flex: 0 0 auto;
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--line);
@@ -2414,7 +2568,15 @@ body.is-graph-faux-fs { overflow: hidden; }
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
-.detail-post-list { list-style: none; margin: 0; padding: 0; }
+/* Posts sit below the connections list; if the list is long it scrolls on its
+   own rather than pushing the panel over. */
+.detail-post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 22vh;
+  overflow-y: auto;
+}
 .detail-post-list li + li { margin-top: 4px; }
 /* Each title truncates by rendered width (ellipsis) past a share of the card. */
 .detail-post-link {

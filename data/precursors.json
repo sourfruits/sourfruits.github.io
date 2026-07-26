@@ -1,82 +1,7 @@
-{
-  "nodes": [
+{ 
+  "nodes": [ 
     {
-      "id": "soren-kierkegaard",
-      "label": "Soren Kierkegaard",
-      "kind": "philosopher",
-      "post_ids": [],
-      "discovered_via": [
-        { "strength": "aware", "source": "danny-h", "date": "2024" },
-        { "strength": "engaged", "source": "dis-philosophy", "date": "2026-03" }
-      ],
-      "connections": [
-        { "to": "either-or", "relationship": "authorship" },
-        { "to": "the-myth-of-sisyphus", "relationship": "influence" },
-        { "to": "the-stranger", "relationship": "influence" },
-        { "to": "the-moviegoer", "relationship": "influence" }
-      ]
-    },
-    {
-      "id": "either-or",
-      "label": "Either/Or",
-      "kind": "book",
-      "post_ids": [],
-      "discovered_via": [
-        { "strength": "aware", "source": "soren-kierkegaard", "date": "2024" },
-        { "source": "dis-philosophy", "date": "2026-03", "note": "Read excerpt: The Unhappiest One" }
-      ],
-      "connections": [
-        { "to": "melancholia", "relationship": "thematic" }
-      ]
-    },
-    {
-      "id": "the-moviegoer",
-      "label": "The Moviegoer",
-      "kind": "book",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "the-stranger", "date": "2026-04", "thread": "existential fiction" }
-      ]
-    },
-    {
-      "id": "melancholia",
-      "label": "Melancholia (2011)",
-      "kind": "film",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "dis-philosophy", "date": "2026-03" }
-      ],
-      "connections": [
-        { "to": "either-or", "relationship": "thematic" }
-      ]
-    },
-    {
-      "id": "the-trial",
-      "label": "The Trial",
-      "kind": "book",
-      "creator": "Franz Kafka",
-      "post_ids": ["kafka-the-trial"],
-      "discovered_via": [
-        { "source": "the-stranger", "date": "2026-06", "thread": "existential fiction" }
-      ],
-      "connections": [
-        { "to": "the-trial-film", "relationship": "adaptation" },
-        { "to": "the-stranger", "relationship": "influence" },
-        { "to": "after-hours", "relationship": "influence" },
-        { "to": "brazil", "relationship": "influence" }
-      ]
-    },
-    {
-      "id": "the-trial-film",
-      "label": "The Trial (1962)",
-      "kind": "film",
-      "creator": "Orson Welles",
-      "discovered_via": [
-        { "source": "the-trial", "date": "2026-06" }
-      ]
-    },
-    {
-      "id": "after-hours",
+      "id": "after-hours-1985",
       "label": "After Hours (1985)",
       "kind": "film",
       "creator": "Martin Scorsese",
@@ -85,273 +10,77 @@
       ]
     },
     {
-      "id": "brazil",
+      "id": "blow-out-1981",
+      "label": "Blow Out (1981)",
+      "kind": "film",
+      "creator": "Brian de Palma",
+      "discovered_via": [
+        { "source": "the-parallax-view-1974", "date": "2023-04", "thread": "70s paranoia" }
+      ],
+      "connections": []
+    },
+    {
+      "id": "blow-up-1966",
+      "label": "Blow-Up (1966)",
+      "kind": "film",
+      "discovered_via": [
+        { "source": "blow-out-1981", "date": "2026-03" }
+      ],
+      "connections": [
+        { "to": "the-conversation-1974", "relationship": "influence" },
+        { "to": "blow-out-1981", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "brazil-1985",
       "label": "Brazil (1985)",
       "kind": "film",
-      "post_ids": [],
       "discovered_via": [
         { "source": "letterboxd", "date": "2026-04", "note": "Part of a Denmark movie-binge phase." }
       ]
     },
     {
-      "id": "the-stranger",
-      "label": "The Stranger",
-      "kind": "book",
-      "creator": "Alfred Camus",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "dis-philosophy", "date": "2026-03", "note": "Borrowed from the DIS library." }
-      ]
-    },
-    {
-      "id": "the-myth-of-sisyphus",
-      "label": "The Myth of Sisyphus",
-      "kind": "book",
-      "creator": "Alfred Camus",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "the-stranger", "date": "2026-04" }
-      ],
-      "connections": [
-        { "to": "the-stranger", "relationship": "thematic" }
-      ]
-    },
-    {
-      "id": "fyodor-dostoevsky",
-      "label": "Fyodor Dostoevsky",
-      "kind": "author",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "notes-from-underground", "date": "2026-05" }
-      ],
-      "connections": [
-        { "to": "notes-from-underground", "relationship": "authorship" },
-        { "to": "white-nights", "relationship": "authorship" },
-        { "to": "crime-and-punishment", "relationship": "authorship" },
-        { "to": "the-myth-of-sisyphus", "relationship": "influence", "note": "Camus directly cites Dostoevsky in the Myth of Sisyphus." }
-      ]
-    },
-    {
-      "id": "white-nights",
-      "label": "White Nights",
-      "kind": "book",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "fyodor-dostoevsky", "date": "2026-05", "note": "Picked it up in a bookstore in Denmark for the flight home." }
-      ],
-      "connections": [
-        { "to": "four-nights-of-a-dreamer", "relationship": "adaptation" },
-        { "to": "le-notti-bianche", "relationship": "adaptation" }
-      ]
-    },
-    {
-      "id": "notes-from-underground",
-      "label": "Notes From Underground",
-      "kind": "book",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "the-stranger", "date": "2026-05", "thread": "existential fiction" }
-      ],
-      "connections": [
-        { "to": "the-stranger", "relationship": "influence" }
-      ]
-    },
-    {
-      "id": "crime-and-punishment",
-      "label": "Crime and Punishment",
-      "kind": "book",
-      "post_ids": [],
-      "discovered_via": [
-        { "strength": "aware", "source": "fyodor-dostoevsky", "date": "2026-05" }
-      ],
-      "connections": [
-        { "to": "pickpocket", "relationship": "influence" }
-      ]
-    },
-    {
-      "id": "le-notti-bianche",
-      "label": "Le Notti Bianche (1957)",
-      "kind": "film",
-      "discovered_via": [
-        { "source": "white-nights", "date": "2026-05" }
-      ]
-    },
-    {
-      "id": "robert-bresson",
-      "label": "Robert Bresson",
-      "kind": "director",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "pickpocket", "date": "2026-05" }
-      ],
-      "connections": [
-        { "to": "pickpocket", "relationship": "authorship" },
-        { "to": "four-nights-of-a-dreamer", "relationship": "authorship" }
-      ]
-    },
-    {
-      "id": "four-nights-of-a-dreamer",
-      "label": "Four Nights of a Dreamer (1971)",
-      "kind": "film",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "white-nights", "date": "2026-05" }
-      ]
-    },
-    {
-      "id": "pickpocket",
-      "label": "Pickpocket (1959)",
-      "kind": "film",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "le-samourai", "date": "2026-04", "thread": "lone operator", "note": "Bresson/Melville ascetic dialogue" }
-      ]
-    },
-    {
-      "id": "le-samourai",
-      "label": "Le Samouraï (1967)",
-      "kind": "film",
-      "creator": "Jean-Pierre Melville",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "the-parallax-view", "mechanism": "letterboxd", "date": "2026-03", "thread": "70s paranoia" }
-      ],
-      "connections": [
-        { "to": "ghost-dog", "relationship": "influence", "note": "Jarmusch built Ghost Dog on Le Samouraï's lone-hitman code and stillness." },
-        { "to": "pickpocket", "relationship": "thematic" },
-        { "to": "the-conversation", "relationship": "thematic", "note": "Existentialist studies of lone operators who build their identity around mastery of their craft" }
-      ]
-    },
-    {
-      "id": "jim-jarmusch",
-      "label": "Jim Jarmusch",
-      "kind": "director",
-      "discovered_via": [
-        { "source": "ghost-dog", "date": "2026-05" }
-      ],
-      "connections": [
-        { "to": "stranger-than-paradise", "relationship": "authorship" },
-        { "to": "ghost-dog", "relationship": "authorship" }
-      ]
-    },
-    {
-      "id": "stranger-than-paradise",
-      "label": "Stranger Than Paradise (1984)",
-      "kind": "film",
-      "discovered_via": [
-        { "strength": "aware", "source": "jim-jarmusch" },
-        { "strength": "engaged", "source": "dis-philosophy", "date": "2026-05", "note": "Assigned/chosen for an essay on boredom; loved it." }
-      ],
-      "connections": [
-        { "to": "chan-is-missing", "relationship": "thematic", "note": "Influential black and white 1980s indie film about aimless wandering" }
-      ]
-    },
-    {
-      "id": "ghost-dog",
-      "label": "Ghost Dog: The Way of the Samurai (1999)",
-      "kind": "film",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "le-samourai", "date": "2026-04", "thread": "lone operator"}
-      ]
-    },
-    {
-      "id": "chan-is-missing",
+      "id": "chan-is-missing-1982",
       "label": "Chan Is Missing (1982)",
       "kind": "film",
       "creator": "Wayne Wang",
       "discovered_via": [
         { "source": "letterboxd", "date": "2026-05" }
       ],
-      "connections": [],
-      "post_ids": ["chan-is-missing"]      
-    },
-    {
-      "id": "blow-up",
-      "label": "Blow-Up (1966)",
-      "kind": "film",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "blow-out", "date": "2026-03" }
-      ],
-      "connections": [
-        { "to": "the-conversation", "relationship": "influence" },
-        { "to": "blow-out", "relationship": "influence" }
-      ]
-    },
-    {
-      "id": "the-conversation",
-      "label": "The Conversation (1974)",
-      "kind": "film",
-      "creator": "Francis Ford Coppola",
-      "discovered_via": [
-        { "source": "the-parallax-view", "date": "2023-04", "thread": "70s paranoia" }
-      ],
-      "connections": [
-        { "to": "the-parallax-view", "relationship": "thematic" }
-      ]
-    },
-    {
-      "id": "blow-out",
-      "label": "Blow Out (1981)",
-      "kind": "film",
-      "creator": "Brian de Palma",
-      "post_ids": [],
-      "discovered_via": [
-        { "source": "the-parallax-view", "date": "2023-04", "thread": "70s paranoia" }
-      ],
       "connections": []
     },
     {
-      "id": "the-parallax-view",
-      "label": "The Parallax View (1974)",
-      "kind": "film",
-      "creator": "Alan J. Pakula",
+      "id": "criterion-channel",
+      "label": "The Criterion Channel",
+      "kind": "platform",
       "discovered_via": [
-        { "date": "2023-04", "note": "General interest in spy/paranoia thrillers around this time; no specific trigger." }
+        { "source": "", "date": "2026-05" }
       ]
     },
     {
-      "id": "mahjong",
-      "label": "Mahjong (1996)",
-      "kind": "film",
-      "creator": "Edward Yang",
-      "discovered_via": [
-        { "source": "letterboxd", "date": "2026-05" }
-      ]
-    },
-    {
-      "id": "cold-water",
+      "id": "cold-water-1994",
       "label": "Cold Water (1994)",
       "kind": "film",
       "creator": "Olivier Assayas",
       "discovered_via": [
-        { "source": "mahjong", "thread": "Virginie Ledoyen" }
+        { "source": "mahjong-1996", "thread": "Virginie Ledoyen", "date": "2026-06"}
       ]
     },
     {
-      "id": "purple-noon",
-      "label": "Purple Noon (1960)",
-      "kind": "film",
-      "creator": "René Clément",
+      "id": "dostoevsky-crime-and-punishment",
+      "label": "Crime and Punishment",
+      "kind": "book",
       "discovered_via": [
-        { "source": "le-samourai", "date": "2026-05", "thread": "Alain Delon" }
-      ]
-    },
-    {
-      "id": "thief",
-      "label": "Thief (1981)",
-      "kind": "film",
-      "creator": "Michael Mann",
-      "discovered_via": [
-        { "source": "le-samourai", "date": "2026-05", "thread": "lone operator" }
+        { "strength": "aware", "source": "fyodor-dostoevsky", "date": "2026-05" }
+      ],
+      "connections": [
+        { "to": "pickpocket-1959", "relationship": "influence" }
       ]
     },
     {
       "id": "danny-h",
       "label": "Danny H",
-      "kind": "person",
-      "post_ids": []
+      "kind": "person"
     },
     {
       "id": "dis-philosophy",
@@ -362,10 +91,277 @@
       ]
     },
     {
+      "id": "kierkegaard-either-or",
+      "label": "Either/Or",
+      "kind": "book",
+      "discovered_via": [
+        { "strength": "aware", "source": "soren-kierkegaard", "date": "2024" },
+        { "source": "dis-philosophy", "date": "2026-03", "note": "Read excerpt: The Unhappiest One" }
+      ],
+      "connections": [
+        { "to": "melancholia-2011", "relationship": "thematic" }
+      ]
+    },
+    {
+      "id": "four-nights-of-a-dreamer-1971",
+      "label": "Four Nights of a Dreamer (1971)",
+      "kind": "film",
+      "discovered_via": [
+        { "source": "dostoevsky-white-nights", "date": "2026-05" }
+      ]
+    },
+    {
+      "id": "from-russia-with-love-1963",
+      "label": "From Russia With Love (1963)",
+      "kind": "film",
+      "creator": "Terence Young",
+      "discovered_via": [
+        { "source": "criterion-channel", "date": "2026-06" }
+      ]
+    },
+    {
+      "id": "fyodor-dostoevsky",
+      "label": "Fyodor Dostoevsky",
+      "kind": "author",
+      "discovered_via": [
+        { "source": "dostoevsky-notes-from-underground", "date": "2026-05" }
+      ],
+      "connections": [
+        { "to": "dostoevsky-notes-from-underground", "relationship": "authorship" },
+        { "to": "dostoevsky-white-nights", "relationship": "authorship" },
+        { "to": "dostoevsky-crime-and-punishment", "relationship": "authorship" },
+        { "to": "dostoevsky-the-myth-of-sisyphus", "relationship": "influence", "note": "Camus directly cites Dostoevsky in the Myth of Sisyphus." }
+      ]
+    },
+    {
+      "id": "ghost-dog-1999",
+      "label": "Ghost Dog: The Way of the Samurai (1999)",
+      "kind": "film",
+      "discovered_via": [
+        { "source": "le-samourai-1967", "date": "2026-04", "thread": "lone operator"}
+      ]
+    },
+    {
+      "id": "jim-jarmusch",
+      "label": "Jim Jarmusch",
+      "kind": "director",
+      "discovered_via": [
+        { "source": "ghost-dog-1999", "date": "2026-05" }
+      ],
+      "connections": [
+        { "to": "stranger-than-paradise-1984", "relationship": "authorship" },
+        { "to": "ghost-dog-1999", "relationship": "authorship" }
+      ]
+    },
+    {
+      "id": "le-notti-bianche-1957",
+      "label": "Le Notti Bianche (1957)",
+      "kind": "film",
+      "discovered_via": [
+        { "source": "dostoevsky-white-nights", "date": "2026-05" }
+      ]
+    },
+    {
+      "id": "le-samourai-1967",
+      "label": "Le Samouraï (1967)",
+      "kind": "film",
+      "creator": "Jean-Pierre Melville",
+      "discovered_via": [
+        { "source": "the-parallax-view-1974", "date": "2026-03", "mechanism": "letterboxd", "note": "this movie is soooooooooooooo cool and awesome and it inspired to want to be a better man honestly", "thread": "70s paranoia" }
+      ],
+      "connections": [
+        { "to": "ghost-dog-1999", "relationship": "influence", "note": "Jarmusch built Ghost Dog on Le Samouraï's lone-hitman code and stillness." },
+        { "to": "pickpocket-1959", "relationship": "thematic" },
+        { "to": "the-conversation-1974", "relationship": "thematic", "note": "Existentialist studies of lone operators who build their identity around mastery of their craft" }
+      ]
+    },
+    {
       "id": "letterboxd",
       "label": "Letterboxd",
-      "kind": "platform",
-      "post_ids": []
+      "kind": "platform"
+    },
+    {
+      "id": "mahjong-1996",
+      "label": "Mahjong (1996)",
+      "kind": "film",
+      "creator": "Edward Yang",
+      "discovered_via": [
+        { "source": "letterboxd", "date": "2026-05" }
+      ]
+    },
+    {
+      "id": "melancholia",
+      "label": "Melancholia (2011)",
+      "kind": "film",
+      "discovered_via": [
+        { "source": "dis-philosophy", "date": "2026-03" }
+      ],
+      "connections": [
+        { "to": "kierkegaard-either-or", "relationship": "thematic" }
+      ]
+    },
+    {
+      "id": "dostoevsky-notes-from-underground",
+      "label": "Notes From Underground",
+      "kind": "book",
+      "discovered_via": [
+        { "source": "camus-the-stranger", "date": "2026-05", "thread": "existential fiction" }
+      ],
+      "connections": [
+        { "to": "camus-the-stranger", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "pickpocket-1959",
+      "label": "Pickpocket (1959)",
+      "kind": "film",
+      "discovered_via": [
+        { "source": "le-samourai-1967", "date": "2026-04", "thread": "lone operator", "note": "Bresson/Melville ascetic dialogue" }
+      ]
+    },
+    {
+      "id": "purple-noon-1960",
+      "label": "Purple Noon (1960)",
+      "kind": "film",
+      "creator": "René Clément",
+      "discovered_via": [
+        { "source": "le-samourai-1967", "date": "2026-05", "thread": "Alain Delon" }
+      ]
+    },
+    {
+      "id": "robert-bresson",
+      "label": "Robert Bresson",
+      "kind": "director",
+      "discovered_via": [
+        { "source": "pickpocket-1959", "date": "2026-05" }
+      ],
+      "connections": [
+        { "to": "pickpocket-1959", "relationship": "authorship" },
+        { "to": "four-nights-of-a-dreamer-1971", "relationship": "authorship" }
+      ]
+    },
+    {
+      "id": "soren-kierkegaard",
+      "label": "Soren Kierkegaard",
+      "kind": "philosopher",
+      "discovered_via": [
+        { "strength": "aware", "source": "danny-h", "date": "2024" },
+        { "strength": "engaged", "source": "dis-philosophy", "date": "2026-03" }
+      ],
+      "connections": [
+        { "to": "kierkegaard-either-or", "relationship": "authorship" },
+        { "to": "camus-the-myth-of-sisyphus", "relationship": "influence" },
+        { "to": "camus-the-stranger", "relationship": "influence" },
+        { "to": "percy-the-moviegoer", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "stranger-than-paradise-1984",
+      "label": "Stranger Than Paradise (1984)",
+      "kind": "film",
+      "discovered_via": [
+        { "strength": "aware", "source": "jim-jarmusch" },
+        { "strength": "engaged", "source": "dis-philosophy", "date": "2026-05", "note": "Assigned/chosen for an essay on boredom; loved it." }
+      ],
+      "connections": [
+        { "to": "chan-is-missing-1982", "relationship": "thematic", "note": "Influential black and white 1980s indie film about aimless wandering" }
+      ]
+    },
+    {
+      "id": "the-conversation-1974",
+      "label": "The Conversation (1974)",
+      "kind": "film",
+      "creator": "Francis Ford Coppola",
+      "discovered_via": [
+        { "source": "the-parallax-view-1974", "date": "2023-04", "thread": "70s paranoia" }
+      ],
+      "connections": [
+        { "to": "the-parallax-view-1974", "relationship": "thematic" }
+      ]
+    },
+    {
+      "id": "percy-the-moviegoer",
+      "label": "The Moviegoer",
+      "kind": "book",
+      "creator": "Walker Percy",
+      "discovered_via": [
+        { "source": "camus-the-stranger", "date": "2026-04", "thread": "existential fiction" }
+      ]
+    },
+    {
+      "id": "camus-the-myth-of-sisyphus",
+      "label": "The Myth of Sisyphus",
+      "kind": "book",
+      "creator": "Alfred Camus",
+      "discovered_via": [
+        { "source": "camus-the-stranger", "date": "2026-04" }
+      ],
+      "connections": [
+        { "to": "camus-the-stranger", "relationship": "thematic" }
+      ]
+    },
+    {
+      "id": "the-parallax-view-1974",
+      "label": "The Parallax View (1974)",
+      "kind": "film",
+      "creator": "Alan J. Pakula",
+      "discovered_via": [
+        { "date": "2023-04", "note": "General interest in spy/paranoia thrillers around this time; no specific trigger." }
+      ]
+    },
+    {
+      "id": "camus-the-stranger",
+      "label": "The Stranger",
+      "kind": "book",
+      "creator": "Alfred Camus",
+      "discovered_via": [
+        { "source": "dis-philosophy", "date": "2026-03", "note": "Borrowed from the DIS library." }
+      ]
+    },
+    {
+      "id": "kafka-the-trial",
+      "label": "The Trial",
+      "kind": "book",
+      "creator": "Franz Kafka",
+      "discovered_via": [
+        { "source": "camus-the-stranger", "date": "2026-06", "thread": "existential fiction" }
+      ],
+      "connections": [
+        { "to": "kafka-the-trial-film", "relationship": "adaptation" },
+        { "to": "camus-the-stranger", "relationship": "influence" },
+        { "to": "after-hours-1985", "relationship": "influence" },
+        { "to": "brazil-1985", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "the-trial-1962",
+      "label": "The Trial (1962)",
+      "kind": "film",
+      "creator": "Orson Welles",
+      "discovered_via": [
+        { "source": "kafka-the-trial", "date": "2026-06" }
+      ]
+    },
+    {
+      "id": "thief-1981",
+      "label": "Thief (1981)",
+      "kind": "film",
+      "creator": "Michael Mann",
+      "discovered_via": [
+        { "source": "le-samourai-1967", "date": "2026-05", "thread": "lone operator" }
+      ]
+    },
+    {
+      "id": "dostoevsky-white-nights",
+      "label": "White Nights",
+      "kind": "book",
+      "discovered_via": [
+        { "source": "fyodor-dostoevsky", "date": "2026-05", "note": "Picked it up in a bookstore in Denmark for the flight home." }
+      ],
+      "connections": [
+        { "to": "four-nights-of-a-dreamer-1971", "relationship": "adaptation" },
+        { "to": "le-notti-bianche-1957", "relationship": "adaptation" }
+      ]
     }
   ]
 }

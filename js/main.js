@@ -23,6 +23,9 @@ let selectedTags = new Set();  // the tags currently checked
 let showDrafts = true;          // drafts revealed by default (for testing)
 let currentView = "normal";    // normal (3-col) | compact (4-col)
 
+// Capitalize a tag's first letter for display (values stay lowercase).
+const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
 // Selected tags parsed from ?tags= (comma-separated).
 function tagsFromURL() {
   const raw = new URLSearchParams(window.location.search).get("tags") || "";
@@ -93,15 +96,22 @@ function buildMenu(posts) {
     counts.get(b) - counts.get(a) ||
     a.localeCompare(b, undefined, { sensitivity: "base" }));
 
+  // Custom accent checkmark (Letterboxd-style) that replaces the native checkbox.
+  const check = `<span class="tag-check" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>`;
   tagMenu.innerHTML =
+    // "Clear all" pinned at the top (doesn't scroll with the list)…
     `<button type="button" class="tag-clear" id="tag-clear">Clear all</button>
      <div class="tag-dropdown-divider"></div>` +
+    // …then the scrollable list of tags below it.
+    `<div class="tag-dropdown-scroll">` +
     allTags.map((tag) => `
       <label class="tag-option">
         <input type="checkbox" value="${escapeHTML(tag)}">
-        <span class="tag-option-name">${escapeHTML(tag)}</span>
+        ${check}
+        <span class="tag-option-name">${escapeHTML(capFirst(tag))}</span>
         <span class="tag-option-count">${counts.get(tag)}</span>
-      </label>`).join("");
+      </label>`).join("") +
+    `</div>`;
 }
 
 // Reflect the selection on the checkboxes, the toggle label (with the number of
@@ -112,7 +122,7 @@ function syncMenu(matchCount) {
   });
   const n = selectedTags.size;
   if (n === 0) tagLabel.textContent = `All tags (${matchCount})`;
-  else if (n === 1) tagLabel.textContent = `${selectedParam()} (${matchCount})`;
+  else if (n === 1) tagLabel.textContent = `${capFirst(selectedParam())} (${matchCount})`;
   else tagLabel.textContent = `${n} tags (${matchCount})`;
   // Underline the toggle while a filter is applied.
   tagToggle.classList.toggle("is-active", n > 0);

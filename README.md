@@ -168,7 +168,6 @@ node automatically). Each node carries its *own* connections:
       "label": "The Trial",                    // display name on the graph
       "kind": "book",                          // free string: film, book, person, platform…
       "creator": "Franz Kafka",                // optional — shown as the Author/Director line
-      "post_ids": ["kafka-the-trial"],         // 0, 1, or many post ids (optional link-out)
       "connections": [                         // bare id, or { to, relationship, note }
         { "to": "after-hours", "relationship": "influence" }
       ],
@@ -186,7 +185,6 @@ node automatically). Each node carries its *own* connections:
       "id": "four-nights-of-a-dreamer",
       "label": "Four Nights of a Dreamer (1971)",
       "kind": "film",
-      "post_ids": [],
       "discovered_via": [                      // discovered via another node, found on a platform
         { "source": "the-parallax-view", "mechanism": "platform-letterboxd", "date": "2026-03" }
       ],
@@ -197,9 +195,11 @@ node automatically). Each node carries its *own* connections:
 ```
 
 **Node fields:**
-- `id` — stable, unique, hand-picked (not auto-generated). It's what `connections`,
-  `discovered_via.source`, and `post_ids` are matched against, so once you use one
-  for something real, keep it forever — never re-slug it.
+- `id` — stable, unique, hand-picked (not auto-generated). It's what `connections`
+  and `discovered_via.source` are matched against — and it doubles as the node's
+  work id: the detail card lists every post in `posts.json` whose own `workId`
+  equals this id (newest first). So once you use one for something real, keep it
+  forever — never re-slug it.
 - `label` — the display name shown next to the node. Optional: if omitted, it's
   derived from the id by dropping the leading `{type}-` segment and title-casing
   the rest (`class-dis-philosophy` → "Dis Philosophy"), so it stays coupled to
@@ -211,9 +211,6 @@ node automatically). Each node carries its *own* connections:
   as the "Director" line (for a `film`) or "Author" line (otherwise). If instead
   another node points at this one with an `authorship` connection, that node is
   used automatically and you can omit this field.
-- `post_ids` — array of `posts.json` ids this node maps to. Usually empty (a
-  graph-only node with no write-up yet); can point to one or several. The detail
-  card lists the linked post title(s) as links.
 - `connections` — an array of the other nodes this one connects to. Each entry is
   either a **bare node id** (`"pickpocket"`) — an untyped, plain undirected line
   with no hover label — or an object
