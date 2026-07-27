@@ -1,43 +1,53 @@
 # Sourfruits
 
-A small Instagram-style photo blog as a static website. The homepage shows your
-posts as square thumbnails — either a horizontal carousel of the most recent ones
-(the default) or a full paginated grid, switched with a view toggle. Clicking a
-thumbnail opens a post with the full image, optional subtitle, date, tags, and text.
-You can filter the homepage by one or more tags, browse a dedicated tag page, or
-search across every post. Each post is a Markdown file with a little frontmatter;
-a small build step compiles them all into the JSON the site reads.
+A small Instagram-style photo blog as a static website. The homepage (`index.html`)
+shows your posts as a full, paginated grid of square thumbnails, with a masthead
+title above it. Clicking a thumbnail opens a post with the full image, optional
+subtitle, date, tags, and text. You can filter the grid by one or more tags, browse
+a dedicated tag page, or search across every post. Each post is a Markdown file with
+a little frontmatter; a small build step compiles them all into the JSON the site reads.
+
+> **Recent layout change:** the homepage used to be a recent-posts *carousel* preview,
+> with the full grid on a separate `posts.html`. Those were swapped — the grid is now
+> the homepage — and `posts.html` was removed. The carousel still exists as reusable
+> markup in `snippets/carousel.html`. See **Hidden & deleted materials** below.
 
 Extras baked in: a multi-select tag filter on the homepage (AND logic, synced to
-the URL via `?tags=`), draft posts that stay hidden until you reveal them, a
-light/dark theme toggle (floating, remembered per browser), an inline header search
-box, gentle load-in fade animations (which respect `prefers-reduced-motion`), and —
-at the bottom of every post — previous/next links and a "More like this" row of
-posts sharing its tags. There's also a small easter egg in the header logo (give
-the little green-and-yellow mark a few clicks) and a companion **Precursors** page
-— a force-directed graph of where things were discovered and how they connect.
+the URL via `?tags=`), draft posts that stay hidden until you reveal them, **pinned**
+posts that sort to the front with a pin marker, three display modes (light / dark /
+**Minimal** — see below), gentle load-in fade animations (which respect
+`prefers-reduced-motion`), and — at the bottom of every post — previous/next links
+and a "More like this" row of posts sharing its tags. There's also a small easter egg
+still coded into the header logo (a green-and-yellow lemon you could squeeze) — though
+its icon is currently removed — and a companion
+**Precursors** page — a force-directed graph of where things were discovered and how
+they connect.
+
+> **Currently hidden/off:** the site is locked to **Minimal mode**; the header search
+> box and the Posts and Tags nav links are hidden, and the logo's lemon icon (with its
+> squeeze animation) was removed. See **Display modes** and **Hidden & deleted
+> materials** below.
 
 ## File structure
 
 ```
 sourfruits-blog/
-├── index.html        Homepage — hero + a recent-posts carousel preview
-├── posts.html        The full photo grid: tag filter, density toggle, pagination
+├── index.html        Homepage — masthead + the full photo grid (tag filter, density toggle, pagination)
 ├── post.html         Single post view (reads ?id= from the URL)
 ├── tag.html          Posts filtered by one tag (reads ?tag= from the URL)
-├── tags.html         All tags used across posts, with post counts
-├── search.html       Search results (reads ?q= from the URL)
+├── tags.html         All tags across posts, with counts (exists, but hidden from the nav)
+├── search.html       Search results (reads ?q= from the URL; the header search box is hidden)
 ├── precursors.html   Force-directed graph of discoveries and connections
 ├── about.html        About page (static placeholder text to replace)
 ├── css/
-│   └── styles.css    All styling, shared by every page
+│   └── styles.css    All styling, shared by every page (light/dark/minimal theme variables live here)
 ├── js/
-│   ├── utils.js      Shared helpers: formatDate, escapeHTML, fetchPosts, sortByDateDesc, isDraft, renderTile, initBackButton
-│   ├── header.js     Injects the shared header/nav + search into every page (stamps the footer year; hosts the logo "squeeze the lemon" easter egg)
-│   ├── theme.js      Floating dark-mode toggle; remembers the choice per browser
+│   ├── utils.js      Shared helpers: formatDate, escapeHTML, fetchPosts, sortByDateDesc/sortPosts, isDraft/isPinned, renderTile, initBackButton
+│   ├── header.js     Injects the shared header/nav into every page (stamps the footer year; the "squeeze the lemon" easter-egg code lives here but is inert — the lemon icon was removed)
+│   ├── theme.js      Display mode: the light/dark toggle button + the MINIMAL flag (see Display modes)
 │   ├── pagination.js Shared page slicing + prev/next/numbered nav
-│   ├── home.js       Homepage — loads posts.json, renders the carousel preview
-│   ├── main.js       Posts page — loads posts.json, builds the filterable grid
+│   ├── main.js       Homepage grid — loads posts.json, builds the filterable/paginated grid
+│   ├── home.js       Carousel filmstrip renderer — currently unused (see snippets/carousel.html)
 │   ├── post.js       Post page — loads one post by its id and renders it
 │   ├── tag.js        Tag page — filters posts by tag, reuses the grid
 │   ├── tags.js       Tags page — tallies tags across posts, renders pills
@@ -48,6 +58,8 @@ sourfruits-blog/
 │   ├── posts/        ← Your posts: one Markdown file per post (the source of truth)
 │   ├── posts.json    ← GENERATED from data/posts/ by the build — don't edit by hand
 │   └── precursors.json  ← The Precursors graph: nodes + connections.
+├── snippets/
+│   └── carousel.html Stashed carousel markup (not a live page — see Hidden & deleted materials)
 ├── scripts/
 │   └── build-posts.mjs  Compiles data/posts/*.md → data/posts.json (Node, no deps)
 ├── .github/workflows/
@@ -152,6 +164,10 @@ Fields (same names/shape as before — they just live in frontmatter now):
   omit one and it falls back to the other.
 - `draft` — optional; `draft: true` (or a date `2099-…` or later) hides the post
   until the Drafts toggle reveals it.
+- `pinned` — optional; `pinned: true` sorts the post to the front of the homepage
+  grid and shows a small pin marker on its thumbnail. Use `pinOrder: <number>`
+  (lower first) to order several pinned posts. Pins only apply on the homepage grid
+  — not on the carousel, tag, or search views.
 - The Markdown **body** is the post's `content` — write it normally (real line
   breaks, a blank line between paragraphs). No escaping, no `\n` — that's the whole
   point of the move. Headings (`## …`), **bold**, *italics*, and `- lists` all work.
@@ -173,6 +189,77 @@ then paste the Markdown straight into the body — no escaping needed anymore.
 Drop your photos into the `images/` folder and point `thumb`/`image` at them, e.g.
 `"image": "images/morning-lemons.jpg"`. See `images/README.md` for the naming
 convention and sizing tips.
+
+## Display modes (light / dark / Minimal)
+
+The site has three display modes, all driven by a `data-theme` attribute on `<html>`
+plus a set of CSS variables in `css/styles.css`:
+
+- **Light** (`:root`) — the default warm off-white.
+- **Dark** (`[data-theme="dark"]`) — the brown/near-black palette.
+- **Minimal** (`[data-theme="minimal"]`) — a flat white background, a plain light
+  header, no film grain, and no day/night toggle button.
+
+Normally a floating moon/sun button (bottom-right, injected by `js/theme.js`) toggles
+light ↔ dark and remembers the choice per browser.
+
+**Minimal is a code-only switch — there's no button for it.** At the top of
+`js/theme.js`:
+
+```js
+const MINIMAL = true;   // ← the site is locked to Minimal mode right now
+```
+
+When `true`, `theme.js` sets `data-theme="minimal"`, skips building the toggle button,
+and ignores any saved or OS preference — so the whole site is Minimal, on every page,
+regardless of settings. **Set it to `false` to restore the normal light/dark toggle.**
+Nothing is deleted; Minimal just bypasses the toggle and dark theme while it's on.
+
+**Film grain** is a subtle SVG-noise layer (`body::after`) whose strength is the
+`--grain-opacity` variable: `0.18` in light, `0.06` in dark, and `0` (off) in Minimal.
+Each mode sets it in its own variable block, so adjusting a mode's grain is a one-line
+change.
+
+## Hidden & deleted materials — and how to restore them
+
+A few things are hidden or removed: the site is on **Minimal mode**, the header search
+box and the Posts and Tags nav links are hidden, the carousel is stashed, and
+`posts.html` was deleted. Here's how to bring each back.
+
+**Master switch — Minimal mode** (`const MINIMAL` in `js/theme.js`): forces the white
+background + plain header, hides the day/night toggle button, and turns off the grain,
+all at once. Restore all of it with `MINIMAL = false`.
+
+**Hidden in `js/header.js`** (still in the file, just not rendered):
+
+| Hidden | How | How to restore |
+| --- | --- | --- |
+| "Posts" nav link | removed the `<a>` from both navs | re-add `<a class="nav-link" href="index.html">Posts</a>` in `navLinks` and the mobile nav |
+| "Tags" nav link | removed the `<a>` from both navs | re-add `<a class="nav-link" href="tags.html">Tags</a>` in both |
+| Header search box | removed `${searchMarkup}` from the template | put `${searchMarkup}` back where the comment marks it |
+
+`search.html` / `search.js` and `tags.html` still exist and work if visited directly —
+they're just unlinked from the nav.
+
+**Removed — the logo's lemon icon:** the `.logo-dots` button was taken out of the header
+in `js/header.js`; only the text wordmark remains. Its squeeze-animation code stays in
+`header.js` but is inert (guarded by `if (dots)`). To restore, re-add the `.logo-dots`
+button markup inside `.header-brand`.
+
+**Stashed — the carousel:** its markup lives in `snippets/carousel.html` (with a
+comment listing what it needs). `js/home.js` and the `.is-carousel` styles are still in
+the repo, unused. To put it back on a page, paste the snippet into that page's `<main>`
+and load `home.js` after `utils.js`.
+
+**Deleted — `posts.html`:** this one was actually removed (not hidden). Git still has
+it:
+
+```bash
+git checkout HEAD -- posts.html
+```
+
+That restores the last committed version (the original "All posts" grid). The full grid
+now lives on `index.html`, so you'd only do this to get the old separate page back.
 
 ## The Precursors graph
 

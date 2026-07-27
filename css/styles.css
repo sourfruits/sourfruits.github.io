@@ -8,12 +8,13 @@
   --line: #d8d7ce;
   --line-light: #ebebeb;   /* softer divider for decorative rules (dark mode overrides below) */
   --header-bg: #f1eeec;    /* soft warm greige navbar (warm, not yellow) */
-  --accent: #67b35d;       /* medium green */
+  --accent: #67b35d;       /* medium green 67b35d */
   --accent-ink: #163a25;   /* dark green — legible as text on an --accent fill */
   --contrast-ink: #ffffff; /* light in day mode, dark in dark mode (overridden below) */
   --accent2: #e8c840;      /* logo yellow (the lower-right dot in the mark) */
   --accent2-ink: #8a6d15;  /* dark amber — legible outline/text on an --accent2 fill */
   --grid-dot: #dcd8ca;     /* faint dot-grid backdrop on the precursors graph */
+  --grain-opacity: 0.18;   /* film-grain layer strength (body::after) */
   /* Connection relationship-type line colors (see js/precursors.js). */
   --rel-adaptation: #86c06a;      /* light green */
   --rel-influence:  #2f6d43;      /* darker green */
@@ -90,7 +91,22 @@
   --rel-thematic:   #b3906b;      /* lighter brown for dark bg */
   --rel-discovery:  #6f9bd6;
   --grid-dot: #302b23;            /* faint dot-grid backdrop (dark mode) */
+  --grain-opacity: 0.06;          /* grain dialed back — light specks glow on dark */
 }
+
+/* MINIMAL mode: a fixed, code-only palette (js/theme.js sets data-theme="minimal"
+   when its MINIMAL flag is on). Keeps the light-mode colors throughout, but forces
+   a flat white background and a very light, untinted grey header. Anything not
+   listed here inherits the light :root values. The day/night toggle is hidden as a
+   guard — theme.js doesn't build it in Minimal mode anyway. */
+[data-theme="minimal"] {
+  --bg: #ffffff;
+  --bg-top: #ffffff;       /* both gradient stops white → flat white page */
+  --bg-bottom: #ffffff;
+  --header-bg: #ffffff;    /* very light neutral grey, no warm tint */
+  --grain-opacity: 0;      /* grain off in minimal mode */
+}
+[data-theme="minimal"] .theme-toggle { display: none; }
 
 * { box-sizing: border-box; }
 
@@ -124,12 +140,12 @@ body::after {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.18;
+  /* Strength is theme-driven via --grain-opacity: 0.18 by default, dialed back to
+     0.06 in dark mode (light specks glow on the dark bg), and 0 in minimal mode.
+     Each value lives in that theme's variable block. */
+  opacity: var(--grain-opacity);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)'/%3E%3C/svg%3E");
 }
-/* The noise reads as light specks, which glow on the dark background — dial it
-   back so the grain stays subtle in dark mode. */
-[data-theme="dark"] body::after { opacity: 0.06; }
 
 main {
   max-width: var(--maxw);
@@ -156,19 +172,21 @@ body.wide main { max-width: var(--maxw-wide); }
   border-bottom: 1px solid var(--line);
 }
 
-/* Top row content: logo on the left, links + search on the right. Full-bleed —
-   no max-width cap, so it spans the whole header bar edge to edge on every page,
-   independent of the page content width below it. (The 20px side padding just
-   keeps the logo/search off the very edge.) */
+/* Top row content: logo on the left, links + search on the right. Its max-width
+   tracks the page's content width — --maxw normally, --maxw-wide on body.wide
+   pages (rule below) — and it's centered with 20px side padding, so the header
+   always lines up with the content column below it. */
 .header-bar-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  max-width: var(--maxw-header);
+  max-width: var(--maxw);
   margin: 0 auto;
   padding: var(--nav-pad-y) 20px;
 }
+/* Match the wider content cap on body.wide pages (mirrors `body.wide main`). */
+body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 
 /* Brand cluster: the dots (their own button) + the "Sourfruits" home link. */
 .header-brand {
@@ -285,7 +303,10 @@ body.wide main { max-width: var(--maxw-wide); }
    gap down to the content. */
 .site-intro {
   text-align: center;
-  padding: var(--header-gap) 10px 0;
+  /* No side padding, so the hero-rule spans the same width as the grid below it.
+     The title is centered anyway, so it doesn't need horizontal padding (main's
+     own 20px padding keeps everything off the viewport edges on small screens). */
+  padding: var(--header-gap) 0 0;
 }
 
 /* Inline search bar: a compact 150x30 bar sitting by the tag-filter button,
@@ -592,10 +613,10 @@ body.wide main { max-width: var(--maxw-wide); }
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  /* Divider sits ABOVE the toolbar, between the heading and the toolbar. */
+  /* The divider now lives under the masthead title (.hero-rule); the toolbar just
+     needs a little breathing room above the grid. */
   padding-top: 16px;
   margin-bottom: 16px;
-  border-top: 1px solid var(--line);
 }
 
 /* Left cluster of the controls row: the tag dropdown and the drafts toggle,
@@ -874,8 +895,21 @@ body.wide main { max-width: var(--maxw-wide); }
   color: var(--bg);
 }
 
-/* Pinned posts sort to the front but intentionally have NO visual indicator on
-   the tile (no badge) — see renderTile in js/utils.js. */
+/* Pinned tiles get a small pin icon in the top-right corner (Instagram-style),
+   see renderTile in js/utils.js. It's tinted the soft off-white of the resting
+   search bar (var(--bg)) rather than pure white, with a drop-shadow so it stays
+   legible over bright photos. Top-right so it never collides with the top-left
+   DRAFT badge (a post can be both pinned and a draft). */
+.pin-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: flex;
+  color: var(--bg);
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+}
 
 /* ---------- Carousel (filmstrip) view ---------- */
 /* Only the carousel runs full-bleed — edge to edge across the viewport — while
@@ -888,9 +922,10 @@ body.wide main { max-width: var(--maxw-wide); }
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
 }
-/* Homepage: the carousel is the first thing in <main>; the hero-rule divider
-   above it (in the header) owns the spacing, so no extra top margin here. */
-main > .grid-wrap.is-carousel:first-child { margin-top: 32px; }
+/* Homepage: the carousel follows the masthead's hero-rule in <main>. That rule's
+   bottom margin is 0, so the carousel owns the 32px gap up to it (kept here, not
+   on the rule, to stay clear of margin-collapsing quirks). */
+main > .grid-wrap.is-carousel { margin-top: 32px; }
 /* Keep the full-bleed carousel from adding a horizontal scrollbar to the page. */
 body:has(.grid.is-carousel) { overflow-x: hidden; }
 
@@ -1731,7 +1766,8 @@ a.post-tag:focus-visible { color: var(--accent); }
 
 /* Pinned posts (sorted to the front) fade in first, ahead of the rest of the
    cascade — same fade as every tile, just an earlier delay. !important beats the
-   inline per-tile delay. */
+   inline per-tile delay. (The carousel never renders is-pinned — see renderTile's
+   pins:false — so this can't affect it.) */
 .tile.is-pinned {
   animation: fadeIn 0.5s ease both !important;
   animation-delay: 0.08s !important;

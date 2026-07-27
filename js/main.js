@@ -1,7 +1,7 @@
-// Posts page: load every post from data/posts.json and render the thumbnail
-// grid, with a multi-select tag filter (AND logic, synced to ?tags=) and a
-// grid-density toggle (normal 3-col ↔ compact 4-col), both paginated. (The
-// homepage shows a lightweight carousel preview of this via js/home.js.)
+// Photo grid (now on index.html): load every post from data/posts.json and render
+// the thumbnail grid, with a multi-select tag filter (AND logic, synced to ?tags=)
+// and a grid-density toggle (normal 3-col ↔ compact 4-col), both paginated. (A
+// carousel preview built by js/home.js is stashed in snippets/carousel.html.)
 
 const grid = document.getElementById("grid");
 const status = document.getElementById("status");
@@ -17,10 +17,15 @@ const draftsLabel = draftsToggle.querySelector(".drafts-label");
 const DENSITY_KEY = "grid-density";
 const VIEWS = ["normal", "compact"];
 
+// This page's own filename, so pagination + ?tags= URLs stay on whatever page
+// hosts the grid. Kept dynamic rather than hardcoded so main.js works wherever
+// it's loaded — the grid lives on index.html now, but this doesn't assume that.
+const PAGE = window.location.pathname.split("/").pop() || "index.html";
+
 let allPosts = [];
 let allTags = [];              // every tag, ordered by post count (ties alphabetical)
 let selectedTags = new Set();  // the tags currently checked
-let showDrafts = true;          // drafts revealed by default (for testing)
+let showDrafts = false;          // drafts revealed by default (for testing)
 let currentView = "normal";    // normal (3-col) | compact (4-col)
 
 // Capitalize a tag's first letter for display (values stay lowercase).
@@ -45,7 +50,7 @@ function pageHref(page) {
   if (tags) params.set("tags", tags);
   if (page > 1) params.set("page", page);
   const qs = params.toString();
-  return qs ? `posts.html?${qs}` : "posts.html";
+  return qs ? `${PAGE}?${qs}` : PAGE;
 }
 
 function renderGrid(posts) {
@@ -138,7 +143,7 @@ function updateURL() {
   else params.delete("tags");
   params.delete("page");
   const qs = params.toString();
-  history.replaceState(null, "", qs ? `posts.html?${qs}` : "posts.html");
+  history.replaceState(null, "", qs ? `${PAGE}?${qs}` : PAGE);
 }
 
 function applyFilter() {

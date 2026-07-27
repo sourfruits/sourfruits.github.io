@@ -5,14 +5,9 @@
   const header = document.querySelector(".site-header");
   if (!header) return;
 
-  // Single source of truth for the site name — used by both the top-left logo
-  // and the centered title below, so changing it here updates both.
-  const SITE_NAME = "Sourfruits";
-
-  // The large centered title lives on the homepage only; every other page shows
-  // just the top-left logo. Treat "/" and "index.html" as the homepage.
-  const file = window.location.pathname.split("/").pop();
-  const isHome = file === "" || file === "index.html";
+  // Single source of truth for the site name in the header's top-left logo.
+  // (The homepage masthead title now lives in the page HTML — see index2.html.)
+  const SITE_NAME = "elia website 😊";
 
   // "Precursors" nav link, one <span> per letter so each can jitter and colour
   // independently on hover. `--dy` is that letter's little vertical nudge; `--d`
@@ -29,8 +24,6 @@
   // easter-egg selectors (.nav-precursors, .header-search) stay unambiguous.
   const navLinks = `
             <a class="nav-link nav-precursors" href="precursors.html">${precursorsLetters}<svg class="np-graph" aria-hidden="true"></svg></a>
-            <a class="nav-link" href="posts.html">Posts</a>
-            <a class="nav-link" href="tags.html">Tags</a>
             <a class="nav-link" href="about.html">About</a>`;
   const searchMarkup = `
           <form class="header-search" action="search.html" method="get" role="search">
@@ -43,31 +36,16 @@
             </button>
           </form>`;
 
-  // Every page — homepage included — carries the same top bar. The homepage
-  // additionally shows the big centered hero title below it (a masthead); other
-  // pages show just the bar.
-  const intro = isHome
-    ? `
-    <div class="site-intro">
-      <p class="site-eyebrow">a visual archive of taste</p>
-      <h1 class="site-title">${SITE_NAME}</h1>
-      <hr class="hero-rule">
-    </div>`
-    : "";
-
   header.innerHTML = `
     <div class="header-bar">
       <div class="header-bar-inner">
         <div class="header-brand">
-          <button type="button" class="logo-dots" aria-label="Squeeze the lemon">
-            <span class="dot-wrap"><span class="dot dot-green"></span><span class="dot dot-yellow"></span></span>
-          </button>
           <a class="header-logo" href="index.html">${SITE_NAME}</a>
         </div>
         <div class="header-actions">
           <nav class="site-nav" aria-label="Primary">${navLinks}
           </nav>
-          ${searchMarkup}
+          <!-- Search bar hidden — re-insert the searchMarkup variable here to restore it. -->
           <button type="button" class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
             <span class="nav-toggle-box">
               <span class="nav-toggle-bar"></span>
@@ -80,10 +58,8 @@
     </div>
     <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
       <a class="nav-link" href="precursors.html">Precursors</a>
-      <a class="nav-link" href="posts.html">Posts</a>
-      <a class="nav-link" href="tags.html">Tags</a>
       <a class="nav-link" href="about.html">About</a>
-    </nav>${intro}
+    </nav>
   `;
 
   // Logo dots easter egg: the two dots are their own button (not the home link),

@@ -72,7 +72,6 @@ function renderPost(post) {
     <div class="post-image-frame" style="--post-bg: url('${encodeURI(src)}')">
       <img class="post-image" src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}">
     </div>
-    <p class="post-byline">By <a href="about.html">Sourfruits</a></p>
     <div class="post-meta">
       <p class="post-date">${escapeHTML(formatDate(post.date, "long"))}</p>
       ${tags}

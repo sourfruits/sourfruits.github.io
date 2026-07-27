@@ -1,0 +1,36 @@
+<!-- ============================================================================
+     CAROUSEL MARKUP — stored for later reuse. This is NOT a live page; nothing
+     links here and no scripts run on it. It's just the HTML block to paste back
+     into a page's <main> whenever you want the recent-posts filmstrip again.
+
+     To make it work on a page you also need:
+       - <script src="js/utils.js"></script>   (fetchPosts, renderTile, sortByDateDesc)
+       - <script src="js/home.js"></script>    (renders the strip into #grid, wires arrows;
+                                                 load it AFTER utils.js)
+       - the .is-carousel / .carousel-arrow / .carousel-seeall rules already in
+         css/styles.css
+
+     Notes:
+       - home.js fills #grid and appends a "See all posts →" card that links to
+         index.html (the full grid). Change that target in js/home.js if the grid
+         ever moves.
+       - The #status paragraph and the two #carousel-prev / #carousel-next buttons
+         are required — home.js looks them up by id.
+============================================================================ -->
+<div class="grid-wrap is-carousel" id="grid-wrap">
+  <button type="button" class="carousel-arrow carousel-arrow-left" id="carousel-prev" aria-label="Scroll left">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  </button>
+  <section id="grid" class="grid is-carousel" aria-label="Recent posts">
+    <!-- Thumbnails are injected here by js/home.js -->
+  </section>
+  <button type="button" class="carousel-arrow carousel-arrow-right" id="carousel-next" aria-label="Scroll right">
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </button>
+</div>
+<hr class="hero-rule">
+<p id="status" class="status">Loading posts…</p>

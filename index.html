@@ -4,55 +4,104 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sourfruits</title>
-  <meta name="description" content="A visual archive of taste and influence">
+  <meta name="description" content="">
 
   <!-- Open Graph / social preview -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Sourfruits">
-  <meta property="og:title" content="Sourfruits">
-  <meta property="og:description" content="A visual archive of taste and influence">
-  <meta property="og:image" content="images/kafka-the-trial.jpg">
+  <meta property="og:site_name" content="elia website">
+  <meta property="og:title" content="elia website">
+  <meta property="og:description" content="">
+  <meta property="og:image" content="">
   <meta property="og:url" content="index.html">
 
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="wide">
+<body>
   <!-- Header markup is injected by js/header.js -->
   <header class="site-header"></header>
 
   <main>
-    <!-- Recent-posts carousel preview below the hero. The full grid (tag filter,
-         density toggle, pagination) lives on posts.html; here it's a fixed
-         filmstrip rendered by js/home.js, ending in a "See all posts →" card
-         that links to posts.html. Carousel classes are hard-set so it's always
-         a filmstrip (no in-page density switching). -->
-    <div class="grid-wrap is-carousel" id="grid-wrap">
-      <button type="button" class="carousel-arrow carousel-arrow-left" id="carousel-prev" aria-label="Scroll left">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="15 18 9 12 15 6"></polyline>
-        </svg>
-      </button>
-      <section id="grid" class="grid is-carousel" aria-label="Recent posts">
-        <!-- Thumbnails are injected here by js/home.js -->
-      </section>
-      <button type="button" class="carousel-arrow carousel-arrow-right" id="carousel-next" aria-label="Scroll right">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="9 18 15 12 9 6"></polyline>
-        </svg>
-      </button>
+    <!-- Homepage masthead: eyebrow + site title + closing divider. This lives in
+         the page (not js/header.js) because it's homepage content, not chrome. -->
+    <div class="site-intro">
+      <p class="site-eyebrow"> </p>
+      <h1 class="site-title">elia website</h1>
+      <hr class="hero-rule">
     </div>
-    <!-- Divider closing out the carousel, matching the hero divider's width. -->
-    <hr class="hero-rule">
+
+    <!-- Full photo grid: multi-select tag filter, drafts + density toggles, and
+         pagination, rendered by js/main.js. (The carousel preview markup is
+         stashed in snippets/carousel.html; js/home.js still renders it.) The
+         masthead above stays with the grid. -->
+    <div class="controls">
+      <div class="controls-left">
+        <div class="tag-filter" id="tag-filter">
+          <button type="button" class="tag-dropdown-toggle" id="tag-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+            <span class="tag-dropdown-label" id="tag-dropdown-label">All tags</span>
+            <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="tag-dropdown-menu" id="tag-dropdown-menu" role="group" aria-label="Filter posts by tag" hidden>
+            <!-- Clear-all + tag checkboxes are injected here by js/main.js -->
+          </div>
+        </div>
+        <button type="button" class="drafts-toggle" id="drafts-toggle" aria-pressed="false" hidden>
+          <svg class="drafts-icon drafts-icon-open" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <svg class="drafts-icon drafts-icon-closed" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          </svg>
+          <span class="drafts-label">Drafts</span>
+        </button>
+      </div>
+      <div class="density-toggle" role="group" aria-label="Grid density">
+        <button type="button" class="density-btn" data-density="compact" aria-label="Compact grid (4 columns)" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <rect x="2" y="2" width="5" height="5" rx="1"></rect>
+            <rect x="9.5" y="2" width="5" height="5" rx="1"></rect>
+            <rect x="17" y="2" width="5" height="5" rx="1"></rect>
+            <rect x="2" y="9.5" width="5" height="5" rx="1"></rect>
+            <rect x="9.5" y="9.5" width="5" height="5" rx="1"></rect>
+            <rect x="17" y="9.5" width="5" height="5" rx="1"></rect>
+            <rect x="2" y="17" width="5" height="5" rx="1"></rect>
+            <rect x="9.5" y="17" width="5" height="5" rx="1"></rect>
+            <rect x="17" y="17" width="5" height="5" rx="1"></rect>
+          </svg>
+        </button>
+        <button type="button" class="density-btn" data-density="normal" aria-label="Normal grid (3 columns)" aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <rect x="2" y="2" width="9" height="9" rx="1.5"></rect>
+            <rect x="13" y="2" width="9" height="9" rx="1.5"></rect>
+            <rect x="2" y="13" width="9" height="9" rx="1.5"></rect>
+            <rect x="13" y="13" width="9" height="9" rx="1.5"></rect>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="grid-wrap" id="grid-wrap">
+      <section id="grid" class="grid" aria-label="Photo posts">
+        <!-- Thumbnails are injected here by js/main.js -->
+      </section>
+    </div>
     <p id="status" class="status">Loading posts…</p>
+    <nav id="pagination" class="pagination" aria-label="Pagination">
+      <!-- Page links are injected here by js/main.js -->
+    </nav>
+    <hr class="page-end-rule">
   </main>
 
   <footer class="site-footer">
-    <p>&copy; <span id="year"></span> Sourfruits</p>
+    <p>&copy; <span id="year"></span> elia website</p>
   </footer>
 
   <script src="js/utils.js"></script>
   <script src="js/header.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/home.js"></script>
+  <script src="js/pagination.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>

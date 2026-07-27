@@ -1,8 +1,8 @@
-// Homepage: a recent-posts carousel filmstrip below the hero, capped at
-// CAROUSEL_MAX and ending in a "See all posts →" card that links to the full
-// Posts page. The full grid — tag filter, density toggle, pagination — lives on
-// posts.html (js/main.js); this is a preview only, so it's intentionally
-// lightweight and always a filmstrip.
+// Recent-posts carousel filmstrip (markup stashed in snippets/carousel.html; not
+// on a live page right now), capped at CAROUSEL_MAX and ending in a "See all
+// posts →" card that links to the full grid. That grid — tag filter, density
+// toggle, pagination — lives on index.html (js/main.js); this is a preview only,
+// so it's intentionally lightweight and always a filmstrip.
 
 const grid = document.getElementById("grid");
 const status = document.getElementById("status");
@@ -26,14 +26,15 @@ function updateCarouselArrows() {
 
 // The "See all posts" card at the end of the strip. If there are more posts
 // than the strip shows, the next one's image sits blurred behind the label as a
-// teaser; otherwise it's a plain card. Either way it links to the Posts page.
+// teaser; otherwise it's a plain card. Either way it links to the full grid,
+// which now lives on index.html.
 function renderSeeAll(nextPost) {
   const label = `<span class="carousel-seeall-inner">See all posts <span aria-hidden="true">&rarr;</span></span>`;
   if (!nextPost) {
-    return `<a class="tile carousel-seeall" href="posts.html">${label}</a>`;
+    return `<a class="tile carousel-seeall" href="index.html">${label}</a>`;
   }
   const img = escapeHTML(nextPost.thumb || nextPost.image);
-  return `<a class="tile carousel-seeall carousel-seeall--preview" href="posts.html">
+  return `<a class="tile carousel-seeall carousel-seeall--preview" href="index.html">
        <img src="${img}" alt="" aria-hidden="true" loading="lazy">
        ${label}
      </a>`;
@@ -54,7 +55,9 @@ fetchPosts()
 
     const strip = all.slice(0, CAROUSEL_MAX);
     const nextPost = all[CAROUSEL_MAX];   // previews behind "See all"
-    grid.innerHTML = strip.map(renderTile).join("") + renderSeeAll(nextPost);
+    // pins:false — the carousel doesn't sort pinned-first, so it renders no pin
+    // marker and no pinned fade-in. "Pinned" is a Posts-page concept only.
+    grid.innerHTML = strip.map((post, i) => renderTile(post, i, { pins: false })).join("") + renderSeeAll(nextPost);
 
     status.textContent = all.length ? "" : "No posts here yet.";
     updateCarouselArrows();

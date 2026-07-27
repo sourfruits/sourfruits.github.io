@@ -1,9 +1,20 @@
-// Site-wide dark-mode toggle. Injects a small floating button fixed in the
-// bottom-right corner of every page that toggles data-theme="dark" on <html>,
-// and remembers the choice in localStorage across pages and sessions.
+// Site-wide theme control. Normally injects a small floating day/night toggle
+// (bottom-right) that flips data-theme="dark" on <html> and remembers the choice
+// in localStorage. The MINIMAL flag below overrides all of that.
 
 (function () {
   const THEME_KEY = "theme";
+
+  // MINIMAL mode — a code-only, always-on switch (no UI). When true, the whole
+  // site renders a fixed clean palette: flat white background + a very light,
+  // untinted grey header (see the [data-theme="minimal"] block in
+  // css/styles.css). The day/night toggle button is never shown, and saved/OS
+  // preferences are ignored. Set to false to restore the normal day/night toggle.
+  const MINIMAL = true;
+  if (MINIMAL) {
+    document.documentElement.setAttribute("data-theme", "minimal");
+    return;   // fixed in code — skip the toggle button and localStorage entirely
+  }
 
   // Build the floating toggle button. Moon shows in light mode (click → dark),
   // sun shows in dark mode (click → light); the CSS swaps which icon is visible.

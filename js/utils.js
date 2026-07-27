@@ -88,14 +88,22 @@ function orderTags(tags) {
 
 // One homepage/tag grid tile. `i` is the item's index on the page, driving the
 // staggered load-in animation delay (see the .tile rule in the CSS).
-function renderTile(post, i) {
+// `opts.pins` (default on) controls whether the pinned treatment renders at all
+// — the pin icon AND the is-pinned class/animation hook. The homepage carousel
+// passes { pins: false } because it doesn't sort pinned-first, so "pinned" is
+// simply not a concept there: no marker, no special fade-in. (Callers using a
+// bare `.map(renderTile)` pass the array as opts; opts.pins is undefined there,
+// so pinning stays on — the default.)
+function renderTile(post, i, opts) {
   const draft = isDraft(post);
-  const pinned = isPinned(post);
-  // Pinned posts sort to the front (see sortPosts) but have NO visual indicator
-  // on the tile — just the is-pinned class as a hook. Only drafts get a badge.
+  const pinned = !(opts && opts.pins === false) && isPinned(post);
+  // Pinned posts sort to the front (see sortPosts) and get a small pin icon in
+  // the top-right corner (Instagram-style) via .pin-badge; the is-pinned class
+  // stays as a styling hook. Drafts get their own top-left DRAFT badge.
   return `
     <a class="tile${draft ? " is-draft" : ""}${pinned ? " is-pinned" : ""}" href="post.html?id=${encodeURIComponent(post.id)}" style="animation-delay: ${(0.3 + i * 0.05).toFixed(2)}s">
       ${draft ? '<span class="draft-badge">DRAFT</span>' : ""}
+      ${pinned ? '<span class="pin-badge" aria-hidden="true"><svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor"><path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146z"/></svg></span>' : ""}
       <img src="${escapeHTML(post.thumb || post.image)}" alt="${escapeHTML(post.title)}" loading="lazy">
       <div class="tile-overlay">
         <span class="tile-caption">
