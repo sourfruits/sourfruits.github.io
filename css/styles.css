@@ -208,7 +208,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   transition: color 0.2s ease;
 }
 .header-logo:hover,
-.header-logo:focus-visible { color: var(--accent); }
+.header-logo:focus-visible { color: var(--ink); }
 
 /* The dots are a standalone button (a lemon to squeeze), not a link — clicking
    navigates nowhere, just fires the easter egg. */
@@ -794,17 +794,11 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 }
 .grid.is-compact { grid-template-columns: repeat(4, 1fr); }
 
+/* Column count is fixed — normal always 3, compact always 4 — at every width,
+   phones included. */
 @media (max-width: 720px) {
-  .grid { grid-template-columns: repeat(2, 1fr); gap: 1px; }
-  .grid.is-compact { grid-template-columns: repeat(3, 1fr); }
   /* Bleed the grid to the screen edges (cancel main's 20px side padding). */
   #grid-wrap { margin-inline: -20px; }
-}
-
-/* Phones: the regular grid drops to a single photo per row so you scroll through
-   them one at a time. Compact keeps its multi-column layout. */
-@media (max-width: 560px) {
-  .grid { grid-template-columns: 1fr; }
 }
 
 
@@ -1485,7 +1479,7 @@ a.page-link:focus-visible {
   transition: color 0.2s ease;
 }
 a.post-tag:hover,
-a.post-tag:focus-visible { color: var(--accent); }
+a.post-tag:focus-visible { color: var(--ink); }
 
 /* Dot before every item after the first, giving "date · tag · tag". Symmetric
    margin carries the whole gap (no flex gap stacked on top), so the spacing
@@ -1747,9 +1741,7 @@ a.post-tag:focus-visible { color: var(--accent); }
   to   { opacity: 1; }
 }
 
-/* 1. Hero/intro fades in immediately on load (no upward drift). */
-.site-intro { animation: fadeIn 0.9s ease both; }
-
+/* 1. Hero/intro shows immediately on load — no fade-in. */
 
 /* 2. Grid tiles stagger in (fade only, no drift); per-tile animation-delay is
    set inline in JS (0.3s base + 0.05s per tile, left-to-right, top-to-bottom). */
@@ -2713,7 +2705,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* Precursors nav link — hover easter egg. Letters shift out of alignment and
    turn green (staggered), then a faint node-graph of lines + dots fades in
    between them a beat later. No glow/text-shadow — just colour, shift, lines. */
-.nav-precursors { position: relative; color: var(--accent); font-weight: 600; }
+.nav-precursors { position: relative; color: var(--ink); font-weight: 600; }
 .np-letter {
   /* Kept as inline (not inline-block) so each letter sits on the exact text
      baseline of the adjacent nav links — no taller line box to misalign. The
