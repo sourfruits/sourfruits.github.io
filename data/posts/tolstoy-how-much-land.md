@@ -2,7 +2,7 @@
 title: "Short Stories by Leo Tolstoy"
 subtitle: "How Much Land Does a Man Need?"
 date: "2099-07-28"
-tags: ["blurb", "books"]
+tags: ["blurb", "books", "philosophy", "jdsoiajfo","80 days writing", "more tags", "music"]
 workId: "tolstoy-how-much-land"
 thumb: "images/tolstoy-how-much-land.jpg"
 image: "images/tolstoy-how-much-land.jpg"
@@ -30,6 +30,8 @@ although i was startled by this unsolicited confession i did not contradict my c
 hahahaha
 
 he understands human nature so well
+
+![alt text](images/tolstoy-how-much-land, "can you put tiny muted captions underneath any inline image (and how do i write it...)")
 
 the parable
 

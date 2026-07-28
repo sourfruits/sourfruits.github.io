@@ -38,7 +38,8 @@
   /* Shared tag treatment — one place to tune tags everywhere (post page, tags
      listing, search results). */
   --tag-size: var(--text-small);
-  --tag-letter-spacing: 0.05em;
+  --tag-weight: 600;          /* medium-bold, matching the byline name */
+  --tag-letter-spacing: normal;
   --tag-gap: 10px;
 
   /* Shared page-heading treatment (post/About, tag, search, tags list). The
@@ -913,7 +914,9 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   letter-spacing: -0.02em;
   line-height: 1.2;
   color: var(--ink);
-  /* Cap at two lines, ellipsis the rest. */
+  /* Balance the wrap first (even line lengths, no lone trailing token), then
+     cap at two lines and ellipsis the rest. */
+  text-wrap: balance;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -925,7 +928,8 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   font-size: var(--text-base);
   font-style: italic;
   color: var(--muted);
-  /* Cap at two lines, ellipsis the rest. */
+  /* Balance the wrap first, then cap at two lines and ellipsis the rest. */
+  text-wrap: balance;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -938,7 +942,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 .tile-meta-info {
   display: flex;
   align-items: baseline;
-  flex-wrap: nowrap;      /* one line — the tags ellipsis rather than wrap */
+  flex-wrap: nowrap;      /* one line — overflow collapses to "+N more" (js/utils.js) */
   margin: 0;
   color: var(--muted);
   font-size: var(--text-small);   /* date + tags both small */
@@ -947,9 +951,10 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   flex: none;                       /* always fully shown */
   margin-right: var(--tag-gap);     /* separate the date from the tag group */
 }
-/* The tag group fills the remaining width on the line and truncates to "…"
-   instead of wrapping. min-width:0 lets the flex item shrink below its content
-   so text-overflow can kick in. */
+/* The tag group fills the remaining width on the line; js/utils.js collapses
+   any overflow to a trailing "+N more" label. The ellipsis is the JS-off
+   fallback. min-width:0 lets the flex item shrink below its content so both the
+   measurement and the fallback text-overflow can kick in. */
 .tile-meta-tags {
   flex: 0 1 auto;
   min-width: 0;
@@ -958,7 +963,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   white-space: nowrap;
 }
 .tile-meta-tag {
-  font-weight: 700;
+  font-weight: var(--tag-weight);
   letter-spacing: var(--tag-letter-spacing);
 }
 .tile-meta-sep {
@@ -1341,7 +1346,7 @@ a.page-link:focus-visible {
 
 .related-heading {
   margin: 0 0 16px;
-  font-size: var(--text-base);
+  font-size: var(--text-reading);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1390,8 +1395,9 @@ a.page-link:focus-visible {
 }
 
 /* All of the post's tags on one line, dot-separated like the post meta row.
-   Shared tags come first and are highlighted in accent. The row clips (no
-   wrap) so it never spills past the card. */
+   Shared tags come first and are highlighted in accent. js/post.js collapses
+   any overflow to a trailing "+N more" label; overflow:hidden is the JS-off
+   fallback (a plain clip). */
 .related-tags {
   margin-top: 4px;
   display: flex;
@@ -1402,7 +1408,7 @@ a.page-link:focus-visible {
 .related-tag {
   flex: none;
   font-size: var(--tag-size);
-  font-weight: 700;
+  font-weight: var(--tag-weight);
   letter-spacing: var(--tag-letter-spacing);
   color: var(--muted);
 }
@@ -1544,6 +1550,8 @@ a.page-link:focus-visible {
 /* Extra room after the date so it's clearly separated from the tag group (the
    flex gap alone left them too close). */
 .post-meta .post-date { margin: 0 var(--tag-gap) 0 0; font-size: inherit; }
+/* Post-page tags take the meta row's size (matching the date) rather than the
+   smaller shared --tag-size; weight/letter-spacing come from the shared tokens. */
 .post-meta .post-tag { font-size: inherit; }
 
 /* Hairline dividers on the post page — below the title/subtitle block and below
@@ -1571,7 +1579,7 @@ a.page-link:focus-visible {
   color: var(--muted);
   text-decoration: none;
   font-size: var(--tag-size);
-  font-weight: 700;
+  font-weight: var(--tag-weight);
   letter-spacing: var(--tag-letter-spacing);
   transition: color 0.2s ease;
 }
@@ -1586,6 +1594,22 @@ a.post-tag:focus-visible { color: var(--ink); }
   pointer-events: none;
 }
 
+/* "+N more" toggle that stands in for the tags overflowing the single-line
+   meta row (js/post.js measures the fit). Looks like a tag but is a real
+   button; clicking it lets the row wrap out to show every tag. */
+.post-tags-more {
+  font: inherit;
+  font-weight: var(--tag-weight);
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.post-tags-more:hover,
+.post-tags-more:focus-visible { color: var(--ink); }
+
 .post-body {
   font-family: var(--font-serif);
 }
@@ -1599,6 +1623,28 @@ a.post-tag:focus-visible { color: var(--ink); }
 /* Match list items to the paragraph font size. */
 .post-body li {
   font-size: var(--text-reading);
+}
+
+/* Inline images never exceed the reading column; height follows to keep the
+   aspect ratio. block + auto side margins so narrower images sit centered. */
+.post-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* A captioned image ( ![alt](src "caption") in Markdown, wrapped by js/post.js).
+   The figure owns the paragraph-sized spacing; the caption is a tiny, muted,
+   centered line beneath the image. */
+.post-figure {
+  margin: 0 0 1.1em;
+}
+.post-figcaption {
+  margin-top: 6px;
+  text-align: center;
+  font-size: var(--text-tiny);
+  color: var(--muted);
 }
 
 /* ---------- Tags ---------- */

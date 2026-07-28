@@ -58,6 +58,7 @@ fetchPosts()
     // pins:false — the carousel doesn't sort pinned-first, so it renders no pin
     // marker and no pinned fade-in. "Pinned" is a Posts-page concept only.
     grid.innerHTML = strip.map((post, i) => renderTile(post, i, { pins: false })).join("") + renderSeeAll(nextPost);
+    fitTileTags();
 
     status.textContent = all.length ? "" : "No posts here yet.";
     updateCarouselArrows();

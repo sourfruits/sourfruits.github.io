@@ -75,6 +75,7 @@ function renderGrid(posts) {
     hrefFor: pageHref,
     renderItems: (pagePosts) => {
       grid.innerHTML = pagePosts.map(renderTile).join("");
+      fitTileTags();
     },
   });
 

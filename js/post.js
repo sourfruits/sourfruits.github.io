@@ -11,7 +11,31 @@ const id = new URLSearchParams(window.location.search).get("id");
 // result with DOMPurify before it reaches the DOM.
 function renderContent(text) {
   const html = marked.parse(String(text || ""));
-  return DOMPurify.sanitize(html);
+  const clean = DOMPurify.sanitize(html);
+
+  // Give any inline image that carries a Markdown title — ![alt](src "caption") —
+  // a small muted caption beneath it, by wrapping it in a <figure>/<figcaption>.
+  // Untitled images render bare. When the image is a standalone paragraph (the
+  // usual case) the whole <p> is swapped out, so we don't nest a block <figure>
+  // inside a <p>.
+  const tmp = document.createElement("div");
+  tmp.innerHTML = clean;
+  tmp.querySelectorAll("img[title]").forEach((img) => {
+    const caption = img.getAttribute("title").trim();
+    if (!caption) return;
+    const figure = document.createElement("figure");
+    figure.className = "post-figure";
+    const cap = document.createElement("figcaption");
+    cap.className = "post-figcaption";
+    cap.textContent = caption;
+
+    const p = img.parentElement;
+    const standalone = p && p.tagName === "P" && p.childNodes.length === 1;
+    (standalone ? p : img).replaceWith(figure);
+    img.removeAttribute("title");   // caption replaces the hover tooltip
+    figure.append(img, cap);
+  });
+  return tmp.innerHTML;
 }
 
 // Create/update an <meta property="og:*"> tag in <head>.
@@ -96,6 +120,65 @@ function renderPost(post) {
     image.addEventListener("error", reveal);
   } else {
     reveal();
+  }
+
+  // Collapse the tag row to a single line, spilling the overflow behind a
+  // "+N more" toggle (recomputed on resize until the reader expands it).
+  const meta = article.querySelector(".post-meta");
+  clampMetaTags(meta);
+  let resizeTimer;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => clampMetaTags(meta), 150);
+  });
+}
+
+// Fit the meta row's tags on one line. Whatever doesn't fit is hidden behind a
+// trailing "+N more" button; clicking it drops the clamp so the row wraps out
+// to every tag. Individual tags are never cut — the break only ever falls on a
+// whole-tag boundary. No-ops once expanded, and when every tag already fits.
+function clampMetaTags(meta) {
+  if (!meta || meta.classList.contains("is-expanded")) return;
+  const tags = Array.from(meta.querySelectorAll(".post-tag"));
+  const seps = Array.from(meta.querySelectorAll(".post-sep"));
+  if (tags.length < 2) return;
+
+  // A reusable toggle, created once and parked at the end of the row.
+  let more = meta.querySelector(".post-tags-more");
+  if (!more) {
+    more = document.createElement("button");
+    more.type = "button";
+    more.className = "post-tags-more";
+    more.addEventListener("click", () => {
+      meta.classList.add("is-expanded");
+      tags.forEach((t) => (t.style.display = ""));
+      seps.forEach((s) => (s.style.display = ""));
+      more.style.display = "none";
+    });
+    meta.appendChild(more);
+  }
+
+  // Reset to the full, unclamped layout so we can measure the natural wrap.
+  tags.forEach((t) => (t.style.display = ""));
+  seps.forEach((s) => (s.style.display = ""));
+  more.style.display = "none";
+
+  // First-line test, relative to the first tag (all tags share a baseline).
+  const refTop = tags[0].offsetTop;
+  const tol = tags[0].offsetHeight * 0.5;
+  const onFirstLine = (el) => el.offsetTop <= refTop + tol;
+
+  // Everything already fits — no toggle needed.
+  if (onFirstLine(tags[tags.length - 1])) return;
+
+  // Show the largest leading run of tags that still leaves "+N more" on line 1.
+  more.style.display = "";
+  for (let k = tags.length - 1; k >= 1; k--) {
+    more.textContent = `+${tags.length - k} more`;
+    // k tags, plus k separators: k-1 between them and one before the button.
+    tags.forEach((t, i) => (t.style.display = i < k ? "" : "none"));
+    seps.forEach((s, i) => (s.style.display = i < k ? "" : "none"));
+    if (onFirstLine(more)) break;
   }
 }
 
@@ -194,6 +277,14 @@ function renderRelated(posts, current) {
       </a>`;
   }).join("");
   section.hidden = false;
+
+  // Same "+N more" clamp as the tiles: overflow tags collapse to a trailing
+  // "+N more" label (dots come from the CSS ::before, so no separator selector).
+  const fitRelated = () =>
+    section.querySelectorAll(".related-tags").forEach((row) =>
+      fitTagsWithMore(row, ".related-tag", null, "related-tag"));
+  fitRelated();
+  window.addEventListener("resize", fitRelated);
 }
 
 if (!id) {

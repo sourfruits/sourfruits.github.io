@@ -133,6 +133,49 @@ function renderTile(post, i, opts) {
   `;
 }
 
+// Fit a single-line tag row to its container, standing the overflow behind a
+// static "+N more" label rendered as the final tag — the break only ever falls
+// on a whole-tag boundary, never mid-tag. Pass the tag selector, an optional
+// explicit-separator selector (null when dots come from a CSS ::before), and the
+// style class the "+N more" label should wear so it matches the row's tags.
+// Unlike the post page's toggle this is not interactive — it's just a label.
+function fitTagsWithMore(container, tagSel, sepSel, styleClass) {
+  if (!container || !container.clientWidth) return;   // hidden (e.g. desktop tile) → skip
+  let more = container.querySelector(".tags-more");
+  if (!more) {
+    more = document.createElement("span");
+    more.className = "tags-more " + styleClass;
+    container.appendChild(more);
+  }
+  const tags = Array.from(container.querySelectorAll(tagSel)).filter((t) => t !== more);
+  const seps = sepSel ? Array.from(container.querySelectorAll(sepSel)) : [];
+  if (tags.length < 2) { more.style.display = "none"; return; }
+
+  // Full layout first, so we can tell whether anything actually overflows.
+  tags.forEach((t) => (t.style.display = ""));
+  seps.forEach((s) => (s.style.display = ""));
+  more.style.display = "none";
+  if (container.scrollWidth <= container.clientWidth) return;
+
+  // Trim whole tags off the end until the row — with "+N more" — fits. The
+  // trailing separator (sep index k-1) stays visible as the divider before it.
+  more.style.display = "";
+  for (let k = tags.length - 1; k >= 1; k--) {
+    more.textContent = `+${tags.length - k} more`;
+    tags.forEach((t, i) => (t.style.display = i < k ? "" : "none"));
+    seps.forEach((s, i) => (s.style.display = i < k ? "" : "none"));
+    if (container.scrollWidth <= container.clientWidth) break;
+  }
+}
+
+// Apply the "+N more" clamp to every mobile tile tag row in the DOM. A cheap
+// no-op on desktop, where the caption (and its tag row) is display:none.
+function fitTileTags() {
+  document.querySelectorAll(".tile-meta-tags").forEach((row) =>
+    fitTagsWithMore(row, ".tile-meta-tag", ".tile-meta-sep", "tile-meta-tag"));
+}
+window.addEventListener("resize", fitTileTags);
+
 // Wire up the back link (class="back-link"): always labeled "← Back", and
 // return via history.back() when the user arrived from within the site.
 // Otherwise the plain href (index.html) handles the fallback. Call this from a

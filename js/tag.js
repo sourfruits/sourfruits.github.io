@@ -30,6 +30,7 @@ function renderGrid(posts) {
       // pins:false — tag pages sort by date, not pinned-first, so "pinned" is
       // a Posts-page-only concept here too (no pin marker, no pinned fade-in).
       grid.innerHTML = pagePosts.map((post, i) => renderTile(post, i, { pins: false })).join("");
+      fitTileTags();
     },
   });
 }
