@@ -13,11 +13,12 @@ a little frontmatter; a small build step compiles them all into the JSON the sit
 > markup in `snippets/carousel.html`. See **Hidden & deleted materials** below.
 
 Extras baked in: a multi-select tag filter on the homepage (AND logic, synced to
-the URL via `?tags=`), draft posts that stay hidden until you reveal them, **pinned**
-posts that sort to the front with a pin marker, three display modes (light / dark /
-**Minimal** — see below), gentle load-in fade animations (which respect
-`prefers-reduced-motion`), and — at the bottom of every post — previous/next links
-and a "More like this" row of posts sharing its tags. There's also a small easter egg
+the URL via `?tags=`), a **density toggle** that switches the homepage grid between
+a normal view (7 posts/page) and a denser compact view (15/page), draft posts that
+stay hidden until you reveal them, **pinned** posts that sort to the front with a pin
+marker, three display modes (light / dark / **Minimal** — see below), gentle load-in
+fade animations (which respect `prefers-reduced-motion`), and — at the bottom of every
+post — previous/next links and a "More like this" row of posts sharing its tags. There's also a small easter egg
 still coded into the header logo (a green-and-yellow lemon you could squeeze) — though
 its icon is currently removed — and a companion
 **Precursors** page — a force-directed graph of where things were discovered and how
@@ -38,11 +39,11 @@ sourfruits-blog/
 ├── tags.html         All tags across posts, with counts (exists, but hidden from the nav)
 ├── search.html       Search results (reads ?q= from the URL; the header search box is hidden)
 ├── precursors.html   Force-directed graph of discoveries and connections
-├── about.html        About page (static placeholder text to replace)
+├── about.html        About page (content is the ABOUT_CONTENT Markdown string in js/about.js)
 ├── css/
 │   └── styles.css    All styling, shared by every page (light/dark/minimal theme variables live here)
 ├── js/
-│   ├── utils.js      Shared helpers: formatDate, escapeHTML, fetchPosts, sortByDateDesc/sortPosts, isDraft/isPinned, renderTile, initBackButton
+│   ├── utils.js      Shared helpers: formatDate, escapeHTML, fetchPosts, sortByDateDesc/sortPosts, isDraft/isPinned, orderTags, renderTile, fitTileTags/fitTagsWithMore (tag "+N more" clamping), initBackButton
 │   ├── header.js     Injects the shared header/nav into every page (stamps the footer year; the "squeeze the lemon" easter-egg code lives here but is inert — the lemon icon was removed)
 │   ├── theme.js      Display mode: the light/dark toggle button + the MINIMAL flag (see Display modes)
 │   ├── pagination.js Shared page slicing + prev/next/numbered nav
@@ -53,7 +54,7 @@ sourfruits-blog/
 │   ├── tags.js       Tags page — tallies tags across posts, renders pills
 │   ├── search.js     Search page — matches title/tags/text, renders cards
 │   ├── precursors.js Precursors page — builds the D3 graph from precursors.json
-│   └── about.js      About page — footer year + back button
+│   └── about.js      About page — renders the ABOUT_CONTENT Markdown string (marked + DOMPurify), plus footer year + back button
 ├── data/
 │   ├── posts/        ← Your posts: one Markdown file per post (the source of truth)
 │   ├── posts.json    ← GENERATED from data/posts/ by the build — don't edit by hand
@@ -65,17 +66,20 @@ sourfruits-blog/
 ├── .github/workflows/
 │   └── build-posts.yml  Runs the build on every push to main, commits posts.json back
 ├── images/           Post images (see images/README.md)
+├── serve.json        Config for `npx serve` (cleanUrls: false)
 └── README.md
 ```
 
 The site itself has no framework or bundler — just HTML, CSS, and a little vanilla
-JavaScript. The one build step is a tiny dependency-free Node script that compiles
-the post Markdown files into `data/posts.json` (run automatically on push — see
-*Adding a new post*). Each page loads `utils.js`, `header.js`, and `theme.js`; the list pages
-(home, tag, search) also load `pagination.js`, then their own page script. Scripts
-talk to each other through a few plain globals (`formatDate`, `escapeHTML`,
-`fetchPosts`, `sortByDateDesc`, `renderTile`, `Pagination`) — no modules or bundler
-involved.
+JavaScript. Three pages do pull small libraries from a CDN, though: `post.html` and
+`about.html` load **marked** + **DOMPurify** to render (and sanitize) Markdown into
+HTML, and `precursors.html` loads **D3** for the graph. The one *build* step is a tiny
+dependency-free Node script that compiles the post Markdown files into
+`data/posts.json` (run automatically on push — see *Adding a new post*). Each page
+loads `utils.js`, `header.js`, and `theme.js`; the paginated pages (home, tag, search)
+also load `pagination.js`, then their own page script. Scripts talk to each other
+through a few plain globals (`formatDate`, `escapeHTML`, `fetchPosts`, `sortByDateDesc`,
+`renderTile`, `Pagination`) — no modules or bundler involved.
 
 ## Running it
 
@@ -160,8 +164,11 @@ Fields (same names/shape as before — they just live in frontmatter now):
 - `workId` — required; ties the post to a Precursors node (the graph's detail card
   lists posts whose `workId` equals its node id). If the post isn't tied to a node,
   just set it to the same value as `id`.
-- `thumb` / `image` — square grid image and full post image (local path or URL);
-  omit one and it falls back to the other.
+- `thumb` / `image` — square grid image and full post image (local path or URL).
+  **Both are required by the build.** (The site's render code does fall back to
+  whichever one is present — feed thumbnails use `thumb || image`, the post hero uses
+  `image || thumb` — but `build-posts.mjs` rejects any post missing either field, so
+  in practice you must supply both. Point them at the same file if you only have one.)
 - `draft` — optional; `draft: true` (or a date `2099-…` or later) hides the post
   until the Drafts toggle reveals it.
 - `pinned` — optional; `pinned: true` sorts the post to the front of the homepage
@@ -171,11 +178,17 @@ Fields (same names/shape as before — they just live in frontmatter now):
 - The Markdown **body** is the post's `content` — write it normally (real line
   breaks, a blank line between paragraphs). No escaping, no `\n` — that's the whole
   point of the move. Headings (`## …`), **bold**, *italics*, and `- lists` all work.
+  - **Inline images** use normal Markdown: `![alt text](images/photo.jpg)`. Add a
+    quoted **title** to give it a small caption underneath —
+    `![alt text](images/photo.jpg "The caption")`. The caption is optional (no
+    title = no caption); the `alt text` stays as the accessibility description.
+    Images are capped at the reading-column width.
 
 The build **fails loudly** (clear message, non-zero exit — so nothing broken gets
-committed) if a file is malformed, missing a required field
-(`id, title, date, tags, workId, thumb, image`), or has an `id` that doesn't match
-its filename.
+committed) if a file is malformed or missing a required field. The required fields
+are `title, date, tags, workId, thumb, image` — note that `id` is **not** one of them:
+it comes from the filename, not frontmatter. Optional extras (`subtitle`, `draft`,
+`pinned`, `pinOrder`, …) are passed through when present.
 
 **Editing / deleting:** edit a post by editing its `.md`; delete one by deleting its
 `.md`; then rebuild (or push). The post page still adds previous/next links and a

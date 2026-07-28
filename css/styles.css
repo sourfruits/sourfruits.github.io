@@ -1315,8 +1315,9 @@ a.page-link:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  /* Cap each link so long titles can't let the two overlap. */
-  max-width: 35%;
+  /* Cap each link at 30% of the reading column so long titles stay short and
+     the two links can't overlap. */
+  max-width: 30%;
   min-width: 0;
   color: var(--muted);
   text-decoration: none;
@@ -1642,7 +1643,7 @@ a.post-tag:focus-visible { color: var(--ink); }
 }
 .post-figcaption {
   margin-top: 6px;
-  text-align: center;
+  font-family: var(--font-sans);
   font-size: var(--text-tiny);
   color: var(--muted);
 }
