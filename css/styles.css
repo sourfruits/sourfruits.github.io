@@ -1644,7 +1644,7 @@ a.post-tag:focus-visible { color: var(--ink); }
 .post-figcaption {
   margin-top: 6px;
   font-family: var(--font-sans);
-  font-size: var(--text-tiny);
+  font-size: var(--text-small);
   color: var(--muted);
 }
 
