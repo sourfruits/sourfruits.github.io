@@ -78,7 +78,7 @@
   --bg-bottom: #ffffff;
   --header-bg: #ffffff;    /* very light neutral grey, no warm tint */
   --grain-opacity: 0;      /* grain off in minimal mode */
-  /*--accent: #1c1c1a;*/
+  --so-minimal: #1c1c1a;
 }
 [data-theme="minimal"] .theme-toggle { display: none; }
 
