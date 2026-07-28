@@ -31,7 +31,7 @@ hahahaha
 
 he understands human nature so well
 
-![alt text](images/tolstoy-how-much-land, "can you put tiny muted captions underneath any inline image (and how do i write it...)")
+![alt text](images/tolstoy-how-much-land.jpg "can you put tiny muted captions underneath any inline image (and how do i write it...)")
 
 the parable
 
