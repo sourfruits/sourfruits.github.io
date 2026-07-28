@@ -7,13 +7,13 @@
 
   // Single source of truth for the site name in the header's top-left logo.
   // (The homepage masthead title now lives in the page HTML — see index2.html.)
-  const SITE_NAME = "elia website 😊";
+  const SITE_NAME = "elia website";
 
   // "Precursors" nav link, one <span> per letter so each can jitter and colour
   // independently on hover. `--dy` is that letter's little vertical nudge; `--d`
   // staggers the transition so they don't all move as one block. The empty
   // <svg> is filled on hover with the connecting lines/dots (see below).
-  const PRECURSORS = "Precursors";
+  const PRECURSORS = "more";
   const JITTER = [-3, 2, -2, 3, -1, 2, -3, 2, -2, 1];  // px, gentle up/down
   const precursorsLetters = [...PRECURSORS].map((ch, i) =>
     `<span class="np-letter" style="--dy:${JITTER[i % JITTER.length]}px;--d:${(i * 0.015).toFixed(3)}s">${ch}</span>`

@@ -326,7 +326,7 @@ function nodeInView(node, margin) {
 // chain). Only zooms IN toward this — if you're already closer it keeps your
 // zoom — so repeated hops don't keep zooming in or ever zoom out.
 const PAN_ZOOM = 1.3;            // absolute zoom floor when following a connection from the card
-const DIRECT_ZOOM_FACTOR = 2; // a direct graph click frames at this × the base fit zoom
+const DIRECT_ZOOM_FACTOR = 3; // a direct graph click frames at this × the base fit zoom
 
 // Center a node in the viewport at absolute zoom `targetK` (defaults to the
 // current zoom = recenter only). Callers decide the zoom level.
