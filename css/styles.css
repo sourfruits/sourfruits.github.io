@@ -792,9 +792,10 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   .grid.is-compact { grid-template-columns: repeat(3, 1fr); }
 
   /* Only the compact thumbnail grid bleeds to the screen edges (contact-sheet
-     look). The normal single-column feed keeps the page's normal side margins,
-     so its images aren't edge-to-edge. */
-  #grid-wrap:has(.grid.is-compact) { margin-inline: -20px; }
+     look). Bleed the GRID itself, not the wrapper, so the wrapper — and its
+     closing divider — stays inset at content width. The normal single-column
+     feed keeps the page's normal side margins, so its images aren't edge-to-edge. */
+  .grid.is-compact { margin-inline: -20px; }
 
   /* Single-column feed (normal view, not the carousel): each post is its image
      — same square crop as everywhere else — with the title/subtitle/date/tags
