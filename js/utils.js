@@ -97,6 +97,16 @@ function orderTags(tags) {
 function renderTile(post, i, opts) {
   const draft = isDraft(post);
   const pinned = !(opts && opts.pins === false) && isPinned(post);
+  // Caption shown beneath the image in the mobile single-column feed (hidden by
+  // CSS everywhere else): title, optional subtitle, then a date · tags line in
+  // the same style as the post page. Tags reuse orderTags but render as plain
+  // (non-link) spans — they're part of the tile's own link to the post.
+  const metaTags = orderTags(post.tags)
+    .map((t) => `<span class="post-tag">${escapeHTML(t)}</span>`)
+    .join(`<span class="post-sep" aria-hidden="true">·</span>`);
+  const metaSubtitle = post.subtitle
+    ? `<p class="tile-meta-subtitle">${escapeHTML(post.subtitle)}</p>`
+    : "";
   // Pinned posts sort to the front (see sortPosts) and get a small pin icon in
   // the top-right corner (Instagram-style) via .pin-badge; the is-pinned class
   // stays as a styling hook. Drafts get their own top-left DRAFT badge.
@@ -110,6 +120,14 @@ function renderTile(post, i, opts) {
           <span class="tile-title">${escapeHTML(post.title)}</span>
           <span class="tile-date">${escapeHTML(formatDate(post.date))}</span>
         </span>
+      </div>
+      <div class="tile-meta">
+        <h3 class="tile-meta-title">${escapeHTML(post.title)}</h3>
+        ${metaSubtitle}
+        <div class="post-meta tile-meta-info">
+          <span class="post-date">${escapeHTML(formatDate(post.date, "long"))}</span>
+          ${metaTags}
+        </div>
       </div>
     </a>
   `;

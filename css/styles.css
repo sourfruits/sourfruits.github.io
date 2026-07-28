@@ -576,8 +576,8 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 .page-end-rule--narrow { max-width: var(--post-width); }
 
 /* ---------- Posts-page controls ---------- */
-/* Tag filter on the left, drafts toggle on the right. Sits under the masthead
-   title (which carries the hero-rule divider), so no extra divider here. */
+/* Tag filter + drafts toggle on the left; density toggle on the right. Sits
+   under the masthead title (which carries the hero-rule divider). */
 .controls {
   position: relative;
   /* Sit above the grid so the tag dropdown menu isn't covered by the tiles. */
@@ -590,6 +590,14 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
      needs a little breathing room above the grid. */
   padding-top: 16px;
   margin-bottom: 16px;
+}
+
+/* Left cluster: the tag filter and the drafts toggle, kept together so the
+   density toggle stays pushed to the right. */
+.controls-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
 }
 
 .tag-filter {
@@ -735,17 +743,91 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   font-size: var(--text-tiny);
 }
 
+/* Grid density toggle: icon-only, no border or background. The muted icons
+   darken to ink on hover and for the active density. */
+.density-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.density-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.density-btn:hover { color: var(--ink); }
+.density-btn.is-active { color: var(--ink); }
+.density-btn:focus-visible { outline: none; color: var(--ink); }
+
 /* ---------- Grid ---------- */
+/* Desktop: normal 3 columns, compact 4. */
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
 }
+.grid.is-compact { grid-template-columns: repeat(4, 1fr); }
 
-/* Column count is fixed at 3 at every width, phones included. */
-@media (max-width: 720px) {
-  /* Bleed the grid to the screen edges (cancel main's 20px side padding). */
-  #grid-wrap { margin-inline: -20px; }
+/* Phone: normal drops to a single column, compact to 3. Page size still follows
+   the desktop counts (set in js/main.js), so this only changes the layout. */
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+  .grid.is-compact { grid-template-columns: repeat(3, 1fr); }
+
+  /* Only the compact thumbnail grid bleeds to the screen edges (contact-sheet
+     look). The normal single-column feed keeps the page's normal side margins,
+     so its images aren't edge-to-edge. */
+  #grid-wrap:has(.grid.is-compact) { margin-inline: -20px; }
+
+  /* Single-column feed (normal view, not the carousel): each post is its image
+     — same square crop as everywhere else — with the title/subtitle/date/tags
+     beneath it, and a hairline divider between posts. Touch has no hover, so the
+     old hover overlay is dropped in favour of this always-visible caption. */
+  /* Space between posts lives in the grid gap (not clickable), so tapping below
+     the caption doesn't hit the tile's link. */
+  .grid:not(.is-compact):not(.is-carousel) { gap: 30px; }
+  .grid:not(.is-compact):not(.is-carousel) .tile {
+    aspect-ratio: auto;      /* image sets its height; caption sits below */
+    overflow: visible;
+    background: none;
+    /* No padding — the link's box ends right at the caption, so there's no empty
+       area below the text that still navigates when tapped. */
+  }
+  .grid:not(.is-compact):not(.is-carousel) .tile img {
+    aspect-ratio: 1 / 1;     /* keep the square cover crop used site-wide */
+    height: auto;
+  }
+  /* No hover zoom in the feed (a tap can trigger :hover on touch). */
+  .grid:not(.is-compact):not(.is-carousel) .tile:hover img { transform: none; }
+  .grid:not(.is-compact):not(.is-carousel) .tile-overlay { display: none; }
+  /* Repurpose ::after (the grid's inner "framed photo" shadow) as the hairline
+     divider between posts: a 1px line centered in the gap below each card. It's
+     pointer-events:none and sits outside the link's box, so it isn't tappable. */
+  .grid:not(.is-compact):not(.is-carousel) .tile::after {
+    content: "";
+    top: auto;
+    bottom: -15px;           /* centered in the 30px gap */
+    left: 0;
+    right: 0;
+    height: 1px;
+    box-shadow: none;
+    background: var(--line);
+    pointer-events: none;
+  }
+  .grid:not(.is-compact):not(.is-carousel) .tile:last-child::after { display: none; }
+  .grid:not(.is-compact):not(.is-carousel) .tile-meta {
+    display: block;
+    margin-top: 12px;
+  }
 }
 
 
@@ -808,6 +890,29 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   margin-top: 2px;
 }
 
+/* Caption beneath the image — only shown in the mobile single-column feed (see
+   the phone media query below). Mirrors the post page's hierarchy: a bold title,
+   an optional italic serif subtitle, then the date · tags meta line. */
+.tile-meta { display: none; }
+.tile-meta-title {
+  margin: 0 0 3px;
+  font-size: var(--text-reading);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+}
+.tile-meta-subtitle {
+  margin: 0 0 7px;
+  font-size: var(--text-medium);
+  font-style: italic;
+  color: var(--muted);
+}
+/* Reuse .post-meta styling but drop its 24px bottom margin — otherwise that
+   margin is clickable space below the tags (the tile is a link). Scoped selector
+   so it beats the plain .post-meta rule that comes later in the file. */
+.tile-meta .post-meta.tile-meta-info { margin: 0; }
+
 /* Draft tiles: dimmed, with a small badge pinned to the top-left corner so
    they read as unpublished when the drafts toggle reveals them. */
 .tile.is-draft { opacity: 0.55; }
@@ -860,6 +965,10 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 main > .grid-wrap.is-carousel { margin-top: 32px; }
 /* Keep the full-bleed carousel from adding a horizontal scrollbar to the page. */
 body:has(.grid.is-carousel) { overflow-x: hidden; }
+/* Same guard for the homepage grid: on mobile #grid-wrap bleeds to the viewport
+   edges (margin-inline: -20px), which can leave a sliver of horizontal scroll /
+   blank space on the right from sub-pixel rounding. Clamp it. */
+body:has(#grid-wrap) { overflow-x: hidden; }
 
 /* Soft edge shadows: the strip's left/right ends are shaded so tiles darken into
    shadow where the arrows sit. Sit above the tiles but below the arrows
@@ -1274,7 +1383,6 @@ a.page-link:focus-visible {
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-height: 60vh;
   overflow: hidden;
   background: transparent;
   margin: 24px 0;   /* breathing room from the title/subtitle above and the meta below */
@@ -1294,8 +1402,8 @@ a.page-link:focus-visible {
 
 .post-image {
   position: relative;
-  max-width: 100%;
-  max-height: 60vh;
+  width: 100%;
+  height: auto;
   object-fit: contain;
   display: block;
   margin-inline: auto;
@@ -1375,12 +1483,18 @@ a.page-link:focus-visible {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 0;
+  gap: calc(var(--tag-gap) / 2);   /* even spacing between date, dividers, tags */
   margin: 0 0 24px;
   color: var(--muted);
-  font-size: var(--text-base);
+  font-size: var(--text-medium);
 }
-.post-meta .post-date { margin: 0; }
+/* Date and tags in the meta row both follow the meta font-size (overriding the
+   standalone .post-date size and the smaller shared --tag-size) so the whole
+   "date · tag · tag" line scales as one. */
+/* Extra room after the date so it's clearly separated from the tag group (the
+   flex gap alone left them too close). */
+.post-meta .post-date { margin: 0 var(--tag-gap) 0 0; font-size: inherit; }
+.post-meta .post-tag { font-size: inherit; }
 
 /* Hairline dividers on the post page — below the title/subtitle block and below
    the meta. */
@@ -1393,9 +1507,10 @@ a.page-link:focus-visible {
 .post-byline {
   margin: 0 0 4px;
   color: var(--muted);
-  font-size: var(--text-base);
-  font-weight: 600;
+  font-size: var(--text-medium);
+  font-weight: 400;   /* "by" stays normal weight */
 }
+.post-byline-name { font-weight: 600; }   /* only the name is bold */
 .post-byline a { color: var(--ink); text-decoration: none; }
 .post-byline a:hover { color: var(--accent); }
 
@@ -1413,13 +1528,12 @@ a.page-link:focus-visible {
 a.post-tag:hover,
 a.post-tag:focus-visible { color: var(--ink); }
 
-/* Dot before every item after the first, giving "date · tag · tag". Symmetric
-   margin carries the whole gap (no flex gap stacked on top), so the spacing
-   reads as one consistent --tag-gap. */
-.post-meta > * + *::before {
-  content: "·";
-  margin: 0 calc(var(--tag-gap) / 2);
+/* Standalone "·" divider between tags (rendered by js/post.js). It's its own
+   element — not a tag's ::before/::after — so it never highlights with a tag on
+   hover, and there's no divider between the date and the first tag. */
+.post-sep {
   color: var(--muted);
+  pointer-events: none;
 }
 
 .post-body {

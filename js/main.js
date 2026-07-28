@@ -1,7 +1,7 @@
 // Photo grid (now on index.html): load every post from data/posts.json and render
-// the thumbnail grid, with a multi-select tag filter (AND logic, synced to ?tags=)
-// and a drafts toggle, paginated. (A carousel preview built by js/home.js is
-// stashed in snippets/carousel.html.)
+// the thumbnail grid, with a multi-select tag filter (AND logic, synced to ?tags=),
+// a drafts toggle, and a grid-density toggle (normal ↔ compact), paginated. (A
+// carousel preview built by js/home.js is stashed in snippets/carousel.html.)
 
 const grid = document.getElementById("grid");
 const status = document.getElementById("status");
@@ -10,8 +10,16 @@ const tagFilter = document.getElementById("tag-filter");
 const tagToggle = document.getElementById("tag-dropdown-toggle");
 const tagMenu = document.getElementById("tag-dropdown-menu");
 const tagLabel = document.getElementById("tag-dropdown-label");
+const densityToggle = document.querySelector(".density-toggle");
 const draftsToggle = document.getElementById("drafts-toggle");
 const draftsLabel = draftsToggle.querySelector(".drafts-label");
+
+const DENSITY_KEY = "grid-density";
+const VIEWS = ["normal", "compact"];
+// Pagination follows the desktop column count for each view (normal 3, compact 4)
+// no matter the actual screen width, so page size is stable across phone/desktop.
+const PC_COLUMNS = { normal: 3, compact: 4 };
+const GRID_ROWS = 4;   // rows per page
 
 // Drafts toggle persists across page navigations within the tab (sessionStorage
 // clears when the tab closes), so paging through the grid keeps drafts on/off.
@@ -28,6 +36,7 @@ let selectedTags = new Set();  // the tags currently checked
 // Restored from sessionStorage so it survives page navigation within the tab.
 let showDrafts = false;
 try { showDrafts = sessionStorage.getItem(DRAFTS_KEY) === "1"; } catch (err) { /* ignore */ }
+let currentView = "normal";    // normal | compact
 
 // Capitalize a tag's first letter for display (values stay lowercase).
 const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
@@ -58,10 +67,12 @@ function renderGrid(posts) {
   // Pinned first, then newest-first, regardless of order in the JSON file.
   sortPosts(posts);
 
-  // Fill each page based on the grid's live column count (fixed at 3).
+  // Page size follows the desktop layout for the current view (normal 3-col →
+  // 12, compact 4-col → 16), regardless of how many columns actually render at
+  // the current width — so paging is consistent on phone and desktop.
   Pagination.paginate({
     items: posts,
-    perPage: Pagination.gridPerPage(grid),
+    perPage: PC_COLUMNS[currentView] * GRID_ROWS,
     container: pagination,
     hrefFor: pageHref,
     renderItems: (pagePosts) => {
@@ -200,6 +211,35 @@ draftsToggle.addEventListener("click", () => {
   buildMenu(baseSet());
   applyFilter();
 });
+
+// Switch the grid between the normal and compact views (column counts live in
+// the CSS — normal 3/1, compact 4/3 for desktop/phone), highlighting the active
+// button, remembering the choice, and re-rendering. Skips the re-render before
+// posts load.
+function setDensity(next) {
+  currentView = next;
+  grid.classList.toggle("is-compact", next === "compact");
+  densityToggle.querySelectorAll(".density-btn").forEach((btn) => {
+    const active = btn.dataset.density === next;
+    btn.classList.toggle("is-active", active);
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+  try { localStorage.setItem(DENSITY_KEY, next); } catch (err) { /* ignore */ }
+  if (allPosts.length) applyFilter();
+}
+
+densityToggle.addEventListener("click", (e) => {
+  const btn = e.target.closest(".density-btn");
+  // Ignore a click on the view you're already in — no needless re-render.
+  if (btn && btn.dataset.density !== currentView) setDensity(btn.dataset.density);
+});
+
+let initialView = "normal";
+try {
+  const saved = localStorage.getItem(DENSITY_KEY);
+  if (VIEWS.includes(saved)) initialView = saved;
+} catch (err) { /* ignore */ }
+setDensity(initialView);
 
 fetchPosts()
   .then((posts) => {

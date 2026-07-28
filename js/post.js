@@ -52,7 +52,11 @@ function renderPost(post) {
   // Content-type tags ("writeup"/"blurb") lead; the rest keep their order.
   const orderedTags = orderTags(post.tags);
   const tags = orderedTags.length
-    ? orderedTags.map((t) => `<a class="post-tag" href="tag.html?tag=${encodeURIComponent(t)}">${escapeHTML(t)}</a>`).join("")
+    ? orderedTags
+        .map((t) => `<a class="post-tag" href="tag.html?tag=${encodeURIComponent(t)}">${escapeHTML(t)}</a>`)
+        // A standalone "·" divider sits between tags only — not attached to a tag,
+        // and never between the date and the first tag.
+        .join(`<span class="post-sep" aria-hidden="true">·</span>`)
     : "";
 
   // The frame shows the same photo as a blurred, darkened backdrop (via the
@@ -72,6 +76,7 @@ function renderPost(post) {
     <div class="post-image-frame" style="--post-bg: url('${encodeURI(src)}')">
       <img class="post-image" src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}">
     </div>
+    <p class="post-byline">by <span class="post-byline-name">Elia C</span></p>
     <div class="post-meta">
       <p class="post-date">${escapeHTML(formatDate(post.date, "long"))}</p>
       ${tags}
