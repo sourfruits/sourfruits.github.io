@@ -58,8 +58,8 @@
   /* Type scale */
   --text-tiny: 0.85rem;
   --text-small: 0.9rem;
-  --text-base: 1rem;
-  --text-medium: 1.1rem;
+  --text-medium: 2rem;     /* (was --textbasetrue/1rem) */
+  --text-base: 1.1rem;     /* formerly --text-medium; now the default text size */
   --text-reading: 1.25rem;
   --text-heading-sm: 1.4rem;
   --text-heading-lg: 2rem;
@@ -201,7 +201,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   display: inline-flex;
   align-items: center;
   font-weight: 800;
-  font-size: var(--text-medium);
+  font-size: var(--text-base);
   letter-spacing: -0.01em;
   color: var(--ink);
   text-decoration: none;
@@ -880,7 +880,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 
 .tile-title {
   font-weight: 700;
-  font-size: var(--text-medium);
+  font-size: var(--text-base);
   line-height: 1.25;
 }
 
@@ -896,22 +896,51 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 .tile-meta { display: none; }
 .tile-meta-title {
   margin: 0 0 3px;
-  font-size: var(--text-reading);
+  font-size: var(--text-medium);
   font-weight: 800;
   letter-spacing: -0.02em;
   line-height: 1.2;
   color: var(--ink);
 }
 .tile-meta-subtitle {
-  margin: 0 0 7px;
-  font-size: var(--text-medium);
+  margin: 0 0 4px;
+  font-size: var(--text-base);
   font-style: italic;
   color: var(--muted);
 }
-/* Reuse .post-meta styling but drop its 24px bottom margin — otherwise that
-   margin is clickable space below the tags (the tile is a link). Scoped selector
-   so it beats the plain .post-meta rule that comes later in the file. */
-.tile-meta .post-meta.tile-meta-info { margin: 0; }
+/* Date · tags line — self-contained (mirrors the post page's meta look but
+   doesn't depend on .post-meta). No bottom margin: the tile is a link, so any
+   space below the tags would be tappable dead area. */
+.tile-meta-info {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: nowrap;      /* one line — the tags ellipsis rather than wrap */
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-base);
+}
+.tile-meta-date {
+  flex: none;                       /* always fully shown */
+  margin-right: var(--tag-gap);     /* separate the date from the tag group */
+}
+/* The tag group fills the remaining width on the line and truncates to "…"
+   instead of wrapping. min-width:0 lets the flex item shrink below its content
+   so text-overflow can kick in. */
+.tile-meta-tags {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tile-meta-tag {
+  font-weight: 700;
+  letter-spacing: var(--tag-letter-spacing);
+}
+.tile-meta-sep {
+  margin: 0 calc(var(--tag-gap) / 2);   /* space around the · within the line */
+  pointer-events: none;
+}
 
 /* Draft tiles: dimmed, with a small badge pinned to the top-left corner so
    they read as unpublished when the drafts toggle reveals them. */
@@ -1134,7 +1163,7 @@ body:has(.grid.is-carousel) main { padding-bottom: 24px; }
 }
 .carousel-seeall-inner {
   font-weight: 700;
-  font-size: var(--text-medium);
+  font-size: var(--text-base);
   transition: transform 0.25s ease;
 }
 /* Label grows on hover for every "See all" card, image or not. */
@@ -1290,7 +1319,7 @@ a.page-link:focus-visible {
 
 .related-heading {
   margin: 0 0 16px;
-  font-size: var(--text-medium);
+  font-size: var(--text-base);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1486,7 +1515,7 @@ a.page-link:focus-visible {
   gap: calc(var(--tag-gap) / 2);   /* even spacing between date, dividers, tags */
   margin: 0 0 24px;
   color: var(--muted);
-  font-size: var(--text-medium);
+  font-size: var(--text-base);
 }
 /* Date and tags in the meta row both follow the meta font-size (overriding the
    standalone .post-date size and the smaller shared --tag-size) so the whole
@@ -1507,7 +1536,7 @@ a.page-link:focus-visible {
 .post-byline {
   margin: 0 0 4px;
   color: var(--muted);
-  font-size: var(--text-medium);
+  font-size: var(--text-base);
   font-weight: 400;   /* "by" stays normal weight */
 }
 .post-byline-name { font-weight: 600; }   /* only the name is bold */
@@ -1639,7 +1668,7 @@ a.post-tag:focus-visible { color: var(--ink); }
 }
 .tag-index-name {
   font-family: var(--font-serif);
-  font-size: var(--text-medium);
+  font-size: var(--text-base);
   color: var(--muted);
 }
 .tag-index-leader {
@@ -1871,7 +1900,7 @@ a.post-tag:focus-visible { color: var(--ink); }
 
 .precursors-intro {
   color: var(--muted);
-  font-size: var(--text-medium);
+  font-size: var(--text-base);
   margin: 0 0 0.4rem;   /* gap above comes from the title's 10px bottom margin */
 }
 /* Meta line under the intro: "Updated <date> · Learn more". The date span and
@@ -2607,7 +2636,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 .detail-title {
   margin: 0 22px 0 0;   /* clear the close button; title wraps naturally */
   font-family: var(--font-serif);
-  font-size: var(--text-medium);
+  font-size: var(--text-base);
   font-weight: 700;
   line-height: 1.25;
   color: var(--ink);
@@ -2771,6 +2800,11 @@ body.is-graph-faux-fs { overflow: hidden; }
 .np-graph {
   position: absolute;
   inset: 0;
+  /* Explicit size so the empty <svg> can't fall back to its intrinsic 300×150
+     default and jut off the right edge (it does when the "Precursors" letters
+     are blank and the link collapses). JS overrides width/height on hover. */
+  width: 100%;
+  height: 100%;
   z-index: 0;   /* behind the letters; lines run through each letter's centre */
   overflow: visible;
   pointer-events: none;
