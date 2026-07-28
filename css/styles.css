@@ -480,9 +480,10 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 /* Mobile layout swap. Placed after the base .site-nav/.nav-link rules above so
    these overrides win the cascade (equal specificity → later rule wins). */
 @media (max-width: 640px) {
-  /* Swap the inline links for the hamburger. */
-  .site-nav { display: none; }
-  .nav-toggle { display: inline-flex; }
+  /* No hamburger on mobile: keep the inline nav link(s) visible as-is, and hide
+     the toggle + its dropdown panel entirely. */
+  .nav-toggle { display: none; }
+  .mobile-nav { display: none; }
 
   /* Collapsed to just the magnifier. The field is clipped by the form's width
      (overflow:hidden) rather than display:none, so it can slide open smoothly. */
@@ -529,26 +530,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
     box-shadow: 0 0 0 3px rgb(from var(--accent) r g b / 0.25);
   }
 
-  .mobile-nav {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    max-height: 0;
-    opacity: 0;
-    background: var(--header-bg);
-    transition: max-height 0.2s ease, opacity 0.2s ease;
-  }
-  .site-header.nav-open .mobile-nav {
-    max-height: 200px;
-    opacity: 1;
-    border-bottom: 1px solid var(--line);
-  }
-  /* While the dropdown is open, drop the navbar's own divider so the panel
-     reads as one continuous surface (the panel carries the bottom border). */
-  .site-header.nav-open .header-bar { border-bottom-color: transparent; }
-  .mobile-nav .nav-link {
-    padding: 12px 20px;
-  }
+  /* (Hamburger dropdown panel removed — the inline nav shows directly now.) */
 }
 
 .site-title {
@@ -574,10 +556,10 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 }
 .hero-rule {
   max-width: var(--maxw);        /* normal frame width */
-  /* 32px above; the gap BELOW (to the carousel) is set on the carousel's own
-     margin-top so it can't shift with margin-collapsing across the header/main
-     flex boundary. Both gaps stay 32px. */
-  margin: 32px auto 0;
+  /* Snug gap up to the toolbar (16px), and a larger 24px gap down to the grid
+     (matching the grid's gap to the bottom pagination line) so the tiles get
+     breathing room and don't paint over the line. */
+  margin: 16px auto 24px;
   border: 0;
   border-top: 1px solid var(--line);
 }
@@ -594,8 +576,8 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 .page-end-rule--narrow { max-width: var(--post-width); }
 
 /* ---------- Posts-page controls ---------- */
-/* Tag filter on the left, grid-density toggle on the right. Sits under the
-   "Posts" page heading (which carries its own accent bar), so no extra divider. */
+/* Tag filter on the left, drafts toggle on the right. Sits under the masthead
+   title (which carries the hero-rule divider), so no extra divider here. */
 .controls {
   position: relative;
   /* Sit above the grid so the tag dropdown menu isn't covered by the tiles. */
@@ -608,14 +590,6 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
      needs a little breathing room above the grid. */
   padding-top: 16px;
   margin-bottom: 16px;
-}
-
-/* Left cluster of the controls row: the tag dropdown and the drafts toggle,
-   kept together so the density toggle stays pushed to the right. */
-.controls-left {
-  display: flex;
-  align-items: center;
-  gap: 18px;
 }
 
 .tag-filter {
@@ -761,41 +735,14 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   font-size: var(--text-tiny);
 }
 
-/* Grid density toggle: icon-only, no border or background. The muted icons
-   darken to ink on hover and for the active density. */
-.density-toggle {
-  display: inline-flex;
-  flex-shrink: 0;
-  gap: 8px;
-}
-
-.density-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-.density-btn:hover { color: var(--ink); }
-.density-btn.is-active { color: var(--ink); }
-.density-btn:focus-visible { outline: none; color: var(--ink); }
-
 /* ---------- Grid ---------- */
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
 }
-.grid.is-compact { grid-template-columns: repeat(4, 1fr); }
 
-/* Column count is fixed — normal always 3, compact always 4 — at every width,
-   phones included. */
+/* Column count is fixed at 3 at every width, phones included. */
 @media (max-width: 720px) {
   /* Bleed the grid to the screen edges (cancel main's 20px side padding). */
   #grid-wrap { margin-inline: -20px; }
@@ -1129,66 +1076,51 @@ body:has(.grid.is-carousel) main { padding-bottom: 24px; }
    and search views. */
 .pagination {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 0;
-  /* Even 16px on both sides of the divider — same as the controls divider. */
-  margin-top: 16px;
+  gap: 8px;
+  /* 24px gap from the grid down to this line (matching the grid's 24px gap up to
+     the top divider); 16px of padding below the line to the page numbers. */
+  margin-top: 24px;
   padding-top: 16px;
   border-top: 1px solid var(--line);
 }
 .pagination:empty { display: none; }
+/* Prev pins to the far left and Next to the far right (the auto margins absorb
+   the slack), leaving the numbered links centered between them. */
+.page-prev { margin-right: auto; }
+.page-next { margin-left: auto; }
 
 .page-link {
-  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 38px;
-  height: 38px;
-  padding: 0 14px;
-  /* Collapse the shared edge with the previous cell so the whole row reads as
-     one connected box instead of separate pills. */
-  margin-left: -1px;
-  border-radius: 0;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
+  padding: 4px 8px;
+  color: var(--muted);
   font-size: var(--text-small);
   font-weight: 600;
   text-decoration: none;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-/* Round only the outer corners of the group (Prev is always first, Next last). */
-.page-link:first-child {
-  margin-left: 0;
-  border-top-left-radius: var(--radius-pill);
-  border-bottom-left-radius: var(--radius-pill);
-}
-.page-link:last-child {
-  border-top-right-radius: var(--radius-pill);
-  border-bottom-right-radius: var(--radius-pill);
+  transition: color 0.2s ease;
 }
 
 a.page-link:hover,
 a.page-link:focus-visible {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--accent-ink);
-  z-index: 1; /* lift the accent border above its neighbours' shared edge */
+  color: var(--ink);
 }
 
 .page-link.is-current {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--accent-ink);
+  color: var(--ink);
   cursor: default;
-  z-index: 1;
 }
 
 .page-link.is-disabled {
   color: var(--muted);
   opacity: 0.5;
+  cursor: default;
+}
+
+/* Ellipsis between distant page numbers — muted, non-interactive. */
+.page-ellipsis {
+  color: var(--muted);
   cursor: default;
 }
 

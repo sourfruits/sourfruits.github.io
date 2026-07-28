@@ -1,7 +1,7 @@
 // Photo grid (now on index.html): load every post from data/posts.json and render
 // the thumbnail grid, with a multi-select tag filter (AND logic, synced to ?tags=)
-// and a grid-density toggle (normal 3-col ↔ compact 4-col), both paginated. (A
-// carousel preview built by js/home.js is stashed in snippets/carousel.html.)
+// and a drafts toggle, paginated. (A carousel preview built by js/home.js is
+// stashed in snippets/carousel.html.)
 
 const grid = document.getElementById("grid");
 const status = document.getElementById("status");
@@ -10,12 +10,12 @@ const tagFilter = document.getElementById("tag-filter");
 const tagToggle = document.getElementById("tag-dropdown-toggle");
 const tagMenu = document.getElementById("tag-dropdown-menu");
 const tagLabel = document.getElementById("tag-dropdown-label");
-const densityToggle = document.querySelector(".density-toggle");
 const draftsToggle = document.getElementById("drafts-toggle");
 const draftsLabel = draftsToggle.querySelector(".drafts-label");
 
-const DENSITY_KEY = "grid-density";
-const VIEWS = ["normal", "compact"];
+// Drafts toggle persists across page navigations within the tab (sessionStorage
+// clears when the tab closes), so paging through the grid keeps drafts on/off.
+const DRAFTS_KEY = "sourfruits:drafts";
 
 // This page's own filename, so pagination + ?tags= URLs stay on whatever page
 // hosts the grid. Kept dynamic rather than hardcoded so main.js works wherever
@@ -25,8 +25,9 @@ const PAGE = window.location.pathname.split("/").pop() || "index.html";
 let allPosts = [];
 let allTags = [];              // every tag, ordered by post count (ties alphabetical)
 let selectedTags = new Set();  // the tags currently checked
-let showDrafts = false;          // drafts revealed by default (for testing)
-let currentView = "normal";    // normal (3-col) | compact (4-col)
+// Restored from sessionStorage so it survives page navigation within the tab.
+let showDrafts = false;
+try { showDrafts = sessionStorage.getItem(DRAFTS_KEY) === "1"; } catch (err) { /* ignore */ }
 
 // Capitalize a tag's first letter for display (values stay lowercase).
 const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
@@ -57,8 +58,7 @@ function renderGrid(posts) {
   // Pinned first, then newest-first, regardless of order in the JSON file.
   sortPosts(posts);
 
-  // Fill each page based on the grid's live column count (which follows both
-  // the density toggle and the screen-width breakpoints).
+  // Fill each page based on the grid's live column count (fixed at 3).
   Pagination.paginate({
     items: posts,
     perPage: Pagination.gridPerPage(grid),
@@ -191,42 +191,15 @@ tagMenu.addEventListener("click", (e) => {
   }
 });
 
-// Switch the grid between the normal (3-col) and compact (4-col) views,
-// highlighting the active button, remembering the choice, and re-rendering.
-// Skips the re-render before posts load.
-function setDensity(next) {
-  currentView = next;
-  grid.classList.toggle("is-compact", next === "compact");
-  densityToggle.querySelectorAll(".density-btn").forEach((btn) => {
-    const active = btn.dataset.density === next;
-    btn.classList.toggle("is-active", active);
-    btn.setAttribute("aria-pressed", active ? "true" : "false");
-  });
-  try { localStorage.setItem(DENSITY_KEY, next); } catch (err) { /* ignore */ }
-  if (allPosts.length) applyFilter();
-}
-
-densityToggle.addEventListener("click", (e) => {
-  const btn = e.target.closest(".density-btn");
-  // Ignore a click on the view you're already in — no needless re-render.
-  if (btn && btn.dataset.density !== currentView) setDensity(btn.dataset.density);
-});
-
 // Drafts toggle: flip whether drafts are included, then rebuild the tag menu
 // (its counts follow the visible pool) and re-render the grid.
 draftsToggle.addEventListener("click", () => {
   showDrafts = !showDrafts;
+  try { sessionStorage.setItem(DRAFTS_KEY, showDrafts ? "1" : "0"); } catch (err) { /* ignore */ }
   draftsToggle.setAttribute("aria-pressed", showDrafts ? "true" : "false");
   buildMenu(baseSet());
   applyFilter();
 });
-
-let initialView = "normal";
-try {
-  const saved = localStorage.getItem(DENSITY_KEY);
-  if (VIEWS.includes(saved)) initialView = saved;
-} catch (err) { /* ignore */ }
-setDensity(initialView);
 
 fetchPosts()
   .then((posts) => {

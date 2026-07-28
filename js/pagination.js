@@ -6,10 +6,10 @@
 // its own `renderItems` (grid of tiles vs. list of cards).
 
 (function (global) {
-  // How many rows we want to fill for a given column count, so each page's
-  // grid comes out complete: 2 cols → 4 rows (8), 3 cols (normal) → 3 rows (9),
-  // 4 cols → 4 rows (16).
-  const ROWS_FOR_COLUMNS = { 2: 4, 3: 3, 4: 4 };
+  // How many rows we want to fill for a given column count, so each page's grid
+  // comes out complete. The grid is fixed at 3 columns → 4 rows (12 per page);
+  // the other entries are kept as sane fallbacks.
+  const ROWS_FOR_COLUMNS = { 2: 4, 3: 4, 4: 4 };
 
   // Count the grid's rendered columns from its computed style. This reflects
   // both the screen-width media queries and the compact/normal class, so it
@@ -36,6 +36,24 @@
     return Math.min(raw, totalPages);
   }
 
+  // The page numbers to actually show: always the first and last page, plus the
+  // current page and its immediate neighbours. Any gap wider than one page
+  // collapses to an ellipsis marker ("…"), e.g. [1, "…", 4, 5, 6, "…", 20].
+  function pageWindow(page, totalPages) {
+    const wanted = new Set([1, totalPages, page - 1, page, page + 1]);
+    const shown = [...wanted]
+      .filter((n) => n >= 1 && n <= totalPages)
+      .sort((a, b) => a - b);
+    const out = [];
+    let prev = 0;
+    for (const n of shown) {
+      if (n - prev > 1) out.push("…");   // skipped one or more pages → ellipsis
+      out.push(n);
+      prev = n;
+    }
+    return out;
+  }
+
   function renderNav(container, page, totalPages, hrefFor) {
     if (totalPages <= 1) {
       container.innerHTML = "";
@@ -44,22 +62,27 @@
 
     const parts = [];
 
-    // Previous button — disabled on the first page.
+    // Previous page holds newer posts (newest-first) — disabled on the first page.
     parts.push(page > 1
-      ? `<a class="page-link page-prev" href="${hrefFor(page - 1)}" rel="prev">‹ Prev</a>`
-      : `<span class="page-link page-prev is-disabled" aria-disabled="true">‹ Prev</span>`);
+      ? `<a class="page-link page-prev" href="${hrefFor(page - 1)}" rel="prev">Newer</a>`
+      : `<span class="page-link page-prev is-disabled" aria-disabled="true">Newer</span>`);
 
-    // Numbered page links.
-    for (let n = 1; n <= totalPages; n++) {
+    // Numbered page links: first, last, and the current page ±1; larger gaps
+    // show as a non-interactive ellipsis.
+    for (const n of pageWindow(page, totalPages)) {
+      if (n === "…") {
+        parts.push(`<span class="page-link page-ellipsis" aria-hidden="true">…</span>`);
+        continue;
+      }
       parts.push(n === page
         ? `<span class="page-link page-number is-current" aria-current="page">${n}</span>`
         : `<a class="page-link page-number" href="${hrefFor(n)}">${n}</a>`);
     }
 
-    // Next button — disabled on the last page.
+    // Next page holds older posts — disabled on the last page.
     parts.push(page < totalPages
-      ? `<a class="page-link page-next" href="${hrefFor(page + 1)}" rel="next">Next ›</a>`
-      : `<span class="page-link page-next is-disabled" aria-disabled="true">Next ›</span>`);
+      ? `<a class="page-link page-next" href="${hrefFor(page + 1)}" rel="next">Older</a>`
+      : `<span class="page-link page-next is-disabled" aria-disabled="true">Older</span>`);
 
     container.innerHTML = parts.join("");
   }
