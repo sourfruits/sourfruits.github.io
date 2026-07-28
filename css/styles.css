@@ -777,6 +777,14 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 }
 .grid.is-compact { grid-template-columns: repeat(4, 1fr); }
 
+/* Closing divider 25px below the grid, on every width (mobile + desktop). Lives
+   on the grid wrapper, not the pagination, so it shows even with a single page.
+   Pagination then sits 16px below this line. */
+#grid-wrap {
+  padding-bottom: 25px;
+  border-bottom: 1px solid var(--line);
+}
+
 /* Phone: normal drops to a single column, compact to 3. Page size still follows
    the desktop counts (set in js/main.js), so this only changes the layout. */
 @media (max-width: 640px) {
@@ -824,6 +832,9 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
     background: var(--line);
     pointer-events: none;
   }
+  /* The last post's own divider is dropped — the grid wrapper's closing divider
+     (#grid-wrap border-bottom) sits 25px below it instead. */
+  .grid:not(.is-compact):not(.is-carousel) .tile:last-child::after { display: none; }
   .grid:not(.is-compact):not(.is-carousel) .tile-meta {
     display: block;
     margin-top: 12px;
@@ -1228,11 +1239,9 @@ body:has(.grid.is-carousel) main { padding-bottom: 24px; }
   display: flex;
   align-items: center;
   gap: 8px;
-  /* 24px gap from the grid down to this line (matching the grid's 24px gap up to
-     the top divider); 16px of padding below the line to the page numbers. */
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
+  /* 16px below the grid's own closing divider (see #grid-wrap). No border here —
+     the divider belongs to the grid so it shows even when there's no pagination. */
+  margin-top: 16px;
 }
 .pagination:empty { display: none; }
 /* Prev pins to the far left and Next to the far right (the auto margins absorb
