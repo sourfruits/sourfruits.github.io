@@ -793,9 +793,9 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
      beneath it, and a hairline divider between posts. Touch has no hover, so the
      old hover overlay is dropped in favour of this always-visible caption. */
   /* Space between posts lives in the grid gap (not clickable), so tapping below
-     the caption doesn't hit the tile's link. 60px total → 30px each side of the
+     the caption doesn't hit the tile's link. 50px total → 25px each side of the
      centered divider. */
-  .grid:not(.is-compact):not(.is-carousel) { gap: 60px; }
+  .grid:not(.is-compact):not(.is-carousel) { gap: 50px; }
   .grid:not(.is-compact):not(.is-carousel) .tile {
     aspect-ratio: auto;      /* image sets its height; caption sits below */
     overflow: visible;
@@ -816,7 +816,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   .grid:not(.is-compact):not(.is-carousel) .tile::after {
     content: "";
     top: auto;
-    bottom: -30px;           /* centered in the 60px gap */
+    bottom: -25px;           /* centered in the 50px gap */
     left: 0;
     right: 0;
     height: 1px;
@@ -824,7 +824,6 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
     background: var(--line);
     pointer-events: none;
   }
-  .grid:not(.is-compact):not(.is-carousel) .tile:last-child::after { display: none; }
   .grid:not(.is-compact):not(.is-carousel) .tile-meta {
     display: block;
     margin-top: 12px;
