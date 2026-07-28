@@ -793,8 +793,9 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
      beneath it, and a hairline divider between posts. Touch has no hover, so the
      old hover overlay is dropped in favour of this always-visible caption. */
   /* Space between posts lives in the grid gap (not clickable), so tapping below
-     the caption doesn't hit the tile's link. */
-  .grid:not(.is-compact):not(.is-carousel) { gap: 30px; }
+     the caption doesn't hit the tile's link. 60px total → 30px each side of the
+     centered divider. */
+  .grid:not(.is-compact):not(.is-carousel) { gap: 60px; }
   .grid:not(.is-compact):not(.is-carousel) .tile {
     aspect-ratio: auto;      /* image sets its height; caption sits below */
     overflow: visible;
@@ -815,7 +816,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   .grid:not(.is-compact):not(.is-carousel) .tile::after {
     content: "";
     top: auto;
-    bottom: -15px;           /* centered in the 30px gap */
+    bottom: -30px;           /* centered in the 60px gap */
     left: 0;
     right: 0;
     height: 1px;
@@ -901,12 +902,24 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   letter-spacing: -0.02em;
   line-height: 1.2;
   color: var(--ink);
+  /* Cap at two lines, ellipsis the rest. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .tile-meta-subtitle {
   margin: 0 0 4px;
   font-size: var(--text-base);
   font-style: italic;
   color: var(--muted);
+  /* Cap at two lines, ellipsis the rest. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 /* Date · tags line — self-contained (mirrors the post page's meta look but
    doesn't depend on .post-meta). No bottom margin: the tile is a link, so any

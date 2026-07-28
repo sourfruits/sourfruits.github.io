@@ -13,7 +13,7 @@
   // independently on hover. `--dy` is that letter's little vertical nudge; `--d`
   // staggers the transition so they don't all move as one block. The empty
   // <svg> is filled on hover with the connecting lines/dots (see below).
-  const PRECURSORS = "more";
+  const PRECURSORS = "see more";
   const JITTER = [-3, 2, -2, 3, -1, 2, -3, 2, -2, 1];  // px, gentle up/down
   const precursorsLetters = [...PRECURSORS].map((ch, i) =>
     `<span class="np-letter" style="--dy:${JITTER[i % JITTER.length]}px;--d:${(i * 0.015).toFixed(3)}s">${ch}</span>`
