@@ -1416,7 +1416,6 @@ a.page-link:focus-visible {
 
 @media (max-width: 520px) {
   .related-grid { gap: 10px; }
-  .related-title { font-size: var(--text-tiny); }
 }
 
 .post {
