@@ -22,9 +22,10 @@
   // Primary nav links + search, shared by the top bar (interior pages) and the
   // homepage hero. Only one of the two layouts renders per page, so the
   // easter-egg selectors (.nav-precursors, .header-search) stay unambiguous.
+  // About link hidden — re-add `<a class="nav-link" href="about.html">About</a>`
+  // to navLinks (and the mobile-nav block below) to restore it.
   const navLinks = `
-            <a class="nav-link nav-precursors" href="precursors.html">${precursorsLetters}<svg class="np-graph" aria-hidden="true"></svg></a>
-            <a class="nav-link" href="about.html">About</a>`;
+            <a class="nav-link nav-precursors" href="precursors.html">${precursorsLetters}<svg class="np-graph" aria-hidden="true"></svg></a>`;
   const searchMarkup = `
           <form class="header-search" action="search.html" method="get" role="search">
             <input type="search" name="q" class="header-search-input" aria-label="Search posts" autocomplete="off">
@@ -58,7 +59,7 @@
     </div>
     <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
       <a class="nav-link" href="precursors.html">Precursors</a>
-      <a class="nav-link" href="about.html">About</a>
+      <!-- About link hidden — re-insert <a class="nav-link" href="about.html">About</a> here to restore it. -->
     </nav>
   `;
 

@@ -67,6 +67,21 @@
   --text-hero: 2.9rem;      /* homepage centered title */
 }
 
+/* MINIMAL mode: a fixed, code-only palette (js/theme.js sets data-theme="minimal"
+   when its MINIMAL flag is on). Keeps the light-mode colors throughout, but forces
+   a flat white background and a very light, untinted grey header. Anything not
+   listed here inherits the light :root values. The day/night toggle is hidden as a
+   guard — theme.js doesn't build it in Minimal mode anyway. */
+[data-theme="minimal"] {
+  --bg: #ffffff;
+  --bg-top: #ffffff;       /* both gradient stops white → flat white page */
+  --bg-bottom: #ffffff;
+  --header-bg: #ffffff;    /* very light neutral grey, no warm tint */
+  --grain-opacity: 0;      /* grain off in minimal mode */
+  /*--accent: #1c1c1a;*/
+}
+[data-theme="minimal"] .theme-toggle { display: none; }
+
 /* Dark mode: override only the color variables — every element reads from these,
    so the whole site (tags, pagination, search, cards, dropdowns, footer, etc.)
    flips automatically. The green accent stays identical in both modes. */
@@ -93,20 +108,6 @@
   --grid-dot: #302b23;            /* faint dot-grid backdrop (dark mode) */
   --grain-opacity: 0.06;          /* grain dialed back — light specks glow on dark */
 }
-
-/* MINIMAL mode: a fixed, code-only palette (js/theme.js sets data-theme="minimal"
-   when its MINIMAL flag is on). Keeps the light-mode colors throughout, but forces
-   a flat white background and a very light, untinted grey header. Anything not
-   listed here inherits the light :root values. The day/night toggle is hidden as a
-   guard — theme.js doesn't build it in Minimal mode anyway. */
-[data-theme="minimal"] {
-  --bg: #ffffff;
-  --bg-top: #ffffff;       /* both gradient stops white → flat white page */
-  --bg-bottom: #ffffff;
-  --header-bg: #ffffff;    /* very light neutral grey, no warm tint */
-  --grain-opacity: 0;      /* grain off in minimal mode */
-}
-[data-theme="minimal"] .theme-toggle { display: none; }
 
 * { box-sizing: border-box; }
 
@@ -559,16 +560,6 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   font-weight: 700;
   letter-spacing: 0.02em;   /* spaced out a touch */
   color: var(--ink);
-}
-
-.site-title::after {
-  content: "";
-  display: block;
-  width: 44px;
-  height: 5px;
-  margin: 10px auto 0;
-  border-radius: 0;
-  background: var(--accent);
 }
 
 /* Homepage hero eyebrow: a small-caps bold line above the title. Extra space
@@ -1764,14 +1755,9 @@ a.post-tag:focus-visible { color: var(--accent); }
    set inline in JS (0.3s base + 0.05s per tile, left-to-right, top-to-bottom). */
 .tile { animation: fadeIn 0.5s ease both; }
 
-/* Pinned posts (sorted to the front) fade in first, ahead of the rest of the
-   cascade — same fade as every tile, just an earlier delay. !important beats the
-   inline per-tile delay. (The carousel never renders is-pinned — see renderTile's
-   pins:false — so this can't affect it.) */
-.tile.is-pinned {
-  animation: fadeIn 0.5s ease both !important;
-  animation-delay: 0.08s !important;
-}
+/* Pinned posts sort to the front (see sortPosts), so they already carry the
+   lowest inline animation-delays and fade in first as part of the normal
+   stagger — no separate delay override needed. */
 
 /* Post page: hidden until the image loads (JS adds .is-loaded to #post). */
 #post .post-image-frame,
@@ -1807,8 +1793,6 @@ a.post-tag:focus-visible { color: var(--accent); }
     opacity: 1;
     transform: none;
   }
-  /* is-pinned uses !important above, so match it here to stay still. */
-  .tile.is-pinned { animation: none !important; opacity: 1; transform: none; }
 }
 
 /* ---------- Precursors (force-directed graph) ---------- */
