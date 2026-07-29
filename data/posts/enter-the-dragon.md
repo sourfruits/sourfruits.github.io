@@ -4,8 +4,7 @@ subtitle: "I am literally Bruce Lee"
 date: "2099-07-22"
 tags: ["writeup", "movies"]
 workId: "enter-the-dragon-1973"
-thumb: "images/enter-the-dragon.jpeg"
-image: "images/enter-the-dragon.jpeg"
+image: "images/enter-the-dragon/image.jpeg"
 ---
 
 yep

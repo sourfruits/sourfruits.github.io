@@ -4,8 +4,7 @@ subtitle: "The absurd humor of existence"
 date: "2026-07-21"
 tags: ["books", "blurb"]
 workId: "kafka-the-trial"
-thumb: "images/kafka-the-trial.jpg"
-image: "images/kafka-the-trial.jpg"
+image: "images/the-trial/image.jpg"
 ---
 
 I started *The Trial* having consumed some of its inescapable influence through Bulgakov's *The Master and Margarita*, Gilliam's *Brazil*, and Scorsese's *After Hours* (all personal favorites), so I had the bleak humor of navigating an absurd bureaucratic nightmare in mind as I read.

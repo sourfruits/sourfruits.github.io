@@ -3,8 +3,7 @@ title: "From Russia with Love (1963)"
 date: "2026-06-29"
 tags: ["movies", "blurb"]
 workId: "from-russia-with-love-1963"
-thumb: "images/from-russia-with-love.jpg"
-image: "images/from-russia-with-love.jpg"
+image: "images/from-russia-with-love/image.jpg"
 ---
 
 **My first post!** Trying this experiment out in a dual effort to:

@@ -4,8 +4,7 @@ subtitle: "How Much Land Does a Man Need?"
 date: "2099-07-28"
 tags: ["blurb", "books", "philosophy", "jdsoiajfo","80 days writing", "more tags", "music"]
 workId: "tolstoy-how-much-land"
-thumb: "images/tolstoy-how-much-land.jpg"
-image: "images/tolstoy-how-much-land.jpg"
+image: "images/how-much-land/image.jpg"
 ---
 
 simple moral and nature
