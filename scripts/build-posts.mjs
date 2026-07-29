@@ -26,9 +26,12 @@ const POSTS_DIR = join(ROOT, "data", "posts");
 const OUT_FILE = join(ROOT, "data", "posts.json");
 
 // Fields every post must carry in frontmatter. `id` is NOT here — it comes from
-// the filename (<id>.md), so renaming a post is just renaming the file. Optional
-// extras (subtitle, pinned, pinOrder, draft, …) are passed through when present.
-const REQUIRED = ["title", "date", "tags", "workId", "thumb", "image"];
+// the filename (<id>.md), so renaming a post is just renaming the file. `thumb`
+// and `image` aren't here either: the site falls back one to the other
+// (thumb || image / image || thumb), so a post needs AT LEAST ONE, not both —
+// that's enforced separately in validate(). Optional extras (subtitle, pinned,
+// pinOrder, draft, …) are passed through when present.
+const REQUIRED = ["title", "date", "tags", "workId"];
 // Preferred key order in the output objects (tidy, stable diffs). `content`
 // always comes last; any unlisted frontmatter keys are appended before it.
 const KEY_ORDER = [
@@ -88,7 +91,16 @@ function validate(data, body, file) {
   const missing = REQUIRED.filter((k) => !(k in data));
   if (missing.length) throw new Error(`${file}: missing required field(s): ${missing.join(", ")}`);
 
-  for (const k of ["title", "date", "workId", "thumb", "image"]) {
+  // thumb/image: at least one must be present (the site falls back one to the
+  // other), and whichever is present must be a non-empty string.
+  if (!("thumb" in data) && !("image" in data)) {
+    throw new Error(`${file}: must have at least one of "thumb" or "image"`);
+  }
+
+  const stringFields = ["title", "date", "workId"];
+  if ("thumb" in data) stringFields.push("thumb");
+  if ("image" in data) stringFields.push("image");
+  for (const k of stringFields) {
     if (typeof data[k] !== "string") throw new Error(`${file}: "${k}" must be a string`);
   }
   if (!Array.isArray(data.tags) || data.tags.some((t) => typeof t !== "string")) {
