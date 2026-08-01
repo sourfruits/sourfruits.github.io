@@ -18,7 +18,7 @@ const DENSITY_KEY = "grid-density";
 const VIEWS = ["normal", "compact"];
 // Posts per page for each view — the same on desktop and mobile (page size is
 // stable across screen widths, independent of how many columns actually render).
-const PER_PAGE = { normal: 7, compact: 15 };
+const PER_PAGE = { normal: 9, compact: 24 };
 
 // Drafts toggle persists across page navigations within the tab (sessionStorage
 // clears when the tab closes), so paging through the grid keeps drafts on/off.
