@@ -16,9 +16,17 @@ const draftsLabel = draftsToggle.querySelector(".drafts-label");
 
 const DENSITY_KEY = "grid-density";
 const VIEWS = ["normal", "compact"];
-// Posts per page for each view — the same on desktop and mobile (page size is
-// stable across screen widths, independent of how many columns actually render).
-const PER_PAGE = { normal: 9, compact: 24 };
+// Posts per page for each view — different  on desktop and mobile (number
+// of columns depends on page width).
+const PER_PAGE = {
+  normal:  { desktop: 7,  mobile: 12 },   // pick your mobile number
+  compact: { desktop: 15, mobile: 15 }
+};
+
+function getPerPage(view) {
+  const isMobile = window.matchMedia("(max-width: 640px)").matches;
+  return PER_PAGE[view][isMobile ? "mobile" : "desktop"];
+}
 
 // Drafts toggle persists across page navigations within the tab (sessionStorage
 // clears when the tab closes), so paging through the grid keeps drafts on/off.
@@ -66,11 +74,10 @@ function renderGrid(posts) {
   // Pinned first, then newest-first, regardless of order in the JSON file.
   sortPosts(posts);
 
-  // Fixed page size per view (normal 7, compact 15), the same on phone and
-  // desktop regardless of how many columns actually render.
+  // Variable page size per view, different on phone and desktop.
   Pagination.paginate({
     items: posts,
-    perPage: PER_PAGE[currentView],
+    perPage: getPerPage(currentView),
     container: pagination,
     hrefFor: pageHref,
     renderItems: (pagePosts) => {
