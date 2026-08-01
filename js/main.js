@@ -19,8 +19,8 @@ const VIEWS = ["normal", "compact"];
 // Posts per page for each view — different  on desktop and mobile (number
 // of columns depends on page width).
 const PER_PAGE = {
-  normal:  { desktop: 7,  mobile: 12 },   // pick your mobile number
-  compact: { desktop: 15, mobile: 15 }
+  normal:  { desktop: 9,  mobile: 12 },   // pick your mobile number
+  compact: { desktop: 16, mobile: 15 }
 };
 
 function getPerPage(view) {
