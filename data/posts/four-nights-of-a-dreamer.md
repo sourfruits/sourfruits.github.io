@@ -1,6 +1,6 @@
 ---
 title: "Four Nights of a Dreamer (1971)"
-subtitle: ""
+subtitle: "Quatre nuits d’un rêveur"
 date: "2026-08-01"
 tags: ["blurb", "movies"]
 workId: "four-nights-of-a-dreamer-1971"
