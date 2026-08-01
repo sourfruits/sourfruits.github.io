@@ -1,5 +1,5 @@
 ---
-title: "Four Nights of a Dreamer"
+title: "Four Nights of a Dreamer (1971)"
 subtitle: ""
 date: "2026-08-01"
 tags: ["blurb", "movies"]
