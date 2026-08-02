@@ -2,7 +2,7 @@
 title: "Short Stories by Leo Tolstoy"
 subtitle: "How Much Land Does a Man Need?"
 date: "2099-07-28"
-tags: ["blurb", "books", "philosophy", "jdsoiajfo","80 days writing", "more tags", "music"]
+tags: ["blurb", "books"]
 workId: "tolstoy-how-much-land"
 image: "images/how-much-land/image.jpg"
 ---
