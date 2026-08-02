@@ -356,6 +356,15 @@
       ]
     },
     {
+      "id": "the-taste-of-tea-2004",
+      "label": "The Taste of Tea (2004)",
+      "kind": "film",
+      "creator": "Katsuhito Ishii",
+      "discovered_via": [
+        { "source": "letterboxd", "date": "2026-05" }
+      ]
+    },
+    {
       "id": "the-trial-1962",
       "label": "The Trial (1962)",
       "kind": "film",
