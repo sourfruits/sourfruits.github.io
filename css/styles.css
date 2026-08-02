@@ -1618,7 +1618,7 @@ a.post-tag:focus-visible { color: var(--ink); }
 
 .post-body p {
   font-size: var(--text-reading);
-  line-height: 1.8;
+  line-height: 2.0;
   margin: 0 0 1.1em;
 }
 
