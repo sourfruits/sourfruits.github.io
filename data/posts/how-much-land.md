@@ -1,6 +1,6 @@
 ---
-title: "Short Stories by Leo Tolstoy"
-subtitle: "How Much Land Does a Man Need?"
+title: "How Much Land Does a Man Need?"
+subtitle: "and Other Stories by Leo Tolstoy"
 date: "2026-08-02"
 tags: ["blurb", "books"]
 workId: "tolstoy-how-much-land"
