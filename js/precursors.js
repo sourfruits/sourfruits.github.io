@@ -22,7 +22,7 @@ const LEARN_MORE_CARDS = [
   {
     label: "Why “precursors”",
     callout: true,   // warm tint + green left-border, so it reads as a distinct aside
-    body: `In 1951, Jorge Luis Borges wrote an essay titled *Kafka and His Precursors*. Borges argues that while works influence their successors, they also retroactively create their precursors. When we term old texts as Kafka-esque, we reinterpret our reading beyond the author’s original intent. A work's influence runs both forwards and backwards, "modifi[ying] our conception of the past, as it will modify the future."
+    body: `In 1951, Jorge Luis Borges wrote an essay titled <em>Kafka and His Precursors</em>. He argues that while works influence their successors, they also create their own precursors. When we retroactively term old works as Kafka-esque, we reinterpret our reading of the text. <b>A work's influence therefore runs both forwards and backwards, "modifi[ying] our conception of the past, as it will modify the future."</b>
     
     This tracker attempts to track the two-way influence of my personal journey through film, art, and literature.`,
   },
