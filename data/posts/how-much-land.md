@@ -1,10 +1,21 @@
 ---
 title: "Short Stories by Leo Tolstoy"
 subtitle: "How Much Land Does a Man Need?"
-date: "2099-07-28"
+date: "2026-08-02"
 tags: ["blurb", "books"]
 workId: "tolstoy-how-much-land"
 image: "images/how-much-land/image.jpg"
 ---
 
-The short stories of Leo Tolstoy, who is often cited as one of the greatest writers ever, are surprisingly simple. Penguin Classic’s *How Much Land Does a Man Need & Other Stories* collects such stories from across his career. They span military tales in the Caucasus to late-career moral parables. On the surface, each short story is minimal. The prose is light and natural, characters are not over-developed, and parables have clear, obvious morals. Yet, Tolstoy’s stylistic simplicity belies an underlying profundity. The contexts of war and allegory strip the stories bare, accentuating enduring truths about human nature under duress, integrity, and the beauty of God’s creation.
+The short stories of Leo Tolstoy, often cited as one of the greatest writers ever, are surprisingly simple. Penguin Classic’s *How Much Land Does a Man Need & Other Stories* collects such works, from military tales in the Caucasus to late-career didactic parables. On the surface, each short story is minimal. The prose is light and natural, characters are not over-developed, and parables have clear, obvious morals. Yet, Tolstoy’s stylistic simplicity belies an underlying profundity. War and allegory strip the characters and stories bare of pretense, accentuating enduring truths about love, death, human nature under duress, integrity, and the beauty of God’s creation.
+
+Born into Russian nobility, Tolstoy lived an early life of privilege. After accruing severe gambling debts, Tolstoy enlisted in the army. His military experience in the mountains of the Caucasus would ignite the pacifist and humanist strain that later defined his writing. Subsequent spiritual experiences converted him into a non-violent anarchist — views which even reached a young Mahatma Gandhi. Towards the end of his career, Tolstoy focused his efforts on developing his theory of Christian anarchy. In every stage, simple plots and prose gave voice to fundamental truths.
+
+The semi-autobiographical tales of the campaign in Chechnya feature a simple story structure. This intentional narrative restraint lets observations on human nature emerge. These range from ironic humor to sobering commentary, for instance on performed courage. In *The Woodfelling*, an officer “confesses” his cowardice before waiting awkwardly for the narrator to contradict him (he doesn’t). The two feign bravery moments later, uselessly sustaining a superficial conversation as death and grapeshot whizz by. Just as Tolstoy restrains his narrative structure to its core, the violence of war exposes the futility of societal civility.
+
+Tolstoy employs an ascetic approach in his moral parables as well. In the titular *How Much Land Does a Man Need?*, an avaricious farmer makes an agreement with ethnic tribes to claim all the land he can walk around in one day. Naturally, his greed drives him farther than he can walk. The farmer pushes himself to the brink of exhaustion and returns, falling dead on the spot. His workman buries him in a six-foot grave — “exactly the right length” for him. With minimal setup and characterization, Tolstoy cuts straight to the dangers of greed. His parables are hysterically sardonic in their humor and charmingly simple in their morals.
+
+The few times Tolstoy deserts his simple style are to write about nature. When Tolstoy describes the mountains of the Caucasus, he paints in broad painterly strokes. Every scene is a Romantic smorgasbord of senses covered in vivid colors, hues, sights, sounds. He writes of milky-white mists, violet-grey horizons, and the mingling sounds of the night. Yet, as Tolstoy’s descriptions become more detailed, the beauty of the mountains remains simple. Perhaps this serves to underline the existential contrast between nature and war. As the narrator rides through the night in *The Raid*, he wonders:  
+\> “Can it be that there is not enough space for man in this beautiful world, under those immeasurable, starry heavens? Is it possible that man’s heart can harbor, amid such ravishing natural beauty, feelings of hatred, vengeance, or the desire to destroy his fellows? All the evil in man, one would think, should disappear in contact with Nature, the most spontaneous expression of beauty and goodness.”
+
+Tolstoy’s short stories are pure and simple, yet wrought in profound insights and existential notes. Like he does in his longest novels, Tolstoy spots a truth of the human experience and distills it to its purest form — a few dozen pages at a time.
