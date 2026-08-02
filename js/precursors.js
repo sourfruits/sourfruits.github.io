@@ -22,15 +22,13 @@ const LEARN_MORE_CARDS = [
   {
     label: "Why “precursors”",
     callout: true,   // warm tint + green left-border, so it reads as a distinct aside
-    body: `In 1951, Jorge Luis Borges wrote an essay titled <em>Kafka and His Precursors</em>. He argues that while works influence their successors, they also create their own precursors. When we retroactively term old works as Kafka-esque, we reinterpret our reading of the text. <b>A work's influence therefore runs both forwards and backwards, "modifi[ying] our conception of the past, as it will modify the future."</b>
+    body: `In 1951, Jorge Luis Borges wrote an essay titled Kafka and His Precursors. He argues that while works influence their successors, they also create their own precursors. When we retroactively term old works as Kafka-esque, we reinterpret our reading of the text. A work's influence therefore runs both forwards and backwards, "modifi[ying] our conception of the past, as it will modify the future."
     
     This tracker attempts to track the two-way influence of my personal journey through film, art, and literature.`,
   },
   {
     label: "How it works",
     body: `Discovery — how I found what I'm interested in, and how my taste evolves. It tracks the moment something genuinely registered in your mind, and what caused that moment.
-
-What made you go look for that? If I found it by chance, THEN it can be a person or platform.
 
 Connections — how what I'm interested in relates to each other (personal noticed connections, not factual Wikipedia categorization).`,
   },
