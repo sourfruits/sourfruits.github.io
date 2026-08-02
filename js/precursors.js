@@ -28,7 +28,7 @@ const LEARN_MORE_CARDS = [
   },
   {
     label: "How it works",
-    body: `Discovery — how I found what I'm interested in, and how my taste evolves. Tracks the moment something genuinely registered in my mind, and what caused that moment.
+    body: `Discovery — what I'm interested in, and how I found it. Tracks the moment something genuinely registered in my mind.
 
 Connections — how what I'm interested in relates to each other (personally noted connections only, not factual Wikipedia categorization).`,
   },
