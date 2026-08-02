@@ -77,6 +77,7 @@
   --bg: #ffffff;
   --bg-top: #ffffff;       /* both gradient stops white → flat white page */
   --bg-bottom: #ffffff;
+  --ink: #000000;
   --header-bg: #ffffff;    /* very light neutral grey, no warm tint */
   --grain-opacity: 0;      /* grain off in minimal mode */
   --so-minimal: #1c1c1a;
