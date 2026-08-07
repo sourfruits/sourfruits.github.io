@@ -1,8 +1,15 @@
 // Shared helpers used across the page scripts. Exposed as globals so the plain
 // <script src> pages (no bundler / modules) can all reach them.
 
+// Single source of truth for how the month reads in post-facing dates: the post
+// page date, the mobile feed caption date, and the tile hover-preview date all
+// use this. Flip it once here ("short" → "long", or back) and all three update
+// together. "short" → "Jun 21, 2026"; "long" → "June 21, 2026".
+const DATE_MONTH_STYLE = "short";
+
 // Turn an ISO date (YYYY-MM-DD) into something friendlier, e.g. "Jun 21, 2026".
-// Pass month: "long" for the fuller "June 21, 2026" used on the post page.
+// Pass month: "long" for the fuller "June 21, 2026", or DATE_MONTH_STYLE to
+// follow the shared post-facing setting above.
 function formatDate(iso, month = "short") {
   const d = new Date(iso + "T00:00:00");
   if (isNaN(d)) return iso;
@@ -118,14 +125,14 @@ function renderTile(post, i, opts) {
       <div class="tile-overlay">
         <span class="tile-caption">
           <span class="tile-title">${escapeHTML(post.title)}</span>
-          <span class="tile-date">${escapeHTML(formatDate(post.date))}</span>
+          <span class="tile-date">${escapeHTML(formatDate(post.date, DATE_MONTH_STYLE))}</span>
         </span>
       </div>
       <div class="tile-meta">
         <h3 class="tile-meta-title">${escapeHTML(post.title)}</h3>
         ${metaSubtitle}
         <div class="tile-meta-info">
-          <span class="tile-meta-date">${escapeHTML(formatDate(post.date, "long"))}</span>
+          <span class="tile-meta-date">${escapeHTML(formatDate(post.date, DATE_MONTH_STYLE))}</span>
           ${metaTags ? `<span class="tile-meta-tags">${metaTags}</span>` : ""}
         </div>
       </div>

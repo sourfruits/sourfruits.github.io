@@ -98,7 +98,7 @@ function renderPost(post) {
     ${subtitle}
     <p class="post-byline">by <span class="post-byline-name">Elia C</span></p>
     <div class="post-meta">
-      <p class="post-date">${escapeHTML(formatDate(post.date, "short"))}</p>
+      <p class="post-date">${escapeHTML(formatDate(post.date, DATE_MONTH_STYLE))}</p>
       ${tags}
     </div>
     <hr class="post-rule">
