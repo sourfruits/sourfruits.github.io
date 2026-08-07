@@ -77,7 +77,6 @@
   --bg: #ffffff;
   --bg-top: #ffffff;       /* both gradient stops white → flat white page */
   --bg-bottom: #ffffff;
-  --ink: #000000;
   --header-bg: #ffffff;    /* very light neutral grey, no warm tint */
   --grain-opacity: 0;      /* grain off in minimal mode */
   --so-minimal: #1c1c1a;
@@ -113,7 +112,12 @@
 
 * { box-sizing: border-box; }
 
-html { -webkit-text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  /* Match body's base color so mobile overscroll rubber-band shows the page
+     color, not the bare white <html> behind it. */
+  background-color: var(--bg-bottom);
+}
 
 body {
   margin: 0;
@@ -202,7 +206,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 .header-logo {
   display: inline-flex;
   align-items: center;
-  font-weight: 800;
+  font-weight: 700;
   font-size: var(--text-base);
   letter-spacing: -0.01em;
   color: var(--ink);
@@ -911,8 +915,8 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
 .tile-meta-title {
   margin: 0 0 3px;
   font-size: var(--text-medium);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: 0;
   line-height: 1.2;
   color: var(--ink);
   /* Balance the wrap first (even line lengths, no lone trailing token), then
@@ -1309,12 +1313,19 @@ a.page-link:focus-visible {
   gap: 16px;
   /* Align to the post reading column (centered) rather than the full page. */
   max-width: var(--post-width);
-  margin: 56px auto 24px;
+  /* A thin divider above the prev/next links, with equal 24px gaps on both sides
+     of the line (space above the rule = space below it, down to the buttons). */
+  margin: 24px auto 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
 }
 .post-nav:empty { display: none; }
 .post-nav a {
   display: inline-flex;
   align-items: center;
+  /* line-height:1 so the 24px padding above is the true visible gap to the
+     button text, not inflated by the text's leading. */
+  line-height: 1;
   gap: 6px;
   /* Cap each link at 30% of the reading column so long titles stay short and
      the two links can't overlap. */
@@ -1340,7 +1351,9 @@ a.page-link:focus-visible {
    above the section (below the prev/next navigation). */
 .related {
   max-width: var(--post-width);
-  margin: 40px auto 0;
+  /* 24px gap above the divider so the space from the prev/next buttons down to
+     this line matches the 24px gaps around the divider above the buttons. */
+  margin: 24px auto 0;
   padding-top: 28px;
   border-top: 1px solid var(--line);
 }
@@ -1390,6 +1403,7 @@ a.page-link:focus-visible {
   font-size: var(--text-base);
   font-weight: 700;
   line-height: 1.25;
+  letter-spacing: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -1473,9 +1487,10 @@ a.page-link:focus-visible {
    (About, tag, search, tags list) use the smaller shared --heading-size,
    centered. */
 .post-title {
+  font-family: var(--font-sans);
   font-size: var(--text-heading-lg);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  letter-spacing: 0;
   /* Top 0 so the back link's bottom margin owns the gap above — aligning the
      title with the tag/search headings on the other back-button pages. */
   margin: 0 0 6px;
@@ -1520,9 +1535,10 @@ a.page-link:focus-visible {
 }
 .posts-heading::after { margin-left: auto; margin-right: auto; }
 
-/* Optional post subtitle: a smaller serif line under the title. */
+/* Optional post subtitle: a smaller sans-serif line under the title. */
 .post-subtitle {
-  font-size: var(--text-heading-sm);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
   font-style: italic;
   color: var(--muted);
   margin: 0 0 10px;
@@ -1544,7 +1560,7 @@ a.page-link:focus-visible {
   gap: calc(var(--tag-gap) / 2);   /* even spacing between date, dividers, tags */
   margin: 0 0 24px;
   color: var(--muted);
-  font-size: var(--text-base);
+  font-size: var(--text-small);
 }
 /* Date and tags in the meta row both follow the meta font-size (overriding the
    standalone .post-date size and the smaller shared --tag-size) so the whole
@@ -1567,7 +1583,7 @@ a.page-link:focus-visible {
 .post-byline {
   margin: 0 0 4px;
   color: var(--muted);
-  font-size: var(--text-base);
+  font-size: var(--text-small);
   font-weight: 400;   /* "by" stays normal weight */
 }
 .post-byline-name { font-weight: 600; }   /* only the name is bold */
@@ -1895,36 +1911,12 @@ a.post-tag:focus-visible { color: var(--ink); }
    lowest inline animation-delays and fade in first as part of the normal
    stagger — no separate delay override needed. */
 
-/* Post page: hidden until the image loads (JS adds .is-loaded to #post). */
-#post .post-image-frame,
-#post .post-title,
-#post .post-subtitle,
-#post .post-rule,
-#post .post-byline,
-#post .post-meta,
-#post .post-body { opacity: 0; }
-
-/* Content cascades in top-to-bottom once the image has loaded: title → subtitle
-   → rule → image → byline → meta → rule → body. */
-#post.is-loaded .post-title      { animation: fadeIn 0.3s ease both; animation-delay: 0.10s; }
-#post.is-loaded .post-subtitle   { animation: fadeIn 0.3s ease both; animation-delay: 0.15s; }
-#post.is-loaded .post-rule       { animation: fadeIn 0.3s ease both; animation-delay: 0.20s; }
-#post.is-loaded .post-image-frame { animation: fadeIn 0.4s ease both; animation-delay: 0.22s; }
-#post.is-loaded .post-byline     { animation: fadeIn 0.3s ease both; animation-delay: 0.28s; }
-#post.is-loaded .post-meta       { animation: fadeIn 0.3s ease both; animation-delay: 0.32s; }
-#post.is-loaded .post-body       { animation: fadeIn 0.3s ease both; animation-delay: 0.42s; }
+/* Post page has no load-in animation — content shows immediately. */
 
 /* Respect reduced-motion: show everything at rest, no animation. */
 @media (prefers-reduced-motion: reduce) {
   .site-intro,
-  .tile,
-  #post .post-image-frame,
-  #post .post-title,
-  #post .post-subtitle,
-  #post .post-rule,
-  #post .post-byline,
-  #post .post-meta,
-  #post .post-body {
+  .tile {
     animation: none;
     opacity: 1;
     transform: none;

@@ -96,31 +96,19 @@ function renderPost(post) {
   article.innerHTML = `
     <h1 class="post-title">${escapeHTML(post.title)}</h1>
     ${subtitle}
+    <p class="post-byline">by <span class="post-byline-name">Elia C</span></p>
+    <div class="post-meta">
+      <p class="post-date">${escapeHTML(formatDate(post.date, "short"))}</p>
+      ${tags}
+    </div>
     <hr class="post-rule">
     <div class="post-image-frame" style="--post-bg: url('${encodeURI(src)}')">
       <img class="post-image" src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}">
-    </div>
-    <p class="post-byline">by <span class="post-byline-name">Elia C</span></p>
-    <div class="post-meta">
-      <p class="post-date">${escapeHTML(formatDate(post.date, "long"))}</p>
-      ${tags}
     </div>
     <hr class="post-rule">
     <div class="post-body">${renderContent(post.content)}</div>
   `;
   status.textContent = "";
-
-  // Fade the image in once it loads, then cascade the content in (see the
-  // load-in animation rules in the CSS). Reveal immediately if the image is
-  // already cached or fails to load, so content never gets stuck hidden.
-  const image = article.querySelector(".post-image");
-  const reveal = () => article.classList.add("is-loaded");
-  if (image && !image.complete) {
-    image.addEventListener("load", reveal);
-    image.addEventListener("error", reveal);
-  } else {
-    reveal();
-  }
 
   // Collapse the tag row to a single line, spilling the overflow behind a
   // "+N more" toggle (recomputed on resize until the reader expands it).
