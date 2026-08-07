@@ -5,7 +5,7 @@
 // page date, the mobile feed caption date, and the tile hover-preview date all
 // use this. Flip it once here ("short" → "long", or back) and all three update
 // together. "short" → "Jun 21, 2026"; "long" → "June 21, 2026".
-const DATE_MONTH_STYLE = "short";
+const DATE_MONTH_STYLE = "long";
 
 // Turn an ISO date (YYYY-MM-DD) into something friendlier, e.g. "Jun 21, 2026".
 // Pass month: "long" for the fuller "June 21, 2026", or DATE_MONTH_STYLE to
