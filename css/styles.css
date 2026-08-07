@@ -117,6 +117,9 @@ html {
   /* Match body's base color so mobile overscroll rubber-band shows the page
      color, not the bare white <html> behind it. */
   background-color: var(--bg-bottom);
+  /* Suppress the mobile overscroll glow/arc painted at the screen edges when
+     scrolling past the top or bottom of the page. */
+  overscroll-behavior: none;
 }
 
 body {
