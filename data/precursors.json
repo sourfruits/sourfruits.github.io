@@ -1,6 +1,16 @@
 { 
   "nodes": [ 
     {
+      "id": "danny-h",
+      "label": "Danny H",
+      "kind": "person"
+    },
+    {
+      "id": "holden-t",
+      "label": "Holden T",
+      "kind": "person"
+    },
+    {
       "id": "after-hours-1985",
       "label": "After Hours (1985)",
       "kind": "film",
@@ -43,7 +53,7 @@
       "id": "camus-the-myth-of-sisyphus",
       "label": "The Myth of Sisyphus",
       "kind": "book",
-      "creator": "Alfred Camus",
+      "creator": "Albert Camus",
       "discovered_via": [
         { "source": "camus-the-stranger", "date": "2026-04" }
       ],
@@ -55,7 +65,7 @@
       "id": "camus-the-stranger",
       "label": "The Stranger",
       "kind": "book",
-      "creator": "Alfred Camus",
+      "creator": "Albert Camus",
       "discovered_via": [
         { "source": "dis-philosophy", "date": "2026-03", "note": "Borrowed from the DIS library." }
       ]
@@ -69,6 +79,15 @@
         { "source": "letterboxd", "date": "2026-05" }
       ],
       "connections": []
+    },
+    {
+      "id": "charli-xcx-music-fashion-film",
+      "label": "Music, Fashion, Film",
+      "kind": "album",
+      "creator": "Charli XCX",
+      "discovered_via": [
+        { "source": "holden-t", "date": "2026-07", "note": "played Girl, so confusing on aux"}
+      ]
     },
     {
       "id": "cold-water-1994",
@@ -86,11 +105,6 @@
       "discovered_via": [
         { "source": "", "date": "2026-05" }
       ]
-    },
-    {
-      "id": "danny-h",
-      "label": "Danny H",
-      "kind": "person"
     },
     {
       "id": "dis-philosophy",
@@ -311,6 +325,15 @@
         { "to": "camus-the-myth-of-sisyphus", "relationship": "influence" },
         { "to": "camus-the-stranger", "relationship": "influence" },
         { "to": "percy-the-moviegoer", "relationship": "influence" }
+      ]
+    },
+    {
+      "id": "sontag-on-photography",
+      "label": "On Photography",
+      "kind": "book",
+      "creator": "Susan Sontag",
+      "discovered_via": [
+        { "source": "charli-xcx-music-fashion-film", "date": "2026-08", "note": "camera: the sociology of being on film"}
       ]
     },
     {
