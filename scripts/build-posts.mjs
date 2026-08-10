@@ -97,11 +97,18 @@ function validate(data, body, file) {
     throw new Error(`${file}: must have at least one of "thumb" or "image"`);
   }
 
-  const stringFields = ["title", "date", "workId"];
+  const stringFields = ["title", "date"];
   if ("thumb" in data) stringFields.push("thumb");
   if ("image" in data) stringFields.push("image");
   for (const k of stringFields) {
     if (typeof data[k] !== "string") throw new Error(`${file}: "${k}" must be a string`);
+  }
+  // workId ties a post to one OR MORE Precursors nodes: a single string, or an
+  // array of strings (the post then shows on each of those nodes' cards). Either
+  // form is accepted; every id must be a non-empty string.
+  const workIds = Array.isArray(data.workId) ? data.workId : [data.workId];
+  if (!workIds.length || workIds.some((w) => typeof w !== "string" || !w)) {
+    throw new Error(`${file}: "workId" must be a non-empty string or an array of non-empty strings`);
   }
   if (!Array.isArray(data.tags) || data.tags.some((t) => typeof t !== "string")) {
     throw new Error(`${file}: "tags" must be an array of strings`);

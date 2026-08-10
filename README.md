@@ -66,6 +66,7 @@ sourfruits-blog/
 ├── .github/workflows/
 │   └── build-posts.yml  Runs the build on every push to main, commits posts.json back
 ├── images/           Post images (see images/README.md)
+│   └── favicon/      Favicon set (.ico, PNGs, apple-touch-icon, site.webmanifest) — see Favicons
 ├── serve.json        Config for `npx serve` (cleanUrls: false)
 └── README.md
 ```
@@ -163,7 +164,10 @@ Fields (same names/shape as before — they just live in frontmatter now):
 - `tags` — a list, e.g. `["citrus", "kitchen"]`.
 - `workId` — required; ties the post to a Precursors node (the graph's detail card
   lists posts whose `workId` equals its node id). If the post isn't tied to a node,
-  just set it to the same value as `id`.
+  just set it to the same value as `id`. It can be a **single id** (`workId: "my-first-lemon"`)
+  or an **array of ids** (`workId: ["four-nights-of-a-dreamer-1971", "pickpocket"]`) —
+  with an array, the post shows on *each* of those nodes' cards. Both forms are
+  accepted; every id must be a non-empty string.
 - `thumb` / `image` — square grid image and full post image (local path or URL).
   **Both are required by the build.** (The site's render code does fall back to
   whichever one is present — feed thumbnails use `thumb || image`, the post hero uses
@@ -202,6 +206,40 @@ then paste the Markdown straight into the body — no escaping needed anymore.
 Drop your photos into the `images/` folder and point `thumb`/`image` at them, e.g.
 `"image": "images/morning-lemons.jpg"`. See `images/README.md` for the naming
 convention and sizing tips.
+
+## Favicons
+
+The browser-tab icon (and the mobile "add to home screen" icons) come from a set of
+files in **`images/favicon/`**, wired into the page by hand in the `<head>` of
+`index.html` under the `<!-- Favicons -->` comment:
+
+```html
+<!-- Favicons -->
+<link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="images/favicon/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon-32x32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="images/favicon/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="images/favicon/android-chrome-512x512.png">
+<link rel="manifest" href="images/favicon/site.webmanifest">
+```
+
+The set was generated with a favicon generator (e.g. [favicon.io](https://favicon.io)):
+drop your source image in, download the zip, and replace the files in `images/favicon/`
+with the ones it produces (same filenames). `site.webmanifest` names the two Android
+icons for installable/home-screen use.
+
+**Only `index.html` carries these tags right now** — the icon shows on the homepage
+tab. To make every page show the favicon, paste the same `<!-- Favicons -->` block into
+the `<head>` of the other HTML pages (`post.html`, `tag.html`, `search.html`,
+`precursors.html`, `about.html`, `tags.html`). It's manual because the `<head>` isn't
+templated — only the `<body>` header/nav is injected by `js/header.js`.
+
+Right above the favicons in `index.html`'s `<head>` is an **Open Graph / social
+preview** block (`og:title`, `og:description`, `og:image`, …) — the tags a link
+unfurls into when shared. They're stubbed empty (`content=""`) for now; fill them in to
+control the preview card. Same deal as the favicons: hand-placed, and only on
+`index.html`.
 
 ## Display modes (light / dark / Minimal)
 
@@ -343,8 +381,9 @@ node automatically). Each node carries its *own* connections:
 - `id` — stable, unique, hand-picked (not auto-generated). It's what `connections`
   and `discovered_via.source` are matched against — and it doubles as the node's
   work id: the detail card lists every post in `posts.json` whose own `workId`
-  equals this id (newest first). So once you use one for something real, keep it
-  forever — never re-slug it.
+  equals this id — or, when a post's `workId` is an array, contains this id
+  (newest first). So once you use one for something real, keep it forever — never
+  re-slug it.
 - `label` — the display name shown next to the node. Optional: if omitted, it's
   derived from the id by dropping the leading `{type}-` segment and title-casing
   the rest (`class-dis-philosophy` → "Dis Philosophy"), so it stays coupled to

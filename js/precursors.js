@@ -928,10 +928,11 @@ function openDetail(node, event, skipCamera) {
   }
 
   // Posts — every post whose workId matches this node's id (the node id IS the
-  // work identifier; posts point back to it via their own data-only workId),
+  // work identifier; posts point back to it via their own data-only workId, a
+  // single id or an array of them — a post can belong to several works),
   // newest first, each a link to the post.
   const matchedPosts = allPosts
-    .filter((p) => p.workId === node.id)
+    .filter((p) => Array.isArray(p.workId) ? p.workId.includes(node.id) : p.workId === node.id)
     .slice()
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
   if (matchedPosts.length) {
