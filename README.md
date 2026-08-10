@@ -358,7 +358,7 @@ node automatically). Each node carries its *own* connections:
         {
           "source": "class-dis-philosophy",   // another node's id (sources are ordinary nodes)
           "strength": "engaged",              // "engaged" (default) or "aware"
-          "date": "2026-03",                  // optional — year / year-month / full date
+          "date": "2026-03",                  // optional — when you FIRST ENGAGED (year / year-month / full date)
           "thread": "existential fiction",    // optional — the through-line you were pulling
           "note": "Read for a philosophy class."  // optional story; shown on its own card
         }
@@ -426,6 +426,9 @@ node automatically). Each node carries its *own* connections:
     (e.g. `letterboxd`). Renders as "· found on X" in the detail card (the id is
     humanized, so `letterboxd` → "found on Letterboxd").
   - `date` — optional, at any precision: `"2024"`, `"2026-03"`, or `"2026-03-14"`.
+    This is **when you first engaged with the material** (sat down and read/watched
+    it), not when you first heard of it. It's what the label, the sort, and the
+    timeline scrubber use — so the timeline reads as a first-engagement history.
   - `thread` — optional. The through-line you were pulling **when you found this
     thing** (`"70s paranoia"`, `"Alain Delon"`). Tag an entry with it only if you
     discovered that thing *while following* the thread — the origin that *started*
