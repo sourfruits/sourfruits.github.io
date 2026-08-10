@@ -2759,14 +2759,16 @@ body.is-graph-faux-fs { overflow: hidden; }
 .detail-dv-date { color: var(--muted); }
 .detail-dv-thread { color: var(--muted); }
 
-/* Connections: a stats label above the list. The section grows to fill the
-   panel's remaining height; its label stays put and the list scrolls within. */
+/* Connections: a stats label above the list. The section takes only the height
+   its content needs (so Posts sits right beneath it, not shoved to the bottom),
+   but can still shrink and scroll its list when the list is long. Its label
+   stays put and the list scrolls within. */
 .detail-conn-section {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--line);
   cursor: default;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
