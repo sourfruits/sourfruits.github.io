@@ -2756,8 +2756,13 @@ body.is-graph-faux-fs { overflow: hidden; }
 .detail-discovered { margin-top: 8px; }
 .detail-dv-list { list-style: none; margin: 4px 0 0; padding: 0; color: var(--muted); font-size: var(--text-tiny); }
 .detail-dv-list li + li { margin-top: 6px; }
-.detail-dv-date { color: var(--muted); }
-.detail-dv-thread { color: var(--muted); }
+/* Date ("Aware: … · Engaged: …") and thread each sit on their own line under the
+   "Discovered via" source. Small + muted in the single-entry meta block; the
+   multi-path list keeps them at its own tiny size. */
+.detail-dv-date,
+.detail-dv-thread { margin-top: 2px; color: var(--muted); font-size: var(--text-small); }
+.detail-dv-list .detail-dv-date,
+.detail-dv-list .detail-dv-thread { font-size: var(--text-tiny); }
 
 /* Connections: a stats label above the list. The section takes only the height
    its content needs (so Posts sits right beneath it, not shoved to the bottom),
@@ -2826,6 +2831,15 @@ body.is-graph-faux-fs { overflow: hidden; }
    lowercase value. The ↳ glyph sits low, so nudge it up to align with the text. */
 .detail-conn-thread { margin-top: 3px; color: var(--muted); font-size: var(--text-tiny); }
 .detail-conn-thread .thread-arrow { position: relative; top: -4px; }
+/* Thread name link (in "Discovered via" and "Led to" thread sub-lines): bold and
+   clickable; underline on hover/focus, then selects the thread. */
+.detail-thread-link {
+  cursor: pointer;
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+}
+.detail-thread-link:hover,
+.detail-thread-link:focus-visible { text-decoration: underline; outline: none; }
 
 .detail-posts {
   flex: 0 0 auto;

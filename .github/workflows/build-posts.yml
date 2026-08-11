@@ -1,8 +1,11 @@
-name: Build posts.json
+name: Build data files
 
-# Regenerate data/posts.json from the Markdown files in data/posts/ on every
-# push to main, then commit it back — so adding/editing a post is just editing a
-# .md file and pushing; the JSON the site reads is always rebuilt automatically.
+# Regenerate the data JSON the site reads from its hand-edited sources on every
+# push to main, then commit it back:
+#   data/posts/*.md    → data/posts.json      (scripts/build-posts.mjs)
+#   data/precursors.txt → data/precursors.json (scripts/build-precursors.mjs)
+# So adding/editing a post or a Precursors node is just editing the source and
+# pushing; the JSON the site reads is always rebuilt automatically.
 
 on:
   push:
@@ -10,16 +13,18 @@ on:
     # Only run when something that affects the output changes.
     paths:
       - "data/posts/**"
+      - "data/precursors.txt"
       - "scripts/build-posts.mjs"
+      - "scripts/build-precursors.mjs"
       - ".github/workflows/build-posts.yml"
 
-# Needed so the workflow's GITHUB_TOKEN can push the regenerated file back.
+# Needed so the workflow's GITHUB_TOKEN can push the regenerated files back.
 permissions:
   contents: write
 
 # If several pushes land quickly, let a newer run supersede an in-flight one.
 concurrency:
-  group: build-posts-${{ github.ref }}
+  group: build-data-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -34,19 +39,23 @@ jobs:
         with:
           node-version: "20"
 
-      # Fails the job (non-zero exit) if any .md is malformed / missing a field,
-      # so a broken post never gets committed as a broken posts.json.
+      # Each build fails the job (non-zero exit) if its source is malformed /
+      # missing a required field, so a broken source never gets committed as
+      # broken JSON.
       - name: Build posts.json
         run: node scripts/build-posts.mjs
 
-      - name: Commit regenerated posts.json (only if it changed)
+      - name: Build precursors.json
+        run: node scripts/build-precursors.mjs
+
+      - name: Commit regenerated JSON (only if it changed)
         run: |
-          if git diff --quiet -- data/posts.json; then
-            echo "posts.json already up to date — nothing to commit."
+          if git diff --quiet -- data/posts.json data/precursors.json; then
+            echo "data JSON already up to date — nothing to commit."
             exit 0
           fi
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/posts.json
-          git commit -m "chore: rebuild posts.json from data/posts/*.md [skip ci]"
+          git add data/posts.json data/precursors.json
+          git commit -m "chore: rebuild posts.json + precursors.json from sources [skip ci]"
           git push

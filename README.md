@@ -338,44 +338,52 @@ A view only shows nodes that actually have data for it, so nothing floats
 disconnected: Connections omits nodes with no connections, and Discovery omits
 nodes with no `discovered_via`.
 
-Its data lives in its own file, **`data/precursors.json`** — completely separate
-from `posts.json`, which it never touches. The file is a single object with one
-`nodes` array; every node is added by hand (nothing from `posts.json` becomes a
-node automatically). Each node carries its *own* connections:
+Its data lives in its own file, **`data/precursors.txt`** — a human-editable text
+format, completely separate from `posts.json`, which it never touches. **Edit the
+`.txt`, not the JSON:** running `node scripts/build-precursors.mjs` compiles it
+into `data/precursors.json` (the file the site actually reads), exactly the way
+`data/posts/*.md` compile into `data/posts.json`. A GitHub Action rebuilds the JSON
+on every push automatically, so `data/precursors.json` is **generated** — never
+hand-edit it (your changes would be overwritten on the next build). The build
+fails loudly on a malformed source (missing `label`/`kind`, a duplicate id, a bad
+relationship, an unparseable date, …), so a broken source never ships as broken
+JSON.
 
-```json
-{
-  "nodes": [
-    {
-      "id": "the-trial",                       // stable, unique, hand-picked slug
-      "label": "The Trial",                    // display name on the graph
-      "kind": "book",                          // free string: film, book, person, platform…
-      "creator": "Franz Kafka",                // optional — shown as the Author/Director line
-      "connections": [                         // bare id, or { to, relationship, note }
-        { "to": "after-hours", "relationship": "influence" }
-      ],
-      "discovered_via": [                      // optional — an ARRAY of discovery events
-        {
-          "source": "class-dis-philosophy",   // another node's id (sources are ordinary nodes)
-          "strength": "engaged",              // "engaged" (default) or "aware"
-          "date": "2026-03",                  // optional — when you FIRST ENGAGED (year / year-month / full date)
-          "thread": "existential fiction",    // optional — the through-line you were pulling
-          "note": "Read for a philosophy class."  // optional story; shown on its own card
-        }
-      ]
-    },
-    {
-      "id": "four-nights-of-a-dreamer",
-      "label": "Four Nights of a Dreamer (1971)",
-      "kind": "film",
-      "discovered_via": [                      // discovered via another node, found on a platform
-        { "source": "the-parallax-view", "mechanism": "platform-letterboxd", "date": "2026-03" }
-      ],
-      "connections": ["pickpocket"]            // bare id = untyped, plain line
-    }
-  ]
-}
+Every node is added by hand (nothing from `posts.json` becomes a node
+automatically). A `### node-id` line starts a node and it runs until the next
+`###`; each node carries its *own* connections and discovery events:
+
+```text
+### the-trial                    # "### id" starts a node — stable, unique, hand-picked slug
+label: The Trial                 # required — display name on the graph
+kind: book                       # required — free string: film, book, person, platform, class, album…
+creator: Franz Kafka             # optional — shown as the Author/Director line
+connections:                     # optional — one "- " item per line
+  - to: after-hours, relationship: influence, note: how the two connect
+  - to: brazil                   # bare "to" = untyped plain line; relationship/note optional
+discovered:                      # optional — one "- " item per line
+  - source: dis-philosophy, aware: 2024, engaged: 2026-03, thread: existential fiction, note: Read for class, mechanism: platform-letterboxd
+  - engaged: 2026-05             # every field optional, but an entry can't be empty
+
+### four-nights-of-a-dreamer
+label: Four Nights of a Dreamer (1971)
+kind: film
+connections:
+  - to: pickpocket               # bare id = untyped, plain line
+discovered:
+  - source: the-parallax-view, engaged: 2026-03
 ```
+
+Format rules: blank lines and `#` comments are ignored; a value containing a comma
+must be double-quoted (`note: "Girl, so confusing"`); dates are `YYYY`, `YYYY-MM`,
+or `YYYY-MM-DD`; a connection `relationship` (if given) must be `adaptation`,
+`influence`, `authorship`, or `thematic`; a discovery entry needs at least one
+field. `precursors.txt` opens with a commented template using every field as a
+cheat-sheet.
+
+The fields below describe both the `.txt` keys and the JSON they compile to
+(`connections` → `{ to, relationship?, note? }`; `discovered` → `discovered_via`,
+with `aware`/`engaged` becoming `awareDate`/`engagedDate`).
 
 **Node fields:**
 - `id` — stable, unique, hand-picked (not auto-generated). It's what `connections`
@@ -420,15 +428,24 @@ node automatically). Each node carries its *own* connections:
     node — an unknown source draws no edge (and logs a warning). Omit `source`
     for a discovery with no traceable origin — the node still counts as discovered
     (it just draws no edge).
-  - `strength` — `"engaged"` (default; a solid edge, *Consciousness*) or `"aware"`
-    (a dashed edge, *Awareness*, for something you'd only heard of).
+  - `awareDate` / `engagedDate` — optional, each at any precision: `"2024"`,
+    `"2026-03"`, or `"2026-03-14"`. An entry can carry either, or both:
+    - `awareDate` — when you **first heard of** the thing. On its own it draws a
+      dashed edge, labelled *Awareness* on hover, and shows as a bare `<date>` on
+      the card. It does **not** count toward a source's size.
+    - `engagedDate` — when you **first sat down** with it (read/watched). It draws
+      a solid edge, labelled *Consciousness* on hover, and counts once toward the
+      source's size. Engagement wins visually: an entry with **both** dates draws
+      the solid edge and shows the progression `<awareDate> → <engagedDate>` on the
+      card (earlier → later).
+
+    Each entry is exactly **one** discovery event — one edge, one "Led to" row,
+    one increment toward size — no matter how many dates it carries; a two-date
+    entry is never split into two. The timeline scrubber uses `engagedDate` if
+    present, else `awareDate`, so it reads as a first-engagement history.
   - `mechanism` — optional. The platform/means you actually found it through
     (e.g. `letterboxd`). Renders as "· found on X" in the detail card (the id is
     humanized, so `letterboxd` → "found on Letterboxd").
-  - `date` — optional, at any precision: `"2024"`, `"2026-03"`, or `"2026-03-14"`.
-    This is **when you first engaged with the material** (sat down and read/watched
-    it), not when you first heard of it. It's what the label, the sort, and the
-    timeline scrubber use — so the timeline reads as a first-engagement history.
   - `thread` — optional. The through-line you were pulling **when you found this
     thing** (`"70s paranoia"`, `"Alain Delon"`). Tag an entry with it only if you
     discovered that thing *while following* the thread — the origin that *started*

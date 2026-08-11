@@ -1,5 +1,5 @@
-{ 
-  "nodes": [ 
+{
+  "nodes": [
     {
       "id": "danny-h",
       "label": "Danny H",
@@ -16,7 +16,10 @@
       "kind": "film",
       "creator": "Martin Scorsese",
       "discovered_via": [
-        { "source": "letterboxd", "date": "2026-03" }
+        {
+          "source": "letterboxd",
+          "engagedDate": "2026-03"
+        }
       ]
     },
     {
@@ -25,20 +28,32 @@
       "kind": "film",
       "creator": "Brian de Palma",
       "discovered_via": [
-        { "source": "the-parallax-view-1974", "date": "2023-04", "thread": "70s paranoia" }
-      ],
-      "connections": []
+        {
+          "source": "the-parallax-view-1974",
+          "engagedDate": "2023-04",
+          "thread": "70s paranoia"
+        }
+      ]
     },
     {
       "id": "blow-up-1966",
       "label": "Blow-Up (1966)",
       "kind": "film",
       "discovered_via": [
-        { "source": "blow-out-1981", "date": "2026-03" }
+        {
+          "source": "blow-out-1981",
+          "engagedDate": "2026-03"
+        }
       ],
       "connections": [
-        { "to": "the-conversation-1974", "relationship": "influence" },
-        { "to": "blow-out-1981", "relationship": "influence" }
+        {
+          "to": "the-conversation-1974",
+          "relationship": "influence"
+        },
+        {
+          "to": "blow-out-1981",
+          "relationship": "influence"
+        }
       ]
     },
     {
@@ -46,7 +61,11 @@
       "label": "Brazil (1985)",
       "kind": "film",
       "discovered_via": [
-        { "source": "letterboxd", "date": "2026-04", "note": "Part of a Denmark movie-binge phase." }
+        {
+          "source": "letterboxd",
+          "engagedDate": "2026-04",
+          "note": "Part of a Denmark movie-binge phase."
+        }
       ]
     },
     {
@@ -55,10 +74,16 @@
       "kind": "book",
       "creator": "Albert Camus",
       "discovered_via": [
-        { "source": "camus-the-stranger", "date": "2026-04" }
+        {
+          "source": "camus-the-stranger",
+          "engagedDate": "2026-04"
+        }
       ],
       "connections": [
-        { "to": "camus-the-stranger", "relationship": "thematic" }
+        {
+          "to": "camus-the-stranger",
+          "relationship": "thematic"
+        }
       ]
     },
     {
@@ -67,7 +92,11 @@
       "kind": "book",
       "creator": "Albert Camus",
       "discovered_via": [
-        { "source": "dis-philosophy", "date": "2026-03", "note": "Borrowed from the DIS library." }
+        {
+          "source": "dis-philosophy",
+          "engagedDate": "2026-03",
+          "note": "Borrowed from the DIS library."
+        }
       ]
     },
     {
@@ -76,9 +105,11 @@
       "kind": "film",
       "creator": "Wayne Wang",
       "discovered_via": [
-        { "source": "letterboxd", "date": "2026-05" }
-      ],
-      "connections": []
+        {
+          "source": "letterboxd",
+          "engagedDate": "2026-05"
+        }
+      ]
     },
     {
       "id": "charli-xcx-music-fashion-film",
@@ -86,7 +117,11 @@
       "kind": "album",
       "creator": "Charli XCX",
       "discovered_via": [
-        { "source": "holden-t", "date": "2026-07", "note": "played Girl, so confusing on aux"}
+        {
+          "source": "holden-t",
+          "engagedDate": "2026-07",
+          "note": "played Girl, so confusing on aux"
+        }
       ]
     },
     {
@@ -95,7 +130,11 @@
       "kind": "film",
       "creator": "Olivier Assayas",
       "discovered_via": [
-        { "source": "mahjong-1996", "thread": "Virginie Ledoyen", "date": "2026-06"}
+        {
+          "source": "mahjong-1996",
+          "engagedDate": "2026-06",
+          "thread": "Virginie Ledoyen"
+        }
       ]
     },
     {
@@ -103,7 +142,9 @@
       "label": "The Criterion Channel",
       "kind": "platform",
       "discovered_via": [
-        { "source": "", "date": "2026-05" }
+        {
+          "engagedDate": "2026-05"
+        }
       ]
     },
     {
@@ -111,7 +152,9 @@
       "label": "DIS Philosophy",
       "kind": "class",
       "discovered_via": [
-        { "date": "2026-01" }
+        {
+          "engagedDate": "2026-01"
+        }
       ]
     },
     {
@@ -119,10 +162,16 @@
       "label": "Crime and Punishment",
       "kind": "book",
       "discovered_via": [
-        { "strength": "aware", "source": "fyodor-dostoevsky", "date": "2026-05" }
+        {
+          "source": "fyodor-dostoevsky",
+          "awareDate": "2026-05"
+        }
       ],
       "connections": [
-        { "to": "pickpocket-1959", "relationship": "influence" }
+        {
+          "to": "pickpocket-1959",
+          "relationship": "influence"
+        }
       ]
     },
     {
@@ -130,10 +179,17 @@
       "label": "Notes From Underground",
       "kind": "book",
       "discovered_via": [
-        { "source": "camus-the-stranger", "date": "2026-05", "thread": "existential fiction" }
+        {
+          "source": "camus-the-stranger",
+          "engagedDate": "2026-05",
+          "thread": "existential fiction"
+        }
       ],
       "connections": [
-        { "to": "camus-the-stranger", "relationship": "influence" }
+        {
+          "to": "camus-the-stranger",
+          "relationship": "influence"
+        }
       ]
     },
     {
@@ -141,11 +197,21 @@
       "label": "White Nights",
       "kind": "book",
       "discovered_via": [
-        { "source": "fyodor-dostoevsky", "date": "2026-05", "note": "Picked it up in a bookstore in Denmark for the flight home." }
+        {
+          "source": "fyodor-dostoevsky",
+          "engagedDate": "2026-05",
+          "note": "Picked it up in a bookstore in Denmark for the flight home."
+        }
       ],
       "connections": [
-        { "to": "four-nights-of-a-dreamer-1971", "relationship": "adaptation" },
-        { "to": "le-notti-bianche-1957", "relationship": "adaptation" }
+        {
+          "to": "four-nights-of-a-dreamer-1971",
+          "relationship": "adaptation"
+        },
+        {
+          "to": "le-notti-bianche-1957",
+          "relationship": "adaptation"
+        }
       ]
     },
     {
@@ -153,7 +219,10 @@
       "label": "Four Nights of a Dreamer (1971)",
       "kind": "film",
       "discovered_via": [
-        { "source": "dostoevsky-white-nights", "date": "2026-05" }
+        {
+          "source": "dostoevsky-white-nights",
+          "engagedDate": "2026-05"
+        }
       ]
     },
     {
@@ -162,7 +231,10 @@
       "kind": "film",
       "creator": "Terence Young",
       "discovered_via": [
-        { "source": "criterion-channel", "date": "2026-06" }
+        {
+          "source": "criterion-channel",
+          "engagedDate": "2026-06"
+        }
       ]
     },
     {
@@ -170,13 +242,29 @@
       "label": "Fyodor Dostoevsky",
       "kind": "author",
       "discovered_via": [
-        { "source": "dostoevsky-notes-from-underground", "date": "2026-05" }
+        {
+          "source": "dostoevsky-notes-from-underground",
+          "engagedDate": "2026-05"
+        }
       ],
       "connections": [
-        { "to": "dostoevsky-notes-from-underground", "relationship": "authorship" },
-        { "to": "dostoevsky-white-nights", "relationship": "authorship" },
-        { "to": "dostoevsky-crime-and-punishment", "relationship": "authorship" },
-        { "to": "dostoevsky-the-myth-of-sisyphus", "relationship": "influence", "note": "Camus directly cites Dostoevsky in the Myth of Sisyphus." }
+        {
+          "to": "dostoevsky-notes-from-underground",
+          "relationship": "authorship"
+        },
+        {
+          "to": "dostoevsky-white-nights",
+          "relationship": "authorship"
+        },
+        {
+          "to": "dostoevsky-crime-and-punishment",
+          "relationship": "authorship"
+        },
+        {
+          "to": "dostoevsky-the-myth-of-sisyphus",
+          "relationship": "influence",
+          "note": "Camus directly cites Dostoevsky in the Myth of Sisyphus."
+        }
       ]
     },
     {
@@ -184,7 +272,11 @@
       "label": "Ghost Dog: The Way of the Samurai (1999)",
       "kind": "film",
       "discovered_via": [
-        { "source": "le-samourai-1967", "date": "2026-04", "thread": "lone operator"}
+        {
+          "source": "le-samourai-1967",
+          "engagedDate": "2026-04",
+          "thread": "lone operator"
+        }
       ]
     },
     {
@@ -192,11 +284,20 @@
       "label": "Jim Jarmusch",
       "kind": "director",
       "discovered_via": [
-        { "source": "ghost-dog-1999", "date": "2026-05" }
+        {
+          "source": "ghost-dog-1999",
+          "engagedDate": "2026-05"
+        }
       ],
       "connections": [
-        { "to": "stranger-than-paradise-1984", "relationship": "authorship" },
-        { "to": "ghost-dog-1999", "relationship": "authorship" }
+        {
+          "to": "stranger-than-paradise-1984",
+          "relationship": "authorship"
+        },
+        {
+          "to": "ghost-dog-1999",
+          "relationship": "authorship"
+        }
       ]
     },
     {
@@ -205,13 +306,29 @@
       "kind": "book",
       "creator": "Franz Kafka",
       "discovered_via": [
-        { "source": "camus-the-stranger", "date": "2026-06", "thread": "existential fiction" }
+        {
+          "source": "camus-the-stranger",
+          "engagedDate": "2026-06",
+          "thread": "existential fiction"
+        }
       ],
       "connections": [
-        { "to": "kafka-the-trial-film", "relationship": "adaptation" },
-        { "to": "camus-the-stranger", "relationship": "influence" },
-        { "to": "after-hours-1985", "relationship": "influence" },
-        { "to": "brazil-1985", "relationship": "influence" }
+        {
+          "to": "kafka-the-trial-film",
+          "relationship": "adaptation"
+        },
+        {
+          "to": "camus-the-stranger",
+          "relationship": "influence"
+        },
+        {
+          "to": "after-hours-1985",
+          "relationship": "influence"
+        },
+        {
+          "to": "brazil-1985",
+          "relationship": "influence"
+        }
       ]
     },
     {
@@ -219,11 +336,21 @@
       "label": "Either/Or",
       "kind": "book",
       "discovered_via": [
-        { "strength": "aware", "source": "soren-kierkegaard", "date": "2024" },
-        { "source": "dis-philosophy", "date": "2026-03", "note": "Read excerpt: The Unhappiest One" }
+        {
+          "source": "soren-kierkegaard",
+          "awareDate": "2024"
+        },
+        {
+          "source": "dis-philosophy",
+          "engagedDate": "2026-03",
+          "note": "Read excerpt: The Unhappiest One"
+        }
       ],
       "connections": [
-        { "to": "melancholia-2011", "relationship": "thematic" }
+        {
+          "to": "melancholia-2011",
+          "relationship": "thematic"
+        }
       ]
     },
     {
@@ -231,7 +358,10 @@
       "label": "Le Notti Bianche (1957)",
       "kind": "film",
       "discovered_via": [
-        { "source": "dostoevsky-white-nights", "date": "2026-05" }
+        {
+          "source": "dostoevsky-white-nights",
+          "engagedDate": "2026-05"
+        }
       ]
     },
     {
@@ -240,13 +370,34 @@
       "kind": "film",
       "creator": "Jean-Pierre Melville",
       "discovered_via": [
-        { "source": "the-parallax-view-1974", "date": "2026-03", "mechanism": "letterboxd", "note": "this movie is soooooooooooooo cool and awesome and it inspired me to want to be a better man honestly", "thread": "70s paranoia" }
+        {
+          "source": "the-parallax-view-1974",
+          "engagedDate": "2026-03",
+          "thread": "70s paranoia",
+          "note": "this movie is soooooooooooooo cool and awesome and it inspired me to want to be a better man honestly",
+          "mechanism": "letterboxd"
+        }
       ],
       "connections": [
-        { "to": "ghost-dog-1999", "relationship": "influence", "note": "Jarmusch built Ghost Dog on Le Samouraï's lone-hitman code and stillness." },
-        { "to": "the-conformist-1970", "relationship": "influence", "note": "Main character is a Jef Costello cosplayer." },
-        { "to": "pickpocket-1959", "relationship": "thematic" },
-        { "to": "the-conversation-1974", "relationship": "thematic", "note": "Existentialist studies of lone operators who build their identity around mastery of their craft" }
+        {
+          "to": "ghost-dog-1999",
+          "relationship": "influence",
+          "note": "Jarmusch built Ghost Dog on Le Samouraï's lone-hitman code and stillness."
+        },
+        {
+          "to": "the-conformist-1970",
+          "relationship": "influence",
+          "note": "Main character is a Jef Costello cosplayer."
+        },
+        {
+          "to": "pickpocket-1959",
+          "relationship": "thematic"
+        },
+        {
+          "to": "the-conversation-1974",
+          "relationship": "thematic",
+          "note": "Existentialist studies of lone operators who build their identity around mastery of their craft"
+        }
       ]
     },
     {
@@ -260,7 +411,10 @@
       "kind": "film",
       "creator": "Edward Yang",
       "discovered_via": [
-        { "source": "letterboxd", "date": "2026-05" }
+        {
+          "source": "letterboxd",
+          "engagedDate": "2026-05"
+        }
       ]
     },
     {
@@ -268,10 +422,16 @@
       "label": "Melancholia (2011)",
       "kind": "film",
       "discovered_via": [
-        { "source": "dis-philosophy", "date": "2026-03" }
+        {
+          "source": "dis-philosophy",
+          "engagedDate": "2026-03"
+        }
       ],
       "connections": [
-        { "to": "kierkegaard-either-or", "relationship": "thematic" }
+        {
+          "to": "kierkegaard-either-or",
+          "relationship": "thematic"
+        }
       ]
     },
     {
@@ -280,7 +440,11 @@
       "kind": "book",
       "creator": "Walker Percy",
       "discovered_via": [
-        { "source": "camus-the-stranger", "date": "2026-04", "thread": "existential fiction" }
+        {
+          "source": "camus-the-stranger",
+          "engagedDate": "2026-04",
+          "thread": "existential fiction"
+        }
       ]
     },
     {
@@ -288,7 +452,12 @@
       "label": "Pickpocket (1959)",
       "kind": "film",
       "discovered_via": [
-        { "source": "le-samourai-1967", "date": "2026-04", "thread": "lone operator", "note": "Bresson/Melville ascetic dialogue" }
+        {
+          "source": "le-samourai-1967",
+          "engagedDate": "2026-04",
+          "thread": "lone operator",
+          "note": "Bresson/Melville ascetic dialogue"
+        }
       ]
     },
     {
@@ -297,7 +466,11 @@
       "kind": "film",
       "creator": "René Clément",
       "discovered_via": [
-        { "source": "le-samourai-1967", "date": "2026-05", "thread": "Alain Delon" }
+        {
+          "source": "le-samourai-1967",
+          "engagedDate": "2026-05",
+          "thread": "Alain Delon"
+        }
       ]
     },
     {
@@ -305,11 +478,20 @@
       "label": "Robert Bresson",
       "kind": "director",
       "discovered_via": [
-        { "source": "pickpocket-1959", "date": "2026-05" }
+        {
+          "source": "pickpocket-1959",
+          "engagedDate": "2026-05"
+        }
       ],
       "connections": [
-        { "to": "pickpocket-1959", "relationship": "authorship" },
-        { "to": "four-nights-of-a-dreamer-1971", "relationship": "authorship" }
+        {
+          "to": "pickpocket-1959",
+          "relationship": "authorship"
+        },
+        {
+          "to": "four-nights-of-a-dreamer-1971",
+          "relationship": "authorship"
+        }
       ]
     },
     {
@@ -317,14 +499,32 @@
       "label": "Soren Kierkegaard",
       "kind": "philosopher",
       "discovered_via": [
-        { "strength": "aware", "source": "danny-h", "date": "2024" },
-        { "strength": "engaged", "source": "dis-philosophy", "date": "2026-03" }
+        {
+          "source": "danny-h",
+          "awareDate": "2024"
+        },
+        {
+          "source": "dis-philosophy",
+          "engagedDate": "2026-03"
+        }
       ],
       "connections": [
-        { "to": "kierkegaard-either-or", "relationship": "authorship" },
-        { "to": "camus-the-myth-of-sisyphus", "relationship": "influence" },
-        { "to": "camus-the-stranger", "relationship": "influence" },
-        { "to": "percy-the-moviegoer", "relationship": "influence" }
+        {
+          "to": "kierkegaard-either-or",
+          "relationship": "authorship"
+        },
+        {
+          "to": "camus-the-myth-of-sisyphus",
+          "relationship": "influence"
+        },
+        {
+          "to": "camus-the-stranger",
+          "relationship": "influence"
+        },
+        {
+          "to": "percy-the-moviegoer",
+          "relationship": "influence"
+        }
       ]
     },
     {
@@ -333,7 +533,11 @@
       "kind": "book",
       "creator": "Susan Sontag",
       "discovered_via": [
-        { "source": "charli-xcx-music-fashion-film", "date": "2026-08", "note": "camera: the sociology of being on film"}
+        {
+          "source": "charli-xcx-music-fashion-film",
+          "engagedDate": "2026-08",
+          "note": "camera: the sociology of being on film"
+        }
       ]
     },
     {
@@ -341,11 +545,21 @@
       "label": "Stranger Than Paradise (1984)",
       "kind": "film",
       "discovered_via": [
-        { "strength": "aware", "source": "jim-jarmusch" },
-        { "strength": "engaged", "source": "dis-philosophy", "date": "2026-05", "note": "Assigned/chosen for an essay on boredom; loved it." }
+        {
+          "source": "jim-jarmusch"
+        },
+        {
+          "source": "dis-philosophy",
+          "engagedDate": "2026-05",
+          "note": "Assigned/chosen for an essay on boredom; loved it."
+        }
       ],
       "connections": [
-        { "to": "chan-is-missing-1982", "relationship": "thematic", "note": "Influential black and white 1980s indie film about aimless wandering" }
+        {
+          "to": "chan-is-missing-1982",
+          "relationship": "thematic",
+          "note": "Influential black and white 1980s indie film about aimless wandering"
+        }
       ]
     },
     {
@@ -354,7 +568,11 @@
       "kind": "film",
       "creator": "Bernardo Bertolucci",
       "discovered_via": [
-        { "source": "the-parallax-view-1974", "date": "2026-05", "thread": "70s paranoia" }
+        {
+          "source": "the-parallax-view-1974",
+          "engagedDate": "2026-05",
+          "thread": "70s paranoia"
+        }
       ]
     },
     {
@@ -363,11 +581,18 @@
       "kind": "film",
       "creator": "Francis Ford Coppola",
       "discovered_via": [
-        { "strength": "aware", "source": "the-parallax-view-1974", "date": "2023-04", "thread": "70s paranoia" },
-        { "source": "the-parallax-view-1974", "date": "2026-04", "thread": "70s paranoia" }
+        {
+          "source": "the-parallax-view-1974",
+          "awareDate": "2023-04",
+          "engagedDate": "2026-04",
+          "thread": "70s paranoia"
+        }
       ],
       "connections": [
-        { "to": "the-parallax-view-1974", "relationship": "thematic" }
+        {
+          "to": "the-parallax-view-1974",
+          "relationship": "thematic"
+        }
       ]
     },
     {
@@ -376,7 +601,10 @@
       "kind": "film",
       "creator": "Alan J. Pakula",
       "discovered_via": [
-        { "date": "2023-04", "note": "General interest in spy/paranoia thrillers around this time; no specific trigger." }
+        {
+          "engagedDate": "2023-04",
+          "note": "General interest in spy/paranoia thrillers around this time; no specific trigger."
+        }
       ]
     },
     {
@@ -385,7 +613,10 @@
       "kind": "film",
       "creator": "Katsuhito Ishii",
       "discovered_via": [
-        { "source": "letterboxd", "date": "2026-05" }
+        {
+          "source": "letterboxd",
+          "engagedDate": "2026-05"
+        }
       ]
     },
     {
@@ -394,7 +625,10 @@
       "kind": "film",
       "creator": "Orson Welles",
       "discovered_via": [
-        { "source": "kafka-the-trial", "date": "2026-06" }
+        {
+          "source": "kafka-the-trial",
+          "engagedDate": "2026-06"
+        }
       ]
     },
     {
@@ -403,7 +637,11 @@
       "kind": "film",
       "creator": "Michael Mann",
       "discovered_via": [
-        { "source": "le-samourai-1967", "date": "2026-05", "thread": "lone operator" }
+        {
+          "source": "le-samourai-1967",
+          "engagedDate": "2026-05",
+          "thread": "lone operator"
+        }
       ]
     }
   ]

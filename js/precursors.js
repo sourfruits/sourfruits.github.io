@@ -349,19 +349,23 @@ function humanizeId(id) {
   return rest.map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
 }
 
-// A node's discovered_via as a normalized array of { source, note?, date? }.
-// Tolerates the old single-object form as well as a missing field. Entries need
-// not carry a source — a source-less entry (date/note only) means the thing
-// entered awareness with no traceable origin; it draws no edge but still counts
-// as a discovery (the node shows as an orphan in Discovery view).
+// A node's discovered_via as a normalized array of
+// { source, note?, awareDate?, engagedDate? }. Each entry is ONE discovery event
+// carrying an awareDate (when you first heard of it), an engagedDate (when you
+// sat down with it), or both. Tolerates the old single-object form as well as a
+// missing field. Entries need not carry a source — a source-less entry (date/note
+// only) means the thing entered awareness with no traceable origin; it draws no
+// edge but still counts as a discovery (the node shows as an orphan in Discovery
+// view).
 function discoveredVia(node) {
   const dv = node.discovered_via;
   const arr = Array.isArray(dv) ? dv : (dv ? [dv] : []);
-  return arr.filter((d) => d && (d.source || d.note || d.date || d.mechanism));
+  return arr.filter((d) => d && (d.source || d.note || d.awareDate || d.engagedDate || d.mechanism));
 }
 
 // Format a discovery date at whatever precision it was given: "2024" (year),
-// "2026-03" (→ "Mar 2026"), or a full "2026-03-14" (→ "Mar 14, 2026").
+// "2026-03" (→ "Mar 2026"), or a full "2026-03-14" (→ "Mar 14, 2026"). The card
+// composes the aware/engaged labels around this (see dvDate in openDetail).
 function formatDiscoveryDate(s) {
   if (!s) return "";
   const parts = String(s).split("-");
@@ -411,17 +415,21 @@ function buildDiscovery(data) {
       }
       const note = dv.note || "";
       const thread = dv.thread || "";
-      // "aware" (just heard of it) vs "engaged" (sat down with it); defaults to
-      // engaged. Aware edges draw dashed. Every entry draws its own edge — a
-      // node can have two (a distinct earlier "aware" and a later "engaged").
-      const strength = dv.strength === "aware" ? "aware" : "engaged";
+      // One entry = one discovery event = one edge, whether it carries an
+      // awareDate (just heard of it), an engagedDate (sat down with it), or both.
+      // An engagedDate wins visually: the edge reads as "engaged" (solid) whenever
+      // it's present, and only "aware" (dashed) when there's an awareDate alone.
+      const engaged = !!dv.engagedDate;
+      const strength = engaged ? "engaged" : "aware";
       include(src);
       links.push({ source: src, target: n.id, type: "discovery", directional: true, note, strength });
       // The source's "Led to" row shows the thread (the pull), not the story note.
+      // One row per entry (per discovered thing) — never split by date.
       if (!ledTo.has(src)) ledTo.set(src, []);
       ledTo.get(src).push({ to: n.id, thread });
-      // Only "consciousness" (engaged) discoveries count toward size.
-      if (strength === "engaged") consciousnessOut.set(src, (consciousnessOut.get(src) || 0) + 1);
+      // Only "consciousness" (engaged) discoveries count toward size — once per
+      // entry that carries an engagedDate, even if it also carries an awareDate.
+      if (engaged) consciousnessOut.set(src, (consciousnessOut.get(src) || 0) + 1);
     });
   });
 
@@ -765,11 +773,19 @@ function capFirst(s) {
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 }
 
+// A thread name rendered as a bold, clickable link — clicking (or Enter/Space)
+// selects that thread, highlighting it in the graph just like the thread menu.
+// data-thread carries the raw (lowercase) value; the label shows capitalized.
+function threadLink(thread) {
+  const label = escapeHTML(capFirst(thread));
+  return `<span class="detail-thread-link" data-thread="${escapeHTML(thread)}" role="button" tabindex="0" title="Highlight the ${label} thread">${label}</span>`;
+}
+
 // The "↳ Thread: X" sub-line, shown under a source's "Led to" rows. The ↳ is
 // nudged up in CSS so it aligns with the text.
 function threadLine(thread) {
   if (!thread) return "";
-  return `<div class="detail-conn-thread"><span class="thread-arrow">↳</span> Thread: ${escapeHTML(capFirst(thread))}</div>`;
+  return `<div class="detail-conn-thread"><span class="thread-arrow">↳</span> Thread: ${threadLink(thread)}</div>`;
 }
 
 // One connection row: relationship label (coloured to match its edge) with a
@@ -894,18 +910,31 @@ function openDetail(node, event, skipCamera) {
     const label = escapeHTML(other.label);
     return `<span class="detail-source-link" data-node-id="${escapeHTML(d.source)}" role="button" tabindex="0" title="Open ${label}">${label}</span>`;
   };
-  // Date and thread both ride inline on the "Discovered via" (origin) line; the
-  // story note is the line below. NOTE: `mechanism` (e.g. "letterboxd") is kept
-  // in the data but NOT displayed anywhere right now — it used to render as
-  // "· found on X".
-  const dvDate = (d) => (d.date ? ` <span class="detail-dv-date">· ${escapeHTML(formatDiscoveryDate(d.date))}</span>` : "");
-  const dvThread = (d) => (d.thread ? ` <span class="detail-dv-thread">· Thread: ${escapeHTML(capFirst(d.thread))}</span>` : "");
+  // The date + thread each get their OWN line below the "Discovered via" source.
+  // The engaged date shows bare (the usual reading); an aware date is labelled
+  // "Aware <date>" (no colon) so the distinction reads as text on the card (the
+  // graph edge's dash style isn't visible from here). With both, engaged leads,
+  // then "· Aware <date>":
+  //   both        → "Apr 2026 · Aware 2023"
+  //   engaged only→ "Apr 2026"
+  //   aware only  → "Aware 2024"
+  // Empty (no markup) when the entry carries no date / no thread. NOTE: `mechanism`
+  // (e.g. "letterboxd") is kept in the data but NOT displayed anywhere right now —
+  // it used to render as "· found on X".
+  const dvDate = (d) => {
+    const parts = [];
+    if (d.engagedDate) parts.push(escapeHTML(formatDiscoveryDate(d.engagedDate)));
+    if (d.awareDate) parts.push(`Aware ${escapeHTML(formatDiscoveryDate(d.awareDate))}`);
+    return parts.length ? `<div class="detail-dv-date">${parts.join(" · ")}</div>` : "";
+  };
+  const dvThread = (d) => (d.thread ? `<div class="detail-dv-thread">Thread: ${threadLink(d.thread)}</div>` : "");
   // Hairline separating the title block from the metadata (Discovery only — in
   // Connections the connections section's own top border does the separating).
   if (currentMode === "discovery" && dvs.length) head += `<hr class="detail-rule">`;
   if (currentMode === "discovery" && dvs.length === 1) {
     const d = dvs[0];
-    body += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvDate(d)}${dvThread(d)}</div>`;
+    body += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}</div>`;
+    body += dvDate(d) + dvThread(d);
     if (d.note) body += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
   } else if (currentMode === "discovery" && dvs.length > 1) {
     const items = dvs.map((d) => {
@@ -1007,12 +1036,19 @@ if (detail) {
     const other = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
     if (other) openDetail(other);   // no event → pan the camera to trace to it
   };
+  // Clicking a thread name selects that thread (highlights it in the graph, same
+  // as the thread menu). Checked before the node link so a thread sub-line inside
+  // a row never falls through to opening a node.
   detail.addEventListener("click", (e) => {
+    const threadEl = e.target.closest("[data-thread]");
+    if (threadEl && detail.contains(threadEl)) { selectThread(threadEl.getAttribute("data-thread")); return; }
     const link = e.target.closest("[data-node-id]");
     if (link && detail.contains(link)) openLinked(link);
   });
   detail.addEventListener("keydown", (e) => {
     if (e.key !== "Enter" && e.key !== " ") return;
+    const threadEl = e.target.closest("[data-thread]");
+    if (threadEl && detail.contains(threadEl)) { e.preventDefault(); selectThread(threadEl.getAttribute("data-thread")); return; }
     const link = e.target.closest("[data-node-id]");
     if (link && detail.contains(link)) { e.preventDefault(); openLinked(link); }
   });
@@ -1529,13 +1565,22 @@ function dateKey(s) {
   return y * 12 + (m - 1);
 }
 
-// The month a node was first discovered (earliest date across its dv entries),
-// or null if it has no dated discovery (those stay visible at every position).
+// A single representative date for a discovery entry: its engagedDate if present,
+// otherwise its awareDate. The timeline reads as an engagement history, only
+// falling back to awareness when there's no engagement date.
+function entryTimelineDate(d) {
+  return d.engagedDate || d.awareDate || null;
+}
+
+// The month a node was first discovered (earliest representative date across its
+// dv entries), or null if it has no dated discovery (those stay visible at every
+// position).
 function nodeDiscoveryKey(node) {
   let min = Infinity;
   discoveredVia(node).forEach((d) => {
-    if (!d.date) return;
-    const k = dateKey(d.date);
+    const date = entryTimelineDate(d);
+    if (!date) return;
+    const k = dateKey(date);
     if (k != null && k < min) min = k;
   });
   return isFinite(min) ? min : null;
@@ -1549,8 +1594,9 @@ function collectTimeline() {
   let min = Infinity, max = -Infinity;
   (rawData && rawData.nodes ? rawData.nodes : []).forEach((n) => {
     discoveredVia(n).forEach((d) => {
-      if (!d.date) return;
-      const k = dateKey(d.date);
+      const date = entryTimelineDate(d);
+      if (!date) return;
+      const k = dateKey(date);
       if (k == null) return;
       if (k < min) min = k;
       if (k > max) max = k;

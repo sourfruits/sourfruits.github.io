@@ -1,0 +1,338 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# data/precursors.txt — the hand-edited source for the Precursors graph.
+#
+# Running  node scripts/build-precursors.mjs  compiles this into
+# data/precursors.json, which the site actually reads. Edit THIS file, not the
+# JSON (the JSON is generated and overwritten on every build). Same relationship
+# as data/posts/*.md → data/posts.json.
+#
+# ── Format cheat-sheet — one node using every possible field ──────────────────
+#
+# ### template-node-id            # "### id" starts a node; it runs until the next "###"
+# label: Display Name             # required
+# kind: film                      # required — free string (film, book, person, platform, class, album, …)
+# creator: Some Person            # optional — the Author/Director byline
+# connections:                    # optional — each item on its own indented "- " line
+#   - to: other-node-id, relationship: influence, note: how the two connect
+#   - to: another-node-id         # relationship + note optional; a bare "to" is a plain line
+#                                 # relationship, if given, must be: adaptation, influence, authorship, thematic
+# discovered:                     # optional — each item on its own indented "- " line
+#   - source: some-node-id, aware: 2023-04, engaged: 2026-05, thread: 70s paranoia, note: the story, mechanism: platform-letterboxd
+#   - aware: 2024                 # every field optional, but an entry can't be empty
+#                                 # dates are YYYY, YYYY-MM, or YYYY-MM-DD
+#
+# Notes:
+#   • Blank lines and lines starting with "#" are ignored.
+#   • A value containing a comma must be quoted:  note: "Girl, so confusing".
+#   • label + kind are required; a discovery entry needs at least one field.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+### danny-h
+label: Danny H
+kind: person
+
+### holden-t
+label: Holden T
+kind: person
+
+### after-hours-1985
+label: After Hours (1985)
+kind: film
+creator: Martin Scorsese
+discovered:
+  - source: letterboxd, engaged: 2026-03
+
+### blow-out-1981
+label: Blow Out (1981)
+kind: film
+creator: Brian de Palma
+discovered:
+  - source: the-parallax-view-1974, engaged: 2023-04, thread: 70s paranoia
+
+### blow-up-1966
+label: Blow-Up (1966)
+kind: film
+connections:
+  - to: the-conversation-1974, relationship: influence
+  - to: blow-out-1981, relationship: influence
+discovered:
+  - source: blow-out-1981, engaged: 2026-03
+
+### brazil-1985
+label: Brazil (1985)
+kind: film
+discovered:
+  - source: letterboxd, engaged: 2026-04, note: Part of a Denmark movie-binge phase.
+
+### camus-the-myth-of-sisyphus
+label: The Myth of Sisyphus
+kind: book
+creator: Albert Camus
+connections:
+  - to: camus-the-stranger, relationship: thematic
+discovered:
+  - source: camus-the-stranger, engaged: 2026-04
+
+### camus-the-stranger
+label: The Stranger
+kind: book
+creator: Albert Camus
+discovered:
+  - source: dis-philosophy, engaged: 2026-03, note: Borrowed from the DIS library.
+
+### chan-is-missing-1982
+label: Chan Is Missing (1982)
+kind: film
+creator: Wayne Wang
+discovered:
+  - source: letterboxd, engaged: 2026-05
+
+### charli-xcx-music-fashion-film
+label: "Music, Fashion, Film"
+kind: album
+creator: Charli XCX
+discovered:
+  - source: holden-t, engaged: 2026-07, note: "played Girl, so confusing on aux"
+
+### cold-water-1994
+label: Cold Water (1994)
+kind: film
+creator: Olivier Assayas
+discovered:
+  - source: mahjong-1996, engaged: 2026-06, thread: Virginie Ledoyen
+
+### criterion-channel
+label: The Criterion Channel
+kind: platform
+discovered:
+  - engaged: 2026-05
+
+### dis-philosophy
+label: DIS Philosophy
+kind: class
+discovered:
+  - engaged: 2026-01
+
+### dostoevsky-crime-and-punishment
+label: Crime and Punishment
+kind: book
+connections:
+  - to: pickpocket-1959, relationship: influence
+discovered:
+  - source: fyodor-dostoevsky, aware: 2026-05
+
+### dostoevsky-notes-from-underground
+label: Notes From Underground
+kind: book
+connections:
+  - to: camus-the-stranger, relationship: influence
+discovered:
+  - source: camus-the-stranger, engaged: 2026-05, thread: existential fiction
+
+### dostoevsky-white-nights
+label: White Nights
+kind: book
+connections:
+  - to: four-nights-of-a-dreamer-1971, relationship: adaptation
+  - to: le-notti-bianche-1957, relationship: adaptation
+discovered:
+  - source: fyodor-dostoevsky, engaged: 2026-05, note: Picked it up in a bookstore in Denmark for the flight home.
+
+### four-nights-of-a-dreamer-1971
+label: Four Nights of a Dreamer (1971)
+kind: film
+discovered:
+  - source: dostoevsky-white-nights, engaged: 2026-05
+
+### from-russia-with-love-1963
+label: From Russia With Love (1963)
+kind: film
+creator: Terence Young
+discovered:
+  - source: criterion-channel, engaged: 2026-06
+
+### fyodor-dostoevsky
+label: Fyodor Dostoevsky
+kind: author
+connections:
+  - to: dostoevsky-notes-from-underground, relationship: authorship
+  - to: dostoevsky-white-nights, relationship: authorship
+  - to: dostoevsky-crime-and-punishment, relationship: authorship
+  - to: dostoevsky-the-myth-of-sisyphus, relationship: influence, note: Camus directly cites Dostoevsky in the Myth of Sisyphus.
+discovered:
+  - source: dostoevsky-notes-from-underground, engaged: 2026-05
+
+### ghost-dog-1999
+label: Ghost Dog: The Way of the Samurai (1999)
+kind: film
+discovered:
+  - source: le-samourai-1967, engaged: 2026-04, thread: lone operator
+
+### jim-jarmusch
+label: Jim Jarmusch
+kind: director
+connections:
+  - to: stranger-than-paradise-1984, relationship: authorship
+  - to: ghost-dog-1999, relationship: authorship
+discovered:
+  - source: ghost-dog-1999, engaged: 2026-05
+
+### kafka-the-trial
+label: The Trial
+kind: book
+creator: Franz Kafka
+connections:
+  - to: kafka-the-trial-film, relationship: adaptation
+  - to: camus-the-stranger, relationship: influence
+  - to: after-hours-1985, relationship: influence
+  - to: brazil-1985, relationship: influence
+discovered:
+  - source: camus-the-stranger, engaged: 2026-06, thread: existential fiction
+
+### kierkegaard-either-or
+label: Either/Or
+kind: book
+connections:
+  - to: melancholia-2011, relationship: thematic
+discovered:
+  - source: soren-kierkegaard, aware: 2024
+  - source: dis-philosophy, engaged: 2026-03, note: Read excerpt: The Unhappiest One
+
+### le-notti-bianche-1957
+label: Le Notti Bianche (1957)
+kind: film
+discovered:
+  - source: dostoevsky-white-nights, engaged: 2026-05
+
+### le-samourai-1967
+label: Le Samouraï (1967)
+kind: film
+creator: Jean-Pierre Melville
+connections:
+  - to: ghost-dog-1999, relationship: influence, note: Jarmusch built Ghost Dog on Le Samouraï's lone-hitman code and stillness.
+  - to: the-conformist-1970, relationship: influence, note: Main character is a Jef Costello cosplayer.
+  - to: pickpocket-1959, relationship: thematic
+  - to: the-conversation-1974, relationship: thematic, note: Existentialist studies of lone operators who build their identity around mastery of their craft
+discovered:
+  - source: the-parallax-view-1974, engaged: 2026-03, thread: 70s paranoia, mechanism: letterboxd, note: this movie is soooooooooooooo cool and awesome and it inspired me to want to be a better man honestly
+
+### letterboxd
+label: Letterboxd
+kind: platform
+
+### mahjong-1996
+label: Mahjong (1996)
+kind: film
+creator: Edward Yang
+discovered:
+  - source: letterboxd, engaged: 2026-05
+
+### melancholia
+label: Melancholia (2011)
+kind: film
+connections:
+  - to: kierkegaard-either-or, relationship: thematic
+discovered:
+  - source: dis-philosophy, engaged: 2026-03
+
+### percy-the-moviegoer
+label: The Moviegoer
+kind: book
+creator: Walker Percy
+discovered:
+  - source: camus-the-stranger, engaged: 2026-04, thread: existential fiction
+
+### pickpocket-1959
+label: Pickpocket (1959)
+kind: film
+discovered:
+  - source: le-samourai-1967, engaged: 2026-04, thread: lone operator, note: Bresson/Melville ascetic dialogue
+
+### purple-noon-1960
+label: Purple Noon (1960)
+kind: film
+creator: René Clément
+discovered:
+  - source: le-samourai-1967, engaged: 2026-05, thread: Alain Delon
+
+### robert-bresson
+label: Robert Bresson
+kind: director
+connections:
+  - to: pickpocket-1959, relationship: authorship
+  - to: four-nights-of-a-dreamer-1971, relationship: authorship
+discovered:
+  - source: pickpocket-1959, engaged: 2026-05
+
+### soren-kierkegaard
+label: Soren Kierkegaard
+kind: philosopher
+connections:
+  - to: kierkegaard-either-or, relationship: authorship
+  - to: camus-the-myth-of-sisyphus, relationship: influence
+  - to: camus-the-stranger, relationship: influence
+  - to: percy-the-moviegoer, relationship: influence
+discovered:
+  - source: danny-h, aware: 2024
+  - source: dis-philosophy, engaged: 2026-03
+
+### sontag-on-photography
+label: On Photography
+kind: book
+creator: Susan Sontag
+discovered:
+  - source: charli-xcx-music-fashion-film, engaged: 2026-08, note: camera: the sociology of being on film
+
+### stranger-than-paradise-1984
+label: Stranger Than Paradise (1984)
+kind: film
+connections:
+  - to: chan-is-missing-1982, relationship: thematic, note: Influential black and white 1980s indie film about aimless wandering
+discovered:
+  - source: jim-jarmusch
+  - source: dis-philosophy, engaged: 2026-05, note: Assigned/chosen for an essay on boredom; loved it.
+
+### the-conformist-1970
+label: The Conformist (1970)
+kind: film
+creator: Bernardo Bertolucci
+discovered:
+  - source: the-parallax-view-1974, engaged: 2026-05, thread: 70s paranoia
+
+### the-conversation-1974
+label: The Conversation (1974)
+kind: film
+creator: Francis Ford Coppola
+connections:
+  - to: the-parallax-view-1974, relationship: thematic
+discovered:
+  - source: the-parallax-view-1974, aware: 2023-04, engaged: 2026-04, thread: 70s paranoia
+
+### the-parallax-view-1974
+label: The Parallax View (1974)
+kind: film
+creator: Alan J. Pakula
+discovered:
+  - engaged: 2023-04, note: General interest in spy/paranoia thrillers around this time; no specific trigger.
+
+### the-taste-of-tea-2004
+label: The Taste of Tea (2004)
+kind: film
+creator: Katsuhito Ishii
+discovered:
+  - source: letterboxd, engaged: 2026-05
+
+### the-trial-1962
+label: The Trial (1962)
+kind: film
+creator: Orson Welles
+discovered:
+  - source: kafka-the-trial, engaged: 2026-06
+
+### thief-1981
+label: Thief (1981)
+kind: film
+creator: Michael Mann
+discovered:
+  - source: le-samourai-1967, engaged: 2026-05, thread: lone operator
