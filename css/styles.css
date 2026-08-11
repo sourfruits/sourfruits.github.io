@@ -2837,7 +2837,6 @@ body.is-graph-faux-fs { overflow: hidden; }
    clickable; underline on hover/focus, then selects the thread. */
 .detail-thread-link {
   cursor: pointer;
-  font-weight: var(--weight-semibold);
   text-decoration: none;
 }
 .detail-thread-link:hover,
