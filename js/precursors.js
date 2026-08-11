@@ -918,14 +918,16 @@ function openDetail(node, event, skipCamera) {
   //   both        → "· Apr 2026 · Aware 2023"
   //   engaged only→ "· Apr 2026"
   //   aware only  → "· Aware 2024"
-  // Empty (no markup) when the entry carries no date / no thread. NOTE: `mechanism`
-  // (e.g. "letterboxd") is kept in the data but NOT displayed anywhere right now —
-  // it used to render as "· found on X".
+  // The leading separator "·" is glued to the source with a non-breaking space, so
+  // a wrapped date drops to the next line WITHOUT the dot ever starting the line;
+  // the date itself is one nowrap unit (see CSS). Empty when the entry carries no
+  // date / no thread. NOTE: `mechanism` (e.g. "letterboxd") is kept in the data but
+  // NOT displayed anywhere right now — it used to render as "· found on X".
   const dvDate = (d) => {
     const parts = [];
     if (d.engagedDate) parts.push(escapeHTML(formatDiscoveryDate(d.engagedDate)));
     if (d.awareDate) parts.push(`Aware ${escapeHTML(formatDiscoveryDate(d.awareDate))}`);
-    return parts.length ? ` <span class="detail-dv-date">· ${parts.join(" · ")}</span>` : "";
+    return parts.length ? `&nbsp;· <span class="detail-dv-date">${parts.join(" · ")}</span>` : "";
   };
   const dvThread = (d) => (d.thread ? `<div class="detail-dv-thread">Thread: ${threadLink(d.thread)}</div>` : "");
   // Hairline separating the title block from the metadata (Discovery only — in
