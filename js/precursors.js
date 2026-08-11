@@ -929,14 +929,15 @@ function openDetail(node, event, skipCamera) {
     if (d.awareDate) parts.push(`Aware ${escapeHTML(formatDiscoveryDate(d.awareDate))}`);
     return parts.length ? `&nbsp;· <span class="detail-dv-date">${parts.join(" · ")}</span>` : "";
   };
-  const dvThread = (d) => (d.thread ? `<div class="detail-dv-thread">Thread: ${threadLink(d.thread)}</div>` : "");
+  // Thread rides inline too, same rules as the date: a nowrap unit whose leading
+  // "·" is glued to the preceding text, so it wraps whole and never leads a line.
+  const dvThread = (d) => (d.thread ? `&nbsp;· <span class="detail-dv-thread">Thread: ${threadLink(d.thread)}</span>` : "");
   // Hairline separating the title block from the metadata (Discovery only — in
   // Connections the connections section's own top border does the separating).
   if (currentMode === "discovery" && dvs.length) head += `<hr class="detail-rule">`;
   if (currentMode === "discovery" && dvs.length === 1) {
     const d = dvs[0];
-    body += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvDate(d)}</div>`;
-    body += dvThread(d);
+    body += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvDate(d)}${dvThread(d)}</div>`;
     if (d.note) body += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
   } else if (currentMode === "discovery" && dvs.length > 1) {
     const items = dvs.map((d) => {
