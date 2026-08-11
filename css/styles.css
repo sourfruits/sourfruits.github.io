@@ -2759,7 +2759,9 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* Date ("· <engaged> · Aware <date>") rides inline on the "Discovered via" line;
    only the thread drops to its own line below. Both muted; the thread line is
    small in the single-entry meta block and tiny in the multi-path list. */
-.detail-dv-date { color: var(--muted); }
+/* Keep the date as one unit: it stays inline after the source, but when there's
+   no room it wraps to its own line whole instead of breaking mid-date. */
+.detail-dv-date { color: var(--muted); white-space: nowrap; }
 .detail-dv-thread { margin-top: 2px; color: var(--muted); font-size: var(--text-small); }
 .detail-dv-list .detail-dv-thread { font-size: var(--text-tiny); }
 
