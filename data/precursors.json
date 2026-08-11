@@ -363,7 +363,8 @@
       "kind": "film",
       "creator": "Francis Ford Coppola",
       "discovered_via": [
-        { "source": "the-parallax-view-1974", "date": "2023-04", "thread": "70s paranoia" }
+        { "strength": "aware", "source": "the-parallax-view-1974", "date": "2023-04", "thread": "70s paranoia" },
+        { "source": "the-parallax-view-1974", "date": "2026-04", "thread": "70s paranoia" }
       ],
       "connections": [
         { "to": "the-parallax-view-1974", "relationship": "thematic" }
