@@ -2756,12 +2756,11 @@ body.is-graph-faux-fs { overflow: hidden; }
 .detail-discovered { margin-top: 8px; }
 .detail-dv-list { list-style: none; margin: 4px 0 0; padding: 0; color: var(--muted); font-size: var(--text-tiny); }
 .detail-dv-list li + li { margin-top: 6px; }
-/* Date ("Aware: … · Engaged: …") and thread each sit on their own line under the
-   "Discovered via" source. Small + muted in the single-entry meta block; the
-   multi-path list keeps them at its own tiny size. */
-.detail-dv-date,
+/* Date ("· <engaged> · Aware <date>") rides inline on the "Discovered via" line;
+   only the thread drops to its own line below. Both muted; the thread line is
+   small in the single-entry meta block and tiny in the multi-path list. */
+.detail-dv-date { color: var(--muted); }
 .detail-dv-thread { margin-top: 2px; color: var(--muted); font-size: var(--text-small); }
-.detail-dv-list .detail-dv-date,
 .detail-dv-list .detail-dv-thread { font-size: var(--text-tiny); }
 
 /* Connections: a stats label above the list. The section takes only the height

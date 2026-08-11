@@ -910,14 +910,14 @@ function openDetail(node, event, skipCamera) {
     const label = escapeHTML(other.label);
     return `<span class="detail-source-link" data-node-id="${escapeHTML(d.source)}" role="button" tabindex="0" title="Open ${label}">${label}</span>`;
   };
-  // The date + thread each get their OWN line below the "Discovered via" source.
-  // The engaged date shows bare (the usual reading); an aware date is labelled
-  // "Aware <date>" (no colon) so the distinction reads as text on the card (the
-  // graph edge's dash style isn't visible from here). With both, engaged leads,
-  // then "· Aware <date>":
-  //   both        → "Apr 2026 · Aware 2023"
-  //   engaged only→ "Apr 2026"
-  //   aware only  → "Aware 2024"
+  // The date rides inline on the "Discovered via" (source) line; only the thread
+  // drops to its own line below. The engaged date shows bare (the usual reading);
+  // an aware date is labelled "Aware <date>" (no colon) so the distinction reads
+  // as text on the card (the graph edge's dash style isn't visible from here).
+  // With both, engaged leads, then "· Aware <date>":
+  //   both        → "· Apr 2026 · Aware 2023"
+  //   engaged only→ "· Apr 2026"
+  //   aware only  → "· Aware 2024"
   // Empty (no markup) when the entry carries no date / no thread. NOTE: `mechanism`
   // (e.g. "letterboxd") is kept in the data but NOT displayed anywhere right now —
   // it used to render as "· found on X".
@@ -925,7 +925,7 @@ function openDetail(node, event, skipCamera) {
     const parts = [];
     if (d.engagedDate) parts.push(escapeHTML(formatDiscoveryDate(d.engagedDate)));
     if (d.awareDate) parts.push(`Aware ${escapeHTML(formatDiscoveryDate(d.awareDate))}`);
-    return parts.length ? `<div class="detail-dv-date">${parts.join(" · ")}</div>` : "";
+    return parts.length ? ` <span class="detail-dv-date">· ${parts.join(" · ")}</span>` : "";
   };
   const dvThread = (d) => (d.thread ? `<div class="detail-dv-thread">Thread: ${threadLink(d.thread)}</div>` : "");
   // Hairline separating the title block from the metadata (Discovery only — in
@@ -933,8 +933,8 @@ function openDetail(node, event, skipCamera) {
   if (currentMode === "discovery" && dvs.length) head += `<hr class="detail-rule">`;
   if (currentMode === "discovery" && dvs.length === 1) {
     const d = dvs[0];
-    body += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}</div>`;
-    body += dvDate(d) + dvThread(d);
+    body += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvDate(d)}</div>`;
+    body += dvThread(d);
     if (d.note) body += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
   } else if (currentMode === "discovery" && dvs.length > 1) {
     const items = dvs.map((d) => {
