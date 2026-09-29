@@ -1,6 +1,17 @@
 {
   "nodes": [
     {
+      "id": "rv-hallberg",
+      "label": "Robert von Hallberg",
+      "kind": "person",
+      "discovered_via": [
+        {
+          "source": "cmc-film-noir",
+          "engagedDate": "2026-09"
+        }
+      ]
+    },
+    {
       "id": "danny-h",
       "label": "Danny H",
       "kind": "person"
@@ -11,16 +22,20 @@
       "kind": "person"
     },
     {
+      "id": "cmc-film-noir",
+      "label": "LIT134: Film Noir",
+      "kind": "class",
+      "discovered_via": [
+        {
+          "engagedDate": "2026-09"
+        }
+      ]
+    },
+    {
       "id": "after-hours-1985",
       "label": "After Hours (1985)",
       "kind": "film",
-      "creator": "Martin Scorsese",
-      "discovered_via": [
-        {
-          "source": "letterboxd",
-          "engagedDate": "2026-03"
-        }
-      ]
+      "creator": "Martin Scorsese"
     },
     {
       "id": "blow-out-1981",
