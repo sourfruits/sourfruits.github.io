@@ -27,6 +27,11 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
+### rv-hallberg
+label: Robert von Hallberg
+kind: person
+discovered:
+  - source: cmc-film-noir, engaged: 2026-09
 
 ### danny-h
 label: Danny H
@@ -36,12 +41,16 @@ kind: person
 label: Holden T
 kind: person
 
+### cmc-film-noir
+label: LIT134: Film Noir
+kind: class
+discovered:
+  - engaged: 2026-09  
+
 ### after-hours-1985
 label: After Hours (1985)
 kind: film
 creator: Martin Scorsese
-discovered:
-  - source: letterboxd, engaged: 2026-03
 
 ### blow-out-1981
 label: Blow Out (1981)
