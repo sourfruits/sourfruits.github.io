@@ -1,6 +1,6 @@
 ---
 title: "Framing and Composition in The Maltese Falcon"
-date: "2026-10-02"
+date: "2026-9-02"
 tags: ["writeup", "movies"]
 workId: the-maltese-falcon-1941
 image: "images/the-maltese-falcon/image.jpg"
