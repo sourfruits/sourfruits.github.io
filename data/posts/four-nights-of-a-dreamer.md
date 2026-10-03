@@ -1,15 +1,13 @@
 ---
 title: "Four Nights of a Dreamer (1971)"
 subtitle: "Quatre nuits d’un rêveur"
-date: "2099-08-01"
+date: "2026-08-01"
 tags: ["blurb", "movies"]
 workId: "four-nights-of-a-dreamer-1971"
 image: "images/four-nights-of-a-dreamer/image.jpg"
 ---
 
 *Originally watched May 24, 2026*
-
-(wip)
 
 The richness of Dostoyevsky's White Nights lies in the delusional passion of its narrator’s expressive monologues. So, it's interesting that Robert Bresson, a director known for his aversion to performed emotion, decided to adapt a novella that lives in what he'd call "movement from the interior to the exterior." 
 
