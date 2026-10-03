@@ -55,19 +55,6 @@
     "content": "yep"
   },
   {
-    "id": "enter-the-dragon",
-    "title": "Enter the Dragon (1973)",
-    "subtitle": "I am literally Bruce Lee",
-    "date": "2099-07-22",
-    "tags": [
-      "writeup",
-      "movies"
-    ],
-    "workId": "enter-the-dragon-1973",
-    "image": "images/enter-the-dragon/image.jpeg",
-    "content": "*Originally written for Letterboxd*\n\nWhat makes this film special is its depiction of a Hong Kong now lost to time. My mom, who grew up there in the 70s, would regale me with tales of the magic of Hong Kong under British rule. To her, it was an era of shared respect and cultural integration. \n\nIn the movie, British intelligence and Shaolin masters work with mutual respect. The scenes in the harbor show the visual dichotomy of a modernizing Hong Kong. Sampan rowers in baggy work jackets ferry passengers to and from larger junk vessels. In the background, Western-style skyscrapers loom, indicative of the skyline to come. Bruce Lee’s character straddles cultures through fashion, alternating between slick tailored Western suits and traditional kung fu garb. \n\n70s HK is a time I will never fully experience, only catch glimpses of — this film is pulpy exploitation that gives life to the world of my mother’s stories."
-  },
-  {
     "id": "stranger-than-paradise-heidegger",
     "pinned": true,
     "title": "Heidegger and Boredom in Stranger Than Paradise (1984)",
@@ -169,5 +156,18 @@
     "workId": "four-nights-of-a-dreamer-1971",
     "image": "images/four-nights-of-a-dreamer/image.jpg",
     "content": "*Originally written for Letterboxd*\n\nThe richness of Dostoyevsky's White Nights lies in the delusional passion of its narrator’s expressive monologues. So, it's interesting that Robert Bresson, a director known for his aversion to performed emotion, decided to adapt a novella that lives in what he'd call \"movement from the interior to the exterior.\" \n\nInstead of adjusting his restrained style, Bresson elects to draw emotional flavor from the melancholy colors and sounds of the Parisian streets. As Jacques holds Marthe, the camera lingers on a bossa nova band on a bateau mouche floating through the Seine, reflecting the haunting romanticism the narrator does not express. A seeming mismatch between the text and filmmaker produces a hypnotic translation of Dostoyevsky’s dialogue-heavy work on to film."
+  },
+  {
+    "id": "enter-the-dragon",
+    "title": "Enter the Dragon (1973)",
+    "subtitle": "I am literally Bruce Lee",
+    "date": "2026-03-28",
+    "tags": [
+      "blurb",
+      "movies"
+    ],
+    "workId": "enter-the-dragon-1973",
+    "image": "images/enter-the-dragon/image.jpeg",
+    "content": "*Originally written for Letterboxd*\n\nWhat makes this film special is its depiction of a Hong Kong now lost to time. My mom, who grew up there in the 70s, would regale me with tales of the magic of Hong Kong under British rule. To her, it was an era of shared respect and cultural integration. \n\nIn the movie, British intelligence and Shaolin masters work with mutual respect. The scenes in the harbor show the visual dichotomy of a modernizing Hong Kong. Sampan rowers in baggy work jackets ferry passengers to and from larger junk vessels. In the background, Western-style skyscrapers loom, indicative of the skyline to come. Bruce Lee’s character straddles cultures through fashion, alternating between slick tailored Western suits and traditional kung fu garb. \n\n70s HK is a time I will never fully experience, only catch glimpses of — this film is pulpy exploitation that gives life to the world of my mother’s stories."
   }
 ]
