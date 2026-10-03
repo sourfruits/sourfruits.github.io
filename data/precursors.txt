@@ -45,7 +45,14 @@ kind: person
 label: LIT134: Film Noir
 kind: class
 discovered:
-  - engaged: 2026-09  
+  - engaged: 2026-09
+
+### the-maltese-falcon-1941
+label: The Maltese Falcon (1941)
+kind: film
+creator: John Huston
+discovered:
+  - source: cmc-film-noir, engaged: 2026-09
 
 ### after-hours-1985
 label: After Hours (1985)
