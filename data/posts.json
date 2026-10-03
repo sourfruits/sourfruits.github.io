@@ -1,5 +1,17 @@
 [
   {
+    "id": "but-beautiful",
+    "title": "But Beautiful by Geoff Dyer",
+    "date": "2099-10-02",
+    "tags": [
+      "writeup",
+      "books"
+    ],
+    "workId": "dyer-but-beautiful",
+    "image": "images/but-beautiful/image.jpg",
+    "content": "blahblah blah"
+  },
+  {
     "id": "music-fashion-film",
     "title": "Music, Fashion, Film",
     "subtitle": "sontag, bourdieu, and the existentialist concerns of charli xcx's newest album",
