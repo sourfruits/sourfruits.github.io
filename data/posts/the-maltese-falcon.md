@@ -12,7 +12,7 @@ The characters of the Maltese Falcon hide their motives from each other, and oft
 
 ![alt text](images/the-maltese-falcon/1.jpg "O'Shaughnessy is led away.")
 
-All pretense is dropped for the first time when Spade and Gutman agree to sell out Wilber. The film takes an intentional moment to linger on close-up expressions of Spade, Gutman, Wilber, O'Shaughnessy, and Cairo. For the first time, the audience sees their reactions up close and unobscured. For the first time, the characters drop their facade of deception, baring their true soul.
+All pretense is dropped for the first time when Spade and Gutman agree to sell out Wilmer. The film takes an intentional moment to linger on close-up expressions of Spade, Gutman, Wilmer, O'Shaughnessy, and Cairo. For the first time, the audience sees their reactions up close and unobscured. For the first time, the characters drop their facade of deception, baring their true soul.
 
 The Maltese Falcon traps its characters in a constant struggle for control. The power dynamic constantly shifts as the characters lunge rapaciously after their own goals. The camera utilizes tight, claustrophobic framing as a reminder of this inescapable struggle. At any given time, the camera zooms in and out just enough to accommodate those displayed onscreen. Furthermore, intentional angling and composition is used to reflect volatile power dynamics. 
 
