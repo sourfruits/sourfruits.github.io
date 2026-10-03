@@ -32,6 +32,18 @@
       ]
     },
     {
+      "id": "the-maltese-falcon-1941",
+      "label": "The Maltese Falcon (1941)",
+      "kind": "film",
+      "creator": "John Huston",
+      "discovered_via": [
+        {
+          "source": "cmc-film-noir",
+          "engagedDate": "2026-09"
+        }
+      ]
+    },
+    {
       "id": "after-hours-1985",
       "label": "After Hours (1985)",
       "kind": "film",
