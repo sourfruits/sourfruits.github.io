@@ -2,7 +2,7 @@
 title: "Framing and Composition in The Maltese Falcon"
 date: "2026-10-02"
 tags: ["writeup", "movies"]
-workId: the-maltese-falcon-1941"
+workId: the-maltese-falcon-1941
 image: "images/the-maltese-falcon/image.jpg"
 ---
 
@@ -16,6 +16,6 @@ All pretense is dropped for the first time when Spade and Gutman agree to sell o
 
 The Maltese Falcon traps its characters in a constant struggle for control. The power dynamic constantly shifts as the characters lunge rapaciously after their own goals. The camera utilizes tight, claustrophobic framing as a reminder of this inescapable struggle. At any given time, the camera zooms in and out just enough to accommodate those displayed onscreen. Furthermore, intentional angling and composition is used to reflect volatile power dynamics. 
 
-In Gutman's first conversation with Spade, he has the upper hand. The camera shoots him from an upward angle, giving him a large and domineering appearance. As the two converse, Gutman takes up a significant portion of the frame while Spade dwindles in comparison. However, the camera reminds us just how quickly this all can change. After the Fat Man is embarrassed by the revelation that his falcon is a sham, the shot changes and Spade now occupies a majority of the foreground, looking "down" onto Gutman. In a game of life, death, wit, and power, no dynamic stays stable for long.
+![alt text](images/the-maltese-falcon/2.jpg "Look at the size of that man.!")
 
-![alt text](images/the-maltese-falcon/2.jpg)
+In Gutman's first conversation with Spade, he has the upper hand. The camera shoots him from an upward angle, giving him a large and domineering appearance. As the two converse, Gutman takes up a significant portion of the frame while Spade dwindles in comparison. However, the camera reminds us just how quickly this all can change. After the Fat Man is embarrassed by the revelation that his falcon is a sham, the shot changes and Spade now occupies a majority of the foreground, looking "down" onto Gutman. In a game of life, death, wit, and power, no dynamic stays stable for long.
