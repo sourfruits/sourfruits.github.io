@@ -1,5 +1,18 @@
 [
   {
+    "id": "the-white-album",
+    "title": "placeholder",
+    "subtitle": "xx",
+    "date": "2099-10-19",
+    "tags": [
+      "writeup",
+      "movies"
+    ],
+    "workId": "didion-the-white-album",
+    "image": "images/the-white-album/image.jpg",
+    "content": "yep"
+  },
+  {
     "id": "music-fashion-film",
     "title": "Music, Fashion, Film",
     "subtitle": "sontag, bourdieu, and the existentialist concerns of charli xcx's newest album",
@@ -13,20 +26,6 @@
       "sontag-on-photography"
     ],
     "image": "images/music-fashion-film/image.jpg",
-    "content": "yep"
-  },
-  {
-    "id": "chan-is-missing",
-    "title": "Chan Is Missing (1982)",
-    "subtitle": "xx",
-    "date": "2099-07-22",
-    "dateOrder": 1,
-    "tags": [
-      "writeup",
-      "movies"
-    ],
-    "workId": "chan-is-missing-1982",
-    "image": "images/chan-is-missing/image.jpeg",
     "content": "yep"
   },
   {
