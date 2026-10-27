@@ -27,6 +27,28 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
+### felix-k
+label: Felix K
+kind: person
+
+### between-worlds-2026
+label: Edward Said: Between Worlds (2026)
+kind: film
+discovered:
+  - source: felix-k, engaged: 2026-10, thread: Arab Israeli conflict
+
+### munich-2005
+label: Munich (2005)
+kind: film
+discovered:
+  - source: between-worlds-2026, aware: 2026-10
+
+### kanafani-men-in-the-sun
+label: Men in the Sun by Ghassan Kanafani
+kind: book
+discovered:
+  - source: between-worlds-2026, aware: 2026-10
+
 ### rv-hallberg
 label: Robert von Hallberg
 kind: person
