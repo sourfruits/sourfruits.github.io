@@ -1,6 +1,45 @@
 {
   "nodes": [
     {
+      "id": "felix-k",
+      "label": "Felix K",
+      "kind": "person"
+    },
+    {
+      "id": "between-worlds-2026",
+      "label": "Edward Said: Between Worlds (2026)",
+      "kind": "film",
+      "discovered_via": [
+        {
+          "source": "felix-k",
+          "engagedDate": "2026-10",
+          "thread": "Arab Israeli conflict"
+        }
+      ]
+    },
+    {
+      "id": "munich-2005",
+      "label": "Munich (2005)",
+      "kind": "film",
+      "discovered_via": [
+        {
+          "source": "between-worlds-2026",
+          "awareDate": "2026-10"
+        }
+      ]
+    },
+    {
+      "id": "kanafani-men-in-the-sun",
+      "label": "Men in the Sun by Ghassan Kanafani",
+      "kind": "book",
+      "discovered_via": [
+        {
+          "source": "between-worlds-2026",
+          "awareDate": "2026-10"
+        }
+      ]
+    },
+    {
       "id": "rv-hallberg",
       "label": "Robert von Hallberg",
       "kind": "person",
