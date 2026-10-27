@@ -236,7 +236,7 @@ label: The Trial
 kind: book
 creator: Franz Kafka
 connections:
-  - to: kafka-the-trial-film, relationship: adaptation
+  - to: the-trial-1962, relationship: adaptation
   - to: camus-the-stranger, relationship: influence
   - to: after-hours-1985, relationship: influence
   - to: brazil-1985, relationship: influence
