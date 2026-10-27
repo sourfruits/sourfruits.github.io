@@ -1,5 +1,5 @@
 ---
-title: "Elevator to the Gallows"
+title: "Elevator to the Gallows (1958)"
 date: "2026-10-26"
 tags: ["blurb", "movies"]
 workId: "elevator-to-the-gallows-1958"
