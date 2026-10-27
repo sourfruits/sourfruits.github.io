@@ -41,7 +41,7 @@ discovered:
 label: Edward Said
 kind: author
 discovered:
-  - source: between-worlds, engaged: 2026-10, thread: Arab Israeli conflict
+  - source: between-worlds-2026, engaged: 2026-10, thread: Arab Israeli conflict
 
 ### orientalism
 label: Orientalism
