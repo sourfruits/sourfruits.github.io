@@ -37,17 +37,32 @@ kind: film
 discovered:
   - source: felix-k, engaged: 2026-10, thread: Arab Israeli conflict
 
+### edward-said
+label: Edward Said
+kind: author
+discovered:
+  - source: between-worlds, engaged: 2026-10, thread: Arab Israeli conflict
+
+### orientalism
+label: Orientalism
+kind: book
+creator: Edward Said
+discovered:
+  - source: edward-said, engaged: 2026-10, thread: Arab Israeli conflict
+
 ### munich-2005
 label: Munich (2005)
 kind: film
+creator: Steven Spielberg
 discovered:
-  - source: between-worlds-2026, aware: 2026-10
+  - source: between-worlds-2026, aware: 2026-10, thread: Arab Israeli conflict
 
 ### kanafani-men-in-the-sun
-label: Men in the Sun by Ghassan Kanafani
+label: Men in the Sun
+creator: Ghassan Kanafani
 kind: book
 discovered:
-  - source: between-worlds-2026, aware: 2026-10
+  - source: between-worlds-2026, aware: 2026-10, thread: Arab Israeli conflict
 
 ### rv-hallberg
 label: Robert von Hallberg
