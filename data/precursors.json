@@ -409,7 +409,7 @@
       ],
       "connections": [
         {
-          "to": "kafka-the-trial-film",
+          "to": "the-trial-1962",
           "relationship": "adaptation"
         },
         {
