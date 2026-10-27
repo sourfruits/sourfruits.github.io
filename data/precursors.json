@@ -18,24 +18,53 @@
       ]
     },
     {
+      "id": "edward-said",
+      "label": "Edward Said",
+      "kind": "author",
+      "discovered_via": [
+        {
+          "source": "between-worlds",
+          "engagedDate": "2026-10",
+          "thread": "Arab Israeli conflict"
+        }
+      ]
+    },
+    {
+      "id": "orientalism",
+      "label": "Orientalism",
+      "kind": "book",
+      "creator": "Edward Said",
+      "discovered_via": [
+        {
+          "source": "edward-said",
+          "engagedDate": "2026-10",
+          "thread": "Arab Israeli conflict"
+        }
+      ]
+    },
+    {
       "id": "munich-2005",
       "label": "Munich (2005)",
       "kind": "film",
+      "creator": "Steven Spielberg",
       "discovered_via": [
         {
           "source": "between-worlds-2026",
-          "awareDate": "2026-10"
+          "awareDate": "2026-10",
+          "thread": "Arab Israeli conflict"
         }
       ]
     },
     {
       "id": "kanafani-men-in-the-sun",
-      "label": "Men in the Sun by Ghassan Kanafani",
+      "label": "Men in the Sun",
       "kind": "book",
+      "creator": "Ghassan Kanafani",
       "discovered_via": [
         {
           "source": "between-worlds-2026",
-          "awareDate": "2026-10"
+          "awareDate": "2026-10",
+          "thread": "Arab Israeli conflict"
         }
       ]
     },
