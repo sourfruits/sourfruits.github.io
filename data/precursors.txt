@@ -381,7 +381,7 @@ label: The Trial (1962)
 kind: film
 creator: Orson Welles
 discovered:
-  - source: kafka-the-trial, engaged: 2026-06
+  - source: kafka-the-trial, aware: 2026-06, engaged: 2026-10
 
 ### thief-1981
 label: Thief (1981)
