@@ -722,7 +722,8 @@
       "discovered_via": [
         {
           "source": "kafka-the-trial",
-          "engagedDate": "2026-06"
+          "awareDate": "2026-06",
+          "engagedDate": "2026-10"
         }
       ]
     },
