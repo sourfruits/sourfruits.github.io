@@ -27,6 +27,20 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
+### elevator-to-the-gallows
+label: Elevator to the Gallows (1958)
+kind: film
+creator: Louis Malle
+discovered:
+  - source: but-beautiful, engaged: 2026-10
+
+### but-beautiful
+label: But Beautiful
+kind: book
+creator: Geoff Dyer
+discovered:
+  - source: rv-hallberg, engaged: 2026-10
+
 ### felix-k
 label: Felix K
 kind: person
