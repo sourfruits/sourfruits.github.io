@@ -218,7 +218,6 @@ label: Four Nights of a Dreamer (1971)
 kind: film
 discovered:
   - source: dostoevsky-white-nights, engaged: 2026-05
-  - source: robert-bresson, aware: 2026-05
 
 ### from-russia-with-love-1963
 label: From Russia With Love (1963)
