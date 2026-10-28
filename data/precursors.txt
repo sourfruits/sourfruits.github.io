@@ -27,14 +27,14 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
-### elevator-to-the-gallows
+### elevator-to-the-gallows-1958
 label: Elevator to the Gallows (1958)
 kind: film
 creator: Louis Malle
 discovered:
-  - source: but-beautiful, engaged: 2026-10
+  - source: dyer-but-beautiful, engaged: 2026-10
 
-### but-beautiful
+### dyer-but-beautiful
 label: But Beautiful
 kind: book
 creator: Geoff Dyer
@@ -57,12 +57,12 @@ kind: author
 discovered:
   - source: between-worlds-2026, engaged: 2026-10, thread: Arab Israeli conflict
 
-### orientalism
+### said-orientalism
 label: Orientalism
 kind: book
 creator: Edward Said
 discovered:
-  - source: on-photography, aware:2026-08, thread: Theory
+  - source: sontag-on-photography, aware:2026-08, thread: Theory
   - source: edward-said, engaged: 2026-10, thread: Arab Israeli conflict
 
 ### munich-2005
