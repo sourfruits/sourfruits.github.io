@@ -1,19 +1,19 @@
 {
   "nodes": [
     {
-      "id": "elevator-to-the-gallows",
+      "id": "elevator-to-the-gallows-1958",
       "label": "Elevator to the Gallows (1958)",
       "kind": "film",
       "creator": "Louis Malle",
       "discovered_via": [
         {
-          "source": "but-beautiful",
+          "source": "dyer-but-beautiful",
           "engagedDate": "2026-10"
         }
       ]
     },
     {
-      "id": "but-beautiful",
+      "id": "dyer-but-beautiful",
       "label": "But Beautiful",
       "kind": "book",
       "creator": "Geoff Dyer",
@@ -54,13 +54,13 @@
       ]
     },
     {
-      "id": "orientalism",
+      "id": "said-orientalism",
       "label": "Orientalism",
       "kind": "book",
       "creator": "Edward Said",
       "discovered_via": [
         {
-          "source": "on-photography",
+          "source": "sontag-on-photography",
           "awareDate": "2026-08",
           "thread": "Theory"
         },
