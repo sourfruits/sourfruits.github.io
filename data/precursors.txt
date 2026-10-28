@@ -62,6 +62,7 @@ label: Orientalism
 kind: book
 creator: Edward Said
 discovered:
+  - source: on-photography, aware:2026-08, thread: Theory
   - source: edward-said, engaged: 2026-10, thread: Arab Israeli conflict
 
 ### munich-2005
