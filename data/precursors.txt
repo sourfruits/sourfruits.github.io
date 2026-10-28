@@ -27,6 +27,12 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
+### susan-sontag
+label: Susan Sontag
+kind: person
+discovered:
+  - source: sontag-on-photography
+
 ### elevator-to-the-gallows-1958
 label: Elevator to the Gallows (1958)
 kind: film
