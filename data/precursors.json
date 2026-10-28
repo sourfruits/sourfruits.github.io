@@ -60,6 +60,11 @@
       "creator": "Edward Said",
       "discovered_via": [
         {
+          "source": "on-photography",
+          "awareDate": "2026-08",
+          "thread": "Theory"
+        },
+        {
           "source": "edward-said",
           "engagedDate": "2026-10",
           "thread": "Arab Israeli conflict"
