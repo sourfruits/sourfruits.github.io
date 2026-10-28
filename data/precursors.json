@@ -1,6 +1,30 @@
 {
   "nodes": [
     {
+      "id": "elevator-to-the-gallows",
+      "label": "Elevator to the Gallows (1958)",
+      "kind": "film",
+      "creator": "Louis Malle",
+      "discovered_via": [
+        {
+          "source": "but-beautiful",
+          "engagedDate": "2026-10"
+        }
+      ]
+    },
+    {
+      "id": "but-beautiful",
+      "label": "But Beautiful",
+      "kind": "book",
+      "creator": "Geoff Dyer",
+      "discovered_via": [
+        {
+          "source": "rv-hallberg",
+          "engagedDate": "2026-10"
+        }
+      ]
+    },
+    {
       "id": "felix-k",
       "label": "Felix K",
       "kind": "person"
