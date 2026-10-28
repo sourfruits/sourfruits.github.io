@@ -1,6 +1,16 @@
 {
   "nodes": [
     {
+      "id": "susan-sontag",
+      "label": "Susan Sontag",
+      "kind": "person",
+      "discovered_via": [
+        {
+          "source": "sontag-on-photography"
+        }
+      ]
+    },
+    {
       "id": "elevator-to-the-gallows-1958",
       "label": "Elevator to the Gallows (1958)",
       "kind": "film",
