@@ -58,6 +58,18 @@
     "content": "yep"
   },
   {
+    "id": "men-in-the-sun",
+    "title": "Men in the Sun by Ghassan Kanafani",
+    "date": "2026-10-29",
+    "tags": [
+      "blurb",
+      "books"
+    ],
+    "workId": "kanafani-men-in-the-sun",
+    "image": "images/men-in-the-sun/image.jpg",
+    "content": "hello"
+  },
+  {
     "id": "elevator-to-the-gallows",
     "title": "Elevator to the Gallows (1958)",
     "subtitle": "Ascenseur pour l'échafaud",
