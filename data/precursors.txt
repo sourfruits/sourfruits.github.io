@@ -27,6 +27,20 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
+### the-friends-of-eddie-coyle-1973
+label: The Friends of Eddie Coyle (1973)
+kind: movie
+creator: Peter Yates
+discovered:
+  - source: out-of-the-past-1947, aware: 2026-11 thread: Robert Mitchum
+
+### out-of-the-past-1947
+label: Out of the Past (1947)
+kind: movie
+creator: Jacques Torneur
+discovered:
+  - source: cmc-film-noir, engaged: 2026-10 thread: Film noir
+
 ### susan-sontag
 label: Susan Sontag
 kind: person
@@ -110,7 +124,7 @@ label: The Maltese Falcon (1941)
 kind: film
 creator: John Huston
 discovered:
-  - source: cmc-film-noir, engaged: 2026-09
+  - source: cmc-film-noir, engaged: 2026-09, thread: Film noir
 
 ### after-hours-1985
 label: After Hours (1985)
