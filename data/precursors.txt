@@ -54,14 +54,14 @@ discovered:
 
 ### the-friends-of-eddie-coyle-1973
 label: The Friends of Eddie Coyle (1973)
-kind: movie
+kind: film
 creator: Peter Yates
 discovered:
   - source: out-of-the-past-1947, aware: 2026-11, thread: Robert Mitchum
 
 ### out-of-the-past-1947
 label: Out of the Past (1947)
-kind: movie
+kind: film
 creator: Jacques Torneur
 discovered:
   - source: cmc-film-noir, engaged: 2026-10, thread: Film noir
