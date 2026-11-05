@@ -225,7 +225,7 @@ discovered:
 label: DIS Philosophy
 kind: class
 discovered:
-  - engaged: 2026-01
+  - source: claremont-mckenna-college, engaged: 2026-01
 
 ### dostoevsky-crime-and-punishment
 label: Crime and Punishment
