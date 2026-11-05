@@ -56,7 +56,7 @@ label: Out of the Past (1947)
 kind: movie
 creator: Jacques Torneur
 discovered:
-  - source: cmc-film-noir, engaged: 2026-10 thread: Film noir
+  - source: cmc-film-noir, engaged: 2026-10, thread: Film noir
 
 ### susan-sontag
 label: Susan Sontag
