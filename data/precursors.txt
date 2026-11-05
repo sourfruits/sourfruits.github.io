@@ -44,7 +44,7 @@ discovered:
 label: Christina Rossetti
 kind: writer
 discovered:
-  - source: cmc-voice-lessons, aware: 2026-11, note: Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor
+  - source: cmc-voice-lessons, aware: 2026-11, note: "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor"
 
 ### christina-rossetti
 label: Christina Rossetti
