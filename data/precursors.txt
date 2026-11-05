@@ -27,22 +27,24 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
-### claremont-mckenna-college
-label: Claremont McKenna College
-kind: school
-
 ### cmc-voice-lessons
 label: Voice Lessons
 kind: class
 creator: Tamara Bevard
 discovered:
-  - source: claremont-mckenna-college, engaged: 2026-09
+  - engaged: 2026-09
 
 ### christina-rossetti
 label: Christina Rossetti
-kind: Poet
+kind: writer
 discovered:
-  - source: cmc-voice-lessons, aware: 2026-11
+  - source: cmc-voice-lessons, aware: 2026-11, note: Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor
+
+### gerard-manley-hopkins
+label: Gerard Manley Hopkins
+kind: writer
+discovered:
+  - source: rv-hallbergs, engaged: 2026-11, note: First aware through Gaffney FWS, inspired to explore poetry
 
 ### the-friends-of-eddie-coyle-1973
 label: The Friends of Eddie Coyle (1973)
@@ -60,7 +62,7 @@ discovered:
 
 ### susan-sontag
 label: Susan Sontag
-kind: person
+kind: writer
 discovered:
   - source: sontag-on-photography
 
@@ -90,7 +92,7 @@ discovered:
 
 ### edward-said
 label: Edward Said
-kind: author
+kind: writer
 discovered:
   - source: between-worlds-2026, engaged: 2026-10, thread: Arab Israeli conflict
 
@@ -142,7 +144,7 @@ label: LIT134: Film Noir
 kind: class
 creator: Robert von Hallberg
 discovered:
-  - source: claremont-mckenna-college, engaged: 2026-09
+  - engaged: 2026-09
 
 ### the-maltese-falcon-1941
 label: The Maltese Falcon (1941)
@@ -225,7 +227,7 @@ discovered:
 label: DIS Philosophy
 kind: class
 discovered:
-  - source: claremont-mckenna-college, engaged: 2026-01
+  - engaged: 2026-01
 
 ### dostoevsky-crime-and-punishment
 label: Crime and Punishment
@@ -267,7 +269,7 @@ discovered:
 
 ### fyodor-dostoevsky
 label: Fyodor Dostoevsky
-kind: author
+kind: writer
 connections:
   - to: dostoevsky-notes-from-underground, relationship: authorship
   - to: dostoevsky-white-nights, relationship: authorship
