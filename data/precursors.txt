@@ -116,6 +116,13 @@ kind: book
 discovered:
   - source: between-worlds-2026, engaged: 2026-10, thread: Arab Israeli conflict
 
+### the-dupes-1972
+label: The Dupes (1972)
+creator: Twefik Saleh
+kind: film
+discovered:
+  - source: kanafani-men-in-the-sun, aware: 2026-10, thread: Arab Israeli conflict
+
 ### rv-hallberg
 label: Robert von Hallberg
 kind: person
