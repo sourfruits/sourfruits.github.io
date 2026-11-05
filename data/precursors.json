@@ -2,8 +2,13 @@
   "nodes": [
     {
       "id": "claremont-mckenna-college",
-      "label": "Claremont McKenna College",
-      "kind": "school"
+      "label": "Claremont McKenna college",
+      "kind": "school",
+      "discovered_via": [
+        {
+          "engagedDate": "2023-08"
+        }
+      ]
     },
     {
       "id": "cmc-voice-lessons",
@@ -20,11 +25,26 @@
     {
       "id": "christina-rossetti",
       "label": "Christina Rossetti",
-      "kind": "Poet",
+      "kind": "writer",
       "discovered_via": [
         {
           "source": "cmc-voice-lessons",
-          "awareDate": "2026-11"
+          "awareDate": "2026-11",
+          "thread": "Poetry",
+          "note": "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor"
+        }
+      ]
+    },
+    {
+      "id": "gerard-manley-hopkins",
+      "label": "Gerard Manley Hopkins",
+      "kind": "writer",
+      "discovered_via": [
+        {
+          "source": "rv-hallberg",
+          "engagedDate": "2026-11",
+          "thread": "Poetry",
+          "note": "First aware through Gaffney FWS, inspired to explore poetry"
         }
       ]
     },
@@ -57,7 +77,7 @@
     {
       "id": "susan-sontag",
       "label": "Susan Sontag",
-      "kind": "person",
+      "kind": "writer",
       "discovered_via": [
         {
           "source": "sontag-on-photography"
@@ -101,14 +121,15 @@
         {
           "source": "felix-k",
           "engagedDate": "2026-10",
-          "thread": "Arab Israeli conflict"
+          "thread": "Arab Israeli conflict",
+          "note": "2026 AFI Fest screening @ the Chinese Theater"
         }
       ]
     },
     {
       "id": "edward-said",
       "label": "Edward Said",
-      "kind": "author",
+      "kind": "writer",
       "discovered_via": [
         {
           "source": "between-worlds-2026",
@@ -130,8 +151,7 @@
         },
         {
           "source": "edward-said",
-          "engagedDate": "2026-10",
-          "thread": "Arab Israeli conflict"
+          "engagedDate": "2026-10"
         }
       ]
     },
@@ -445,7 +465,7 @@
     {
       "id": "fyodor-dostoevsky",
       "label": "Fyodor Dostoevsky",
-      "kind": "author",
+      "kind": "writer",
       "discovered_via": [
         {
           "source": "dostoevsky-notes-from-underground",
