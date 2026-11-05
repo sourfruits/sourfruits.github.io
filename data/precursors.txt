@@ -44,13 +44,6 @@ kind: Poet
 discovered:
   - source: cmc-voice-lessons, aware: 2026-11
 
-### cmc-voice-lessons
-label: Voice Lessons
-kind: class
-creator: Tamara Bevard
-discovered:
-  - source: claremont-mckenna-college, engaged: 2026-09
-
 ### the-friends-of-eddie-coyle-1973
 label: The Friends of Eddie Coyle (1973)
 kind: movie
