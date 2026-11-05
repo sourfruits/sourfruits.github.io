@@ -1,6 +1,60 @@
 {
   "nodes": [
     {
+      "id": "claremont-mckenna-college",
+      "label": "Claremont McKenna College",
+      "kind": "school"
+    },
+    {
+      "id": "cmc-voice-lessons",
+      "label": "Voice Lessons",
+      "kind": "class",
+      "creator": "Tamara Bevard",
+      "discovered_via": [
+        {
+          "source": "claremont-mckenna-college",
+          "engagedDate": "2026-09"
+        }
+      ]
+    },
+    {
+      "id": "christina-rossetti",
+      "label": "Christina Rossetti",
+      "kind": "Poet",
+      "discovered_via": [
+        {
+          "source": "cmc-voice-lessons",
+          "awareDate": "2026-11"
+        }
+      ]
+    },
+    {
+      "id": "the-friends-of-eddie-coyle-1973",
+      "label": "The Friends of Eddie Coyle (1973)",
+      "kind": "movie",
+      "creator": "Peter Yates",
+      "discovered_via": [
+        {
+          "source": "out-of-the-past-1947",
+          "awareDate": "2026-11",
+          "thread": "Robert Mitchum"
+        }
+      ]
+    },
+    {
+      "id": "out-of-the-past-1947",
+      "label": "Out of the Past (1947)",
+      "kind": "movie",
+      "creator": "Jacques Torneur",
+      "discovered_via": [
+        {
+          "source": "cmc-film-noir",
+          "engagedDate": "2026-10",
+          "thread": "Film noir"
+        }
+      ]
+    },
+    {
       "id": "susan-sontag",
       "label": "Susan Sontag",
       "kind": "person",
@@ -102,6 +156,19 @@
       "discovered_via": [
         {
           "source": "between-worlds-2026",
+          "engagedDate": "2026-10",
+          "thread": "Arab Israeli conflict"
+        }
+      ]
+    },
+    {
+      "id": "the-dupes-1972",
+      "label": "The Dupes (1972)",
+      "kind": "film",
+      "creator": "Twefik Saleh",
+      "discovered_via": [
+        {
+          "source": "kanafani-men-in-the-sun",
           "awareDate": "2026-10",
           "thread": "Arab Israeli conflict"
         }
@@ -132,8 +199,10 @@
       "id": "cmc-film-noir",
       "label": "LIT134: Film Noir",
       "kind": "class",
+      "creator": "Robert von Hallberg",
       "discovered_via": [
         {
+          "source": "claremont-mckenna-college",
           "engagedDate": "2026-09"
         }
       ]
@@ -146,7 +215,8 @@
       "discovered_via": [
         {
           "source": "cmc-film-noir",
-          "engagedDate": "2026-09"
+          "engagedDate": "2026-09",
+          "thread": "Film noir"
         }
       ]
     },
@@ -287,6 +357,7 @@
       "kind": "class",
       "discovered_via": [
         {
+          "source": "claremont-mckenna-college",
           "engagedDate": "2026-01"
         }
       ]
