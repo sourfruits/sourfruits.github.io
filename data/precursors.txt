@@ -140,7 +140,7 @@ kind: person
 ### cmc-film-noir
 label: LIT134: Film Noir
 kind: class
-author: Robert von Hallberg
+creator: Robert von Hallberg
 discovered:
   - source: claremont-mckenna-college, engaged: 2026-09
 
