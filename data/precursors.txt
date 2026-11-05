@@ -50,7 +50,7 @@ discovered:
 label: Gerard Manley Hopkins
 kind: writer
 discovered:
-  - source: rv-hallberg, engaged: 2026-11, thread: Poetry, note: First aware through Gaffney FWS, inspired to explore poetry
+  - source: rv-hallberg, engaged: 2026-11, thread: Poetry, note: "First aware through Gaffney FWS, inspired to explore poetry"
 
 ### the-friends-of-eddie-coyle-1973
 label: The Friends of Eddie Coyle (1973)
