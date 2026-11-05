@@ -367,7 +367,19 @@
       "kind": "platform",
       "discovered_via": [
         {
+          "source": "letterboxd",
           "engagedDate": "2026-05"
+        }
+      ]
+    },
+    {
+      "id": "dis-copenhagen",
+      "label": "DIS Copenhagen",
+      "kind": "school",
+      "discovered_via": [
+        {
+          "source": "claremont-mckenna-college",
+          "engagedDate": "2026-01"
         }
       ]
     },
@@ -377,7 +389,7 @@
       "kind": "class",
       "discovered_via": [
         {
-          "source": "claremont-mckenna-college",
+          "source": "dis-copenhagen",
           "engagedDate": "2026-01"
         }
       ]
@@ -628,7 +640,14 @@
     {
       "id": "letterboxd",
       "label": "Letterboxd",
-      "kind": "platform"
+      "kind": "platform",
+      "discovered_via": [
+        {
+          "source": "dis-copenhagen",
+          "engagedDate": "2026-05",
+          "note": "Started binging and logging movies fr in Copenhagen"
+        }
+      ]
     },
     {
       "id": "mahjong-1996",
