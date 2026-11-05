@@ -94,7 +94,7 @@ kind: person
 label: Edward Said: Between Worlds (2026)
 kind: film
 discovered:
-  - source: felix-k, engaged: 2026-10, thread: Arab Israeli conflict
+  - source: felix-k, engaged: 2026-10, thread: Arab Israeli conflict, note: 2026 AFI Fest screening @ the Chinese Theater
 
 ### edward-said
 label: Edward Said
