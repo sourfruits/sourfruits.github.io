@@ -27,12 +27,18 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
+### claremont-mckenna-college
+label: Claremont McKenna college
+kind: school
+discovered:
+  - engaged: 2023-08
+
 ### cmc-voice-lessons
 label: Voice Lessons
 kind: class
 creator: Tamara Bevard
 discovered:
-  - engaged: 2026-09
+  - engaged: 2026-09, source: claremont-mckenna-college
 
 ### christina-rossetti
 label: Christina Rossetti
@@ -150,7 +156,7 @@ label: LIT134: Film Noir
 kind: class
 creator: Robert von Hallberg
 discovered:
-  - engaged: 2026-09
+  - engaged: 2026-09, source: claremont-mckenna-college
 
 ### the-maltese-falcon-1941
 label: The Maltese Falcon (1941)
@@ -233,7 +239,7 @@ discovered:
 label: DIS Philosophy
 kind: class
 discovered:
-  - engaged: 2026-01
+  - engaged: 2026-01, source: claremont-mckenna-college
 
 ### dostoevsky-crime-and-punishment
 label: Crime and Punishment
