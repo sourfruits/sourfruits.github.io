@@ -227,13 +227,19 @@ discovered:
 label: The Criterion Channel
 kind: platform
 discovered:
-  - engaged: 2026-05
+  - engaged: 2026-05, source: letterboxd
+
+### dis-copenhagen
+label: DIS Copenhagen
+kind: school
+discovered:
+  - engaged: 2026-01, source: claremont-mckenna-college
 
 ### dis-philosophy
 label: DIS Philosophy
 kind: class
 discovered:
-  - engaged: 2026-01, source: claremont-mckenna-college
+  - engaged: 2026-01, source: dis-copenhagen
 
 ### dostoevsky-crime-and-punishment
 label: Crime and Punishment
@@ -341,6 +347,8 @@ discovered:
 ### letterboxd
 label: Letterboxd
 kind: platform
+discovered:
+  - source: dis-copenhagen, engaged: 2026-05, note: "Started binging and logging movies fr in Copenhagen"
 
 ### mahjong-1996
 label: Mahjong (1996)
