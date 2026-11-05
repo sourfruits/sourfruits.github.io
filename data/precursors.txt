@@ -200,7 +200,7 @@ label: The Stranger
 kind: book
 creator: Albert Camus
 discovered:
-  - source: dis-philosophy, engaged: 2026-03, note: Borrowed from the DIS library.
+  - source: dis-copenhagen, engaged: 2026-03, note: Borrowed from the DIS library.
 
 ### chan-is-missing-1982
 label: Chan Is Missing (1982)
