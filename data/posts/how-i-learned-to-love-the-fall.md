@@ -1,5 +1,5 @@
 ---
-title: "The Friends of Eddie Coyle or: How I Learned to Love the Fall"
+title: "Eddie Coyle, and how I learned to love the fall"
 subtitle: "The wistfulness of fall as told through Evans, Mitchum, and Hopkins"
 date: "2026-11-06"
 tags: ["writeup", "movies"]
