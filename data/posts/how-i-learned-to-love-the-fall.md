@@ -1,5 +1,5 @@
 ---
-title: "How I Learned to Love the Fall"
+title: "Eddie Coyle and: How I Learned to Love the Fall"
 subtitle: "The wistfulness of Autumn, as told through Evans, Mitchum, and Hopkins"
 date: "2026-11-06"
 tags: ["writeup", "movies"]
