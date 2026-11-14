@@ -100,6 +100,8 @@ Ending: To me, it makes it more beautiful
 I walk past the two trees every morning. The regal gold leaves of the first tree are starting to droop and fall one by one, floating away with each gust of wind. And yesterday I noticed a tawny gradient, a pied beauty in the brown leaves of its aged friend.
 
 &nbsp;
+---
+&nbsp;
 
 *A playlist for the fall:*  
 [https\://open.spotify.com/playlist/0tVsHbKGqA1aDO2WdJtGCp?si=4b7cf3b48dba4780](https://open.spotify.com/playlist/0tVsHbKGqA1aDO2WdJtGCp?si=4b7cf3b48dba4780)
