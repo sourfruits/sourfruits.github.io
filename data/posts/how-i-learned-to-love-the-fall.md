@@ -1,7 +1,7 @@
 ---
 title: "Eddie Coyle, and How I Learned to Love the Fall"
 subtitle: "On autumn, time, and memory"
-date: "2099-11-06"
+date: "2026-11-14"
 tags: ["writeup", "movies"]
 workId: "the-friends-of-eddie-coyle-1973"
 image: "images/how-i-learned-to-love-the-fall/image.jpg"
