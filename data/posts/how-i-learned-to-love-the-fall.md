@@ -26,7 +26,7 @@ I started thinking about autumn’s transience after watching Peter Yates’ 197
 
 ***II. Goldengrove Unleaving***
 
-Two nights ago, I made the long walk from choir practice back to my dorm. Like always, I was the first one out of the building. Usually, I leave in anticipation; this time I just wanted to be alone. I pulled my jacket tight around me, but I couldn’t shake the chill. Almost by habit, I took a detour past the campus cafe, past places that used to feel like home. That night, I lay awake in bed, staring at things I’d collected: a teacup, a small wooden train, faded receipts retraced in shaky pen. I began flipping through poems from Hopkins and Rossetti, two poets who spent their lives choosing between faith and their own desires. 
+Two nights ago, I made the long walk from choir practice back to my dorm. Like always, I was the first one out of the building. Usually, I leave in anticipation; this time I just wanted to be alone. I pulled my jacket tight around me, but I couldn’t shake the chill. Almost by habit, I took a detour past the campus cafe, past places that used to feel like home. That night, I lay awake in bed, staring at things we'd shared: a teacup, a small wooden train, faded receipts retraced in shaky pen. I began flipping through poems from Hopkins and Rossetti, two poets who spent their lives choosing between faith and their own desires. 
 
 Gerard Manley Hopkins’ life and work were marked by melancholy. Torn between ascetic self-denial and creative passion, he burned his early poems upon entering the Jesuit order. Hopkins writes “to a young child” in *Spring and Fall:* 
 
