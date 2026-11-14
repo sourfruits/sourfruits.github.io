@@ -1,6 +1,6 @@
 ---
 title: "Eddie Coyle, and How I Learned to Love the Fall"
-subtitle: "The wistfulness of autumn as told through Evans, Mitchum, and Hopkins"
+subtitle: "On autumn, time, and memory"
 date: "2099-11-06"
 tags: ["writeup", "movies"]
 workId: "the-friends-of-eddie-coyle-1973"
