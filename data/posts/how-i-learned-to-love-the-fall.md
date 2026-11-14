@@ -7,8 +7,8 @@ workId: "the-friends-of-eddie-coyle-1973"
 image: "images/how-i-learned-to-love-the-fall/image.jpg"
 ---
 
->> He hath made everything beautiful in its time…
->> — Ecclesiastes 3:11 (KJV)
+_He hath made everything beautiful in its time…
+— Ecclesiastes 3:11 (KJV)_
 
 ***I. Two Trees***
 
