@@ -37,14 +37,14 @@ I really started noticing this after watching Peter Yates’ 1973 neo-noir *The 
 
 The Victorian poets took fall, loss, and beauty and tied it to time. Gerard Manley Hopkins struggled with a lifelong conflict between his religious devotion, ascetic guilt, and creativity. Upon becoming a Jesuit, he burned all his early poems. Hopkins, one of my favorite poets for the depth of his emotional turmoil, wrote on autumn and loss in his poem *Spring and Fall:*
 
->>Márgarét, áre you gríeving  
->>Over Goldengrove unleaving?
+>Márgarét, áre you gríeving  
+>Over Goldengrove unleaving?
 
->>…Though worlds of wanwood leafmeal lie;  
->>And yet you wíll weep and know why.
+>…Though worlds of wanwood leafmeal lie;  
+>And yet you wíll weep and know why.
 
->>…It ís the blight man was born for,  
->>It is Margaret you mourn for.
+>…It ís the blight man was born for,  
+>It is Margaret you mourn for.
 
 Hopkins interprets a child’s grief for shedding leaves as mourning for man’s mortality. While nature’s cyclical promise is implied, the poem reserves the hope of return for the fall foliage. Our condition is permanent: we are dust, and to dust we shall return.
 
