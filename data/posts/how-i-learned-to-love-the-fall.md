@@ -7,7 +7,7 @@ workId: "the-friends-of-eddie-coyle-1973"
 image: "images/how-i-learned-to-love-the-fall/image.jpg"
 ---
 
-*He hath made everything beautiful in its time…*  
+*He hath made everything beautiful in its time.*  
 *— Ecclesiastes 3:11 (KJV)*
 
 ***I. Two Trees***
@@ -24,10 +24,10 @@ I find my fondest memories in the chill of autumn. Not necessarily my happiest, 
 
 Each fall brings the excitement of new things as the old ones slip away. There’s a shared wistfulness in the autumn-inspired art that I love. Take for example the jazz standard Autumn Leaves, with lyrics adapted by Johnny Mercer:
 
->>The falling leaves drift by the window  
->>The autumn leaves of red and gold  
->>I see your lips, the summer kisses  
->>The sun-burned hands I used to hold
+>The falling leaves drift by the window  
+>The autumn leaves of red and gold  
+>I see your lips, the summer kisses  
+>The sun-burned hands I used to hold
 
 Mercer finds beauty in memory and tragedy in impermanence. I’m particularly fond of the Bill Evans rendition, where his lyrical phrasings dance lightly around an upbeat swing even as we’re constantly pulled back into a nostalgic G-minor.
 
