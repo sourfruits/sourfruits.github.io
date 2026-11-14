@@ -7,6 +7,9 @@ workId: "the-friends-of-eddie-coyle-1973"
 image: "images/how-i-learned-to-love-the-fall/image.jpg"
 ---
 
+>> He hath made everything beautiful in its time…
+>> — Ecclesiastes 3:11 (KJV)
+
 ***I. Two Trees***
 
 Two trees greeted me on my morning walk to the dining hall. The first stood tall and sported a lush crown of gold foliage. The second sat a little further around the bend. It was half the other’s height, and tattered brown leaves peeled off its branches. Its rusting leaves were so sparse I could stick my hand through them, a pile already gathering at its base. Only one seemed worth photographing. I took a picture of both.
