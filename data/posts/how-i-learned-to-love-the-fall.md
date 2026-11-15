@@ -52,9 +52,9 @@ Christina Rossetti, who greatly influenced Hopkins, struggled with the grief of 
 >…Yet rise it shall—the sap of Spring;  
 >O Jesus, rise in me.
 
-Unlike Hopkins, Rossetti gives herself the hope of seasonal renewal. It seemed as if over a century ago, these two had sat outside on a cold November night and felt what I felt.
+Unlike Hopkins, Rossetti gives herself the hope of seasonal renewal. It seemed as if over a century ago, the two had walked through their own cold November nights and felt what I felt.
 
-What the poets never answer is that while the trees know the timing of their re-leaving, we don’t know when our leaves come and go, when fall ends and winter comes. Like Eddie Coyle, all we imagine is the future, blind to loss that could happen. For twenty years, this unknowability stopped me from fully investing in anything. This fall, I learned to embrace the new. Now, I’m learning to let it go. I find myself reaching for my phone every night to send a song or a poem, and stopping myself before I do.
+What the poets never answer is that while the trees know the timing of their re-leaving, we don’t know when our leaves come and go, when fall ends and winter comes. College taught me that chapters can close: my journal entries are sorted by semester, and I’m mentally prepared for graduation. It didn't teach me that some seasons end before you're ready. Like Eddie Coyle, all we imagine is the future, blind to loss that could happen. For twenty years, this unknowability stopped me from fully investing in anything. When fall started, I learned to embrace the new. Now, I’m learning to let it go. I find myself reaching for my phone every night to send a song or a poem, and stopping myself before I do.
 
 I could say that there’s comfort in knowing that to every thing there is a season, that God makes every thing beautiful in his time. But right now, those words are empty. I hate that I have to see the leaves fall. 
 
