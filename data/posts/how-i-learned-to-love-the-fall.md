@@ -36,7 +36,7 @@ Gerard Manley Hopkins’ life and work were marked by melancholy. Torn between a
 >…It ís the blight man was born for,  
 >It is Margaret you mourn for.
 
-While the Goldengrove will return, our human mortality is permanent: we are dust, and to dust we shall return.
+In the poem, a child grieving the shedding of leaves really grieving her own mortality. Nature’s cycles promise that Goldengrove will return, but our condition is permanent: we are dust, and to dust we shall return.
 
 Christina Rossetti, who greatly influenced Hopkins, struggled with the grief of renunciation. She takes a more hopeful turn in the first two stanzas of *A Better Resurrection*:
 
@@ -52,10 +52,10 @@ Christina Rossetti, who greatly influenced Hopkins, struggled with the grief of 
 >…Yet rise it shall—the sap of Spring;  
 >O Jesus, rise in me.
 
-Unlike Hopkins, Rossetti gives herself the hope of seasonal renewal. It seemed as if over a century ago, the two had walked through their own cold November nights and felt what I felt.
+Unlike Hopkins, Rossetti sees for herself the hope of seasonal renewal. I wanted to believe her.
 
-What the poets never answer is that while the trees know the timing of their re-leaving, we don’t know when our leaves come and go, when fall ends and winter comes. College taught me that chapters can close: my journal entries are sorted by semester, and I’m mentally prepared for graduation. It didn't teach me that some seasons end before you're ready. Like Eddie Coyle, all we imagine is the future, blind to loss that could happen. When fall started, I learned to embrace the new for the first time. Now, I’m learning to let it go. I still find myself reaching for my phone to send a song or a poem, and stopping myself before I do.
+What the poets don’t mention is that while the trees know the timing of their re-leaving, we don’t. We don’t know when our leaves come and go, when fall ends and winter comes. College taught me that chapters can close: my journal entries are sorted by semester, and I’m already bracing for graduation. It didn't teach me that some seasons end before you're ready. Like Eddie Coyle, I had imagined a future, blind to the loss around the corner. This fall, just as I learned to fully embrace the new for the first time, I find myself learning to let it go. I still reach for my phone to send a song or a poem, and stop myself before I do.
 
-I could say that there’s comfort in knowing that to every thing there is a season, that God makes every thing beautiful in his time. But right now, those words are empty. I hate that I have to see the leaves fall. Still, knowing how quickly the new can fade, I feel no regret for having chosen it. I’d do it all again.
+I could say that there’s comfort in knowing that to every thing there is a season, that God makes every thing beautiful in his time. But right now, those words feel empty. I hate that I have to see the leaves fall. Still, even knowing how quickly the new can fade, I don’t regret having chosen it. I’d do it all again.
 
 I walk by the two trees every morning. The gold leaves of the first one are starting to droop and fall one by one, floating away with each gust of wind. And yesterday I noticed a tawny gradient, a pied beauty in the brown leaves of its aged friend.
