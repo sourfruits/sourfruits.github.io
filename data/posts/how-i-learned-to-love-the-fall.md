@@ -54,10 +54,10 @@ Christina Rossetti, who greatly influenced Hopkins, struggled with the grief of 
 
 Unlike Hopkins, Rossetti gives herself the hope of seasonal renewal. It seemed as if over a century ago, the two had walked through their own cold November nights and felt what I felt.
 
-What the poets never answer is that while the trees know the timing of their re-leaving, we don’t know when our leaves come and go, when fall ends and winter comes. College taught me that chapters can close: my journal entries are sorted by semester, and I’m mentally prepared for graduation. It didn't teach me that some seasons end before you're ready. Like Eddie Coyle, all we imagine is the future, blind to loss that could happen. When fall started, I learned to embrace the new for the first time. Now, I’m learning to let it go. I find myself reaching for my phone to send a song or a poem, and stopping myself before I do.
+What the poets never answer is that while the trees know the timing of their re-leaving, we don’t know when our leaves come and go, when fall ends and winter comes. College taught me that chapters can close: my journal entries are sorted by semester, and I’m mentally prepared for graduation. It didn't teach me that some seasons end before you're ready. Like Eddie Coyle, all we imagine is the future, blind to loss that could happen. When fall started, I learned to embrace the new for the first time. Now, I’m learning to let it go. I still find myself reaching for my phone to send a song or a poem, and stopping myself before I do.
 
 I could say that there’s comfort in knowing that to every thing there is a season, that God makes every thing beautiful in his time. But right now, those words are empty. I hate that I have to see the leaves fall. 
 
-Still, even knowing that the new could fade at any moment, I feel no regret for having chosen it. I’d do it all again.
+Even now, knowing that the new could fade at any moment, I feel no regret for having chosen it. I’d do it all again.
 
 I walk by the two trees every morning. The gold leaves of the first one are starting to droop and fall one by one, floating away with each gust of wind. And yesterday I noticed a tawny gradient, a pied beauty in the brown leaves of its aged friend.
