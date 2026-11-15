@@ -38,7 +38,7 @@ Gerard Manley Hopkins’ life and work were marked by melancholy. Torn between a
 
 While the Goldengrove will return, our human mortality is permanent: we are dust, and to dust we shall return.
 
-Christina Rossetti, who greatly influenced Hopkins, struggled with the grief of renunciation, breaking off two engagements for her faith. She takes a more hopeful turn in the first two stanzas of *A Better Resurrection*:
+Christina Rossetti, who greatly influenced Hopkins, struggled with the grief of renunciation. She takes a more hopeful turn in the first two stanzas of *A Better Resurrection*:
 
 >I have no wit, no words, no tears;  
 >My heart within me like a stone  
