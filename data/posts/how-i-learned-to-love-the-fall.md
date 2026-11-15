@@ -52,7 +52,7 @@ Christina Rossetti, who greatly influenced Hopkins, struggled with the grief of 
 >…Yet rise it shall—the sap of Spring;  
 >O Jesus, rise in me.
 
-Unlike Hopkins, Rossetti’s poem promises the hope of seasonal renewal. That night, I wanted to believe her.
+Unlike Hopkins, Rossetti offers the hope of seasonal renewal. That night, I wanted to believe her.
 
 What the poets don’t mention is that while the trees know the timing of their re-leaving, we don’t. We don’t know when our leaves come and go, when fall ends and winter comes. College taught me that chapters can close: my journal entries are sorted by semester, and I’m already bracing for graduation. It didn't teach me that some seasons end before you're ready. Like Eddie Coyle, I imagined a future, blind to loss around the corner. This fall, just as I learned to fully embrace the new for the first time, I find myself learning to let it go. I still reach for my phone to send a song or a poem, and stop myself before I do.
 
