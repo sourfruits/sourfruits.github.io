@@ -1,5 +1,18 @@
 [
   {
+    "id": "hopkins-poems-and-prose",
+    "title": "hopkins",
+    "subtitle": "--",
+    "date": "2099-11-18",
+    "tags": [
+      "blurb",
+      "books"
+    ],
+    "workId": "hopkins-poems-and-prose",
+    "image": "images/hopkins-poems-and-prose/image.jpg",
+    "content": "hello"
+  },
+  {
     "id": "the-white-album",
     "title": "placeholder",
     "subtitle": "xx",
