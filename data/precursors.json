@@ -28,9 +28,14 @@
       "kind": "writer",
       "discovered_via": [
         {
+          "source": "gerard-manley-hopkins",
+          "engagedDate": "2026-11",
+          "thread": "Poetry",
+          "note": "Victorian inspiration, 'A Better Resurrection'"
+        },
+        {
           "source": "cmc-voice-lessons",
           "awareDate": "2026-11",
-          "thread": "Poetry",
           "note": "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor"
         }
       ]
