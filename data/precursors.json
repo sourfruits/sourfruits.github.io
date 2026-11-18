@@ -54,6 +54,18 @@
       ]
     },
     {
+      "id": "henri-nouwen",
+      "label": "Henri Nouwen",
+      "kind": "writer",
+      "discovered_via": [
+        {
+          "source": "gerard-manley-hopkins",
+          "awareDate": "2026-11",
+          "thread": "religious-grief",
+        }
+      ]
+    },
+    {
       "id": "the-friends-of-eddie-coyle-1973",
       "label": "The Friends of Eddie Coyle (1973)",
       "kind": "film",
