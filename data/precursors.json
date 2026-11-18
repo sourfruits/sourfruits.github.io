@@ -30,13 +30,12 @@
         {
           "source": "gerard-manley-hopkins",
           "engagedDate": "2026-11",
-          "thread": "religious grief",
+          "thread": "Poetry",
           "note": "Victorian inspiration, 'A Better Resurrection'"
         },
         {
           "source": "cmc-voice-lessons",
           "awareDate": "2026-11",
-          "thread": "poetry",
           "note": "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor"
         }
       ]
@@ -47,22 +46,10 @@
       "kind": "writer",
       "discovered_via": [
         {
+          "source": "rv-hallberg",
           "engagedDate": "2026-11",
-          "thread": "poetry",
-          "note": "First aware through Gaffney's FWS in 2023, inspired to explore poetry by RvH"
-        }
-      ]
-    },
-    {
-      "id": "henri-nouwen",
-      "label": "Henri Nouwen",
-      "kind": "writer",
-      "discovered_via": [
-        {
-          "source": "gerard-manley-hopkins", "awareDate": "2026-11", "thread": "religious grief"
-        },
-        {
-          "source": "danny-h", "engagedDate": "2026-11"
+          "thread": "Poetry",
+          "note": "First aware through Gaffney FWS, inspired to explore poetry"
         }
       ]
     },
@@ -165,7 +152,7 @@
         {
           "source": "sontag-on-photography",
           "awareDate": "2026-08",
-          "thread": "theory"
+          "thread": "Theory"
         },
         {
           "source": "edward-said",
@@ -203,7 +190,7 @@
       "id": "the-dupes-1972",
       "label": "The Dupes (1972)",
       "kind": "film",
-      "creator": "Tewfik Saleh",
+      "creator": "Twefik Saleh",
       "discovered_via": [
         {
           "source": "kanafani-men-in-the-sun",
@@ -268,7 +255,7 @@
       "id": "blow-out-1981",
       "label": "Blow Out (1981)",
       "kind": "film",
-      "creator": "Brian De Palma",
+      "creator": "Brian de Palma",
       "discovered_via": [
         {
           "source": "the-parallax-view-1974",
@@ -566,18 +553,23 @@
           "engagedDate": "2026-06",
           "thread": "existential fiction"
         }
-      ]
-    },
-    {
-      "id": "nabokov-invitation-to-a-beheading",
-      "label": "Invitation to a Beheading",
-      "kind": "book",
-      "creator": "Vladimir Nabokov",
-      "discovered_via": [
+      ],
+      "connections": [
         {
-          "source": "kafka-the-trial",
-          "engagedDate": "2026-06",
-          "thread": "existential fiction"
+          "to": "the-trial-1962",
+          "relationship": "adaptation"
+        },
+        {
+          "to": "camus-the-stranger",
+          "relationship": "influence"
+        },
+        {
+          "to": "after-hours-1985",
+          "relationship": "influence"
+        },
+        {
+          "to": "brazil-1985",
+          "relationship": "influence"
         }
       ]
     },
