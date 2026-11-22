@@ -66,11 +66,18 @@ function isPinned(post) {
 // pinned posts without one fall to the end of the pinned group. Otherwise it's
 // newest-first by date, and same-date posts break by `dateOrder` (see
 // byDateOrder). Mutates + returns.
+// Order (each group newest first; pinned groups honour pinOrder first):
+//   1. pinned drafts   2. drafts   3. pinned posts   4. everything else
+// Drafts only show when the drafts toggle is on, so visitors just see 3 → 4.
+function sortGroup(post) {
+  const d = isDraft(post), p = isPinned(post);
+  return d && p ? 0 : d ? 1 : p ? 2 : 3;
+}
 function sortPosts(posts) {
   return posts.sort((a, b) => {
-    const pa = isPinned(a), pb = isPinned(b);
-    if (pa !== pb) return pa ? -1 : 1;                 // pinned ahead of the rest
-    if (pa && pb) {                                     // both pinned → by pinOrder
+    const ga = sortGroup(a), gb = sortGroup(b);
+    if (ga !== gb) return ga - gb;
+    if (isPinned(a) && isPinned(b)) {                   // same pinned group → by pinOrder
       const oa = Number.isFinite(a.pinOrder) ? a.pinOrder : Infinity;
       const ob = Number.isFinite(b.pinOrder) ? b.pinOrder : Infinity;
       if (oa !== ob) return oa - ob;

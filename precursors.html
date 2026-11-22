@@ -24,7 +24,7 @@
   <header class="site-header"></header>
 
   <main>
-    <h1 class="precursors-title">Precursors<span class="beta-tag">beta</span></h1>
+    <h1 class="precursors-title">Precursors</h1>
     <p class="precursors-intro">Where each piece comes from and what it connects to.</p>
     <!-- Meta line: "Updated <date> · Learn more". The date is filled by
          js/precursors.js from the GitHub API (last commit touching
@@ -41,7 +41,7 @@
       <div class="precursors-learn-cards" id="learn-more-cards"></div>
     </div>
 
-    <hr class="precursors-rule">
+    <!-- Divider under the intro removed; restore <hr class="precursors-rule"> to bring it back. -->
 
     <div class="graph-area">
     <!-- Toolbar + graph together form the frame that goes full screen, so the
@@ -49,9 +49,48 @@
     <div class="graph-frame" id="graph-frame">
     <!-- Mode toggle + Threads filter in the toolbar above the graph. -->
     <div class="graph-toolbar">
+      <!-- Graph / List switch: flips the box between the graph and a ranked,
+           filterable list of every item (js/precursors.js, "List view"). -->
+      <div class="mode-toggle view-toggle" role="group" aria-label="View">
+        <button type="button" class="view-btn is-active" data-view="graph" aria-pressed="true">Graph</button>
+        <button type="button" class="view-btn" data-view="list" aria-pressed="false">List</button>
+      </div>
+      <!-- Mode toggle hidden: the page is Discovery-only for now. To bring the
+           Connections view back, restore this markup:
       <div class="mode-toggle" role="group" aria-label="Graph mode">
         <button type="button" class="mode-btn" data-mode="discovery" aria-pressed="true">Discovery</button>
         <button type="button" class="mode-btn" data-mode="connections" aria-pressed="false">Connections</button>
+      </div>
+      -->
+      <!-- List-only controls (category + sort): live in the toolbar next to the
+           switch so there's one row of buttons; shown only in List view. -->
+      <div class="list-tools" id="list-tools" hidden>
+        <div class="cat-filter" id="cat-filter">
+          <button type="button" class="tag-dropdown-toggle" id="cat-toggle" aria-haspopup="true" aria-expanded="false">
+            <span class="tag-dropdown-label" id="cat-label"><span class="lbl-long">All categories</span><span class="lbl-short">All</span></span>
+            <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="thread-dropdown-menu" id="cat-menu" role="group" aria-label="Filter by category" hidden></div>
+        </div>
+        <!-- Sort: same dropdown look as the category filter (not a native
+             <select>), so the controls match the rest of the page. -->
+        <div class="cat-filter sort-filter" id="sort-filter">
+          <button type="button" class="tag-dropdown-toggle" id="sort-toggle" aria-haspopup="true" aria-expanded="false">
+            <span class="tag-dropdown-label" id="sort-label"><span class="lbl-long">Most influential</span><span class="lbl-short">Top</span></span>
+            <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="thread-dropdown-menu sort-menu" id="sort-menu" role="group" aria-label="Sort" hidden>
+            <div class="thread-dropdown-scroll">
+              <button type="button" class="thread-option is-selected" data-sort="influence" data-short="Top"><span class="thread-option-name">Most influential</span></button>
+              <button type="button" class="thread-option" data-sort="recent" data-short="Recent"><span class="thread-option-name">Most recent</span></button>
+              <button type="button" class="thread-option" data-sort="az" data-short="A–Z"><span class="thread-option-name">A to Z</span></button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="thread-filter" id="thread-filter">
         <button type="button" class="tag-dropdown-toggle" id="thread-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
@@ -130,6 +169,13 @@
         <div class="graph-legend" id="graph-legend" aria-hidden="true"></div>
       </details>
       <svg id="graph" aria-label="Force-directed graph of precursors"></svg>
+      <!-- List view: covers the graph canvas (left 2/3) while "List" is on,
+           leaving the docked card on the right. Every item ranked (category +
+           sort controls are in the toolbar); tapping a row flips back to the
+           graph with that item's card open. Populated by js/precursors.js. -->
+      <div class="list-view" id="list-view" hidden>
+        <ol class="list-rows" id="list-rows"></ol>
+      </div>
       <!-- Docked node detail panel (right side); populated by js/precursors.js -->
       <div class="node-detail" id="node-detail"></div>
     </div>

@@ -22,15 +22,9 @@ const LEARN_MORE_CARDS = [
   {
     label: "Why “precursors”",
     callout: true,   // warm tint + green left-border, so it reads as a distinct aside
-    body: `In 1951, Jorge Luis Borges wrote an essay titled <em>Kafka and His Precursors</em>, arguing that while works influence their successors, they also retroactively create their own precursors. A work "modifies our conception of the past, as it will modify the future."
-    
-    This tracker visualizes the two-way influence of my personal journey through film, art, and literature.`,
-  },
-  {
-    label: "How it works",
-    body: `Discovery — what I'm interested in, and how I found it.
+    body: `In 1951, Jorge Luis Borges wrote an essay titled <em>Kafka and His Precursors</em>, arguing that while works influence their successors, they also retroactively create their own precursors.
 
-Connections — how what I'm interested in relates to each other (personally noted connections, not factual categorization).`,
+This tracker visualizes my personal journey through film, art, and literature, with each node representing when I first engaged with the work. The discoveries here run forward and backwards in time, "modif[ying] our conceptions of the past, as it will modify the future."`,
   },
 ];
 
@@ -64,6 +58,7 @@ const TUNING = {
 const svg = d3.select("#graph");
 const wrap = document.getElementById("graph-wrap");
 const detail = document.getElementById("node-detail");
+const graphArea = document.querySelector(".graph-area");
 const legend = document.getElementById("graph-legend");
 const status = document.getElementById("status");
 const modeButtons = document.querySelectorAll(".mode-btn");
@@ -259,6 +254,7 @@ document.addEventListener("pointerup", (e) => {
   const t = e.target;
   if (!wrap.contains(t)) return;                     // outside the graph entirely
   if (detail.contains(t)) return;                    // inside the card
+  if (t.closest && t.closest(".list-view")) return;  // the list view handles its own taps
   if (t.closest && t.closest("g.node")) return;      // a node — it toggles itself
   if (detailNodeId !== null) closeDetail();
   if (activeThread) selectThread(null);              // empty tap clears the thread
@@ -671,9 +667,9 @@ function edgeColor(d) {
 }
 
 // The hover label for a typed connection. Discovery edges read by strength —
-// "Consciousness" (engaged) vs "Awareness" (aware) — matching the legend.
+// "Engagement" (engaged) vs "Awareness" (aware) — matching the legend.
 function edgeLabel(d) {
-  if (d.type === "discovery") return d.strength === "aware" ? "Awareness" : "Consciousness";
+  if (d.type === "discovery") return d.strength === "aware" ? "Awareness" : "Engagement";
   return d.type && RELATIONSHIP_TYPES[d.type] ? RELATIONSHIP_TYPES[d.type].label : "";
 }
 
@@ -881,6 +877,9 @@ function cardConnections(node) {
 
 function openDetail(node, event, skipCamera) {
   detailNodeId = node.id;
+  // On phones the panel is hidden until something is selected (see CSS); show
+  // it before any camera move so size() already accounts for its width.
+  if (graphArea) graphArea.classList.add("has-detail");
 
   // Header block: kind as a small uppercase eyebrow above the serif title, then
   // the creator as a byline on its own line, then a hairline before the meta.
@@ -1007,6 +1006,7 @@ function renderPlaceholder() {
 function closeDetail(immediate) {
   if (!detail) return;
   detailNodeId = null;
+  if (graphArea) graphArea.classList.remove("has-detail");
   renderPlaceholder();
   updateNodeSelection();
 }
@@ -1342,7 +1342,7 @@ function renderLegend(mode) {
   const dc = RELATIONSHIP_TYPES.discovery.color;
   legend.innerHTML =
     hubItem +
-    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>Consciousness →</span>` +
+    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>Engagement →</span>` +
     `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc};border-top-style:dashed"></span>Awareness →</span>`;
 }
 
@@ -1812,6 +1812,210 @@ if (fsBtn) {
   document.addEventListener("fullscreenchange", onFsChange);
   document.addEventListener("webkitfullscreenchange", onFsChange);
 }
+
+// --- List view ---------------------------------------------------------------
+// The Graph / List switch in the toolbar flips the graph box to a ranked list of
+// every item in the graph. The list has its own category dropdown (built like
+// the Threads menu) and a sort. Threads and the clock are graph-only. Tapping a row
+// flips back to the graph and opens that item's card (camera pans to it).
+// `var` so the hoisted guard in renderList() is safe if it's called early.
+var listState = { view: "graph", category: "all", sort: "influence" };
+
+// The category dropdown is built straight from the `kind` values in
+// precursors.txt — no hand-made grouping to maintain. A new kind (say
+// "poem") shows up in the dropdown on its own the next time the page loads.
+function listCategoryOf(node) {
+  return String(node.kind || "").trim().toLowerCase();
+}
+
+// Every item currently in the graph (the built view nodes carry growth and
+// discoveryOut, which the raw nodes don't).
+function listItems() {
+  return simulation ? simulation.nodes().slice() : [];
+}
+
+// Earliest dated discovery as its original string ("2024-03"), for display.
+function firstDateString(node) {
+  let best = null, bestKey = Infinity;
+  discoveredVia(node).forEach((d) => {
+    const s = entryTimelineDate(d);
+    const k = s ? dateKey(s) : null;
+    if (k != null && k < bestKey) { bestKey = k; best = s; }
+  });
+  return best;
+}
+
+function byInfluence(a, b) {
+  return (b.growth || 0) - (a.growth || 0)
+    || ((b.discoveryOut || []).length - (a.discoveryOut || []).length)
+    || a.label.localeCompare(b.label, undefined, { sensitivity: "base" });
+}
+
+// Dropdown buttons carry a long and a short label; CSS shows the short one on
+// phones so the List toolbar fits on one row.
+function setDropdownLabel(el, long, short) {
+  el.innerHTML = `<span class="lbl-long">${escapeHTML(long)}</span><span class="lbl-short">${escapeHTML(short)}</span>`;
+}
+
+function buildCategoryMenu() {
+  const menu = document.getElementById("cat-menu");
+  if (!menu) return;
+  const counts = new Map();
+  listItems().forEach((n) => {
+    const k = listCategoryOf(n);
+    if (k) counts.set(k, (counts.get(k) || 0) + 1);
+  });
+  // Most common kinds first, ties alphabetical.
+  const kinds = [...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  // A remembered category that no longer exists falls back to "all".
+  if (listState.category !== "all" && !counts.has(listState.category)) listState.category = "all";
+  const options = kinds.map(([k, n]) => `
+      <button type="button" class="thread-option" data-cat="${escapeHTML(k)}">
+        <span class="thread-option-name">${escapeHTML(capFirst(k))}</span>
+        <span class="thread-option-count">${n}</span>
+      </button>`).join("");
+  menu.innerHTML =
+    `<button type="button" class="tag-clear" id="cat-clear">All categories</button>
+     <div class="tag-dropdown-divider"></div>
+     <div class="thread-dropdown-scroll">${options}</div>`;
+  syncCategoryMenu();
+}
+
+function syncCategoryMenu() {
+  const menu = document.getElementById("cat-menu");
+  const toggle = document.getElementById("cat-toggle");
+  const label = document.getElementById("cat-label");
+  const cat = listState.category;
+  if (menu) {
+    menu.querySelectorAll(".thread-option").forEach((b) => b.classList.toggle("is-selected", b.dataset.cat === cat));
+    const clear = menu.querySelector("#cat-clear");
+    if (clear) clear.disabled = cat === "all";
+  }
+  if (toggle) toggle.classList.toggle("is-active", cat !== "all");
+  // Long label for wide screens, short one for phones (CSS picks which shows).
+  if (label) {
+    if (cat === "all") setDropdownLabel(label, "All categories", "All");
+    else setDropdownLabel(label, capFirst(cat), capFirst(cat));
+  }
+}
+
+function renderList() {
+  if (!listState) return;
+  const rowsEl = document.getElementById("list-rows");
+  if (!rowsEl) return;
+  const sort = listState.sort;
+  let items = listItems();
+  if (listState.category !== "all") items = items.filter((n) => listCategoryOf(n) === listState.category);
+  if (sort === "az") items.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+  else if (sort === "recent") items.sort((a, b) => (nodeDiscoveryKey(b) ?? -Infinity) - (nodeDiscoveryKey(a) ?? -Infinity) || byInfluence(a, b));
+  else items.sort(byInfluence);
+
+  if (!items.length) {
+    rowsEl.innerHTML = `<li class="list-empty">Nothing matches these filters.</li>`;
+    return;
+  }
+  rowsEl.innerHTML = items.map((n, i) => {
+    const creator = creatorInfo(n);
+    // Byline in italics: the creator if there is one, else the kind ("platform").
+    const by = creator ? creator.name : (n.kind || "");
+    // Pull a trailing "(1967)" off the title so the year can sit quieter.
+    const m = /^(.*?)\s*\((\d{4})\)\s*$/.exec(n.label);
+    const title = m ? `${escapeHTML(m[1])} <span class="list-year">(${m[2]})</span>` : escapeHTML(n.label);
+    let right = "";
+    if (sort === "recent") {
+      const d = firstDateString(n);
+      right = d ? escapeHTML(formatDiscoveryDate(d)) : "";
+    } else {
+      const led = (n.discoveryOut || []).length;
+      right = led ? `led to ${led}` : "";
+    }
+    return `<li><button type="button" class="list-row" data-node-id="${escapeHTML(n.id)}">
+        ${sort === "influence" ? `<span class="list-rank">${i + 1}</span>` : ""}
+        <span class="list-main">
+          <span class="list-title">${title}</span>
+          ${by ? `<span class="list-by">${escapeHTML(by)}</span>` : ""}
+        </span>
+        <span class="list-leader" aria-hidden="true"></span>
+        <span class="list-count">${right}</span>
+      </button></li>`;
+  }).join("");
+}
+
+function setView(view) {
+  listState.view = view;
+  const listEl = document.getElementById("list-view");
+  document.querySelectorAll(".view-btn").forEach((b) => {
+    const on = b.dataset.view === view;
+    b.classList.toggle("is-active", on);
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  // The timeline only means something on the graph: close it and hide the clock.
+  if (view === "list" && scrubOpen) closeTimeline();
+  if (timelineBtn) timelineBtn.classList.toggle("is-list-hidden", view === "list");
+  // Threads is graph-only too: the list shows everything, filtered by category.
+  if (threadFilter) threadFilter.classList.toggle("is-list-hidden", view === "list");
+  if (listEl) listEl.hidden = view !== "list";
+  const tools = document.getElementById("list-tools");
+  if (tools) tools.hidden = view !== "list";
+  if (view === "list") { buildCategoryMenu(); renderList(); }
+}
+
+(function initListView() {
+  document.querySelectorAll(".view-btn").forEach((b) => {
+    b.addEventListener("click", () => setView(b.dataset.view));
+  });
+  const rowsEl = document.getElementById("list-rows");
+  if (rowsEl) rowsEl.addEventListener("click", (e) => {
+    const row = e.target.closest(".list-row");
+    if (!row) return;
+    const id = row.dataset.nodeId;
+    // Flip back to the graph and open the item's card (the camera pans to it).
+    setView("graph");
+    const node = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
+    if (node) openDetail(node);
+  });
+  // Sort dropdown.
+  const sortFilter = document.getElementById("sort-filter");
+  const sortToggle = document.getElementById("sort-toggle");
+  const sortMenu = document.getElementById("sort-menu");
+  const sortLabel = document.getElementById("sort-label");
+  if (sortFilter && sortToggle && sortMenu) {
+    const openSort = () => { sortMenu.hidden = false; sortToggle.setAttribute("aria-expanded", "true"); };
+    const closeSort = () => { sortMenu.hidden = true; sortToggle.setAttribute("aria-expanded", "false"); };
+    sortToggle.addEventListener("click", () => (sortMenu.hidden ? openSort() : closeSort()));
+    sortMenu.addEventListener("click", (e) => {
+      const b = e.target.closest(".thread-option");
+      if (!b) return;
+      listState.sort = b.dataset.sort;
+      sortMenu.querySelectorAll(".thread-option").forEach((o) => o.classList.toggle("is-selected", o === b));
+      if (sortLabel) setDropdownLabel(sortLabel, b.textContent.trim(), b.dataset.short || b.textContent.trim());
+      renderList();
+      closeSort();
+    });
+    document.addEventListener("click", (e) => { if (!sortFilter.contains(e.target)) closeSort(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeSort(); });
+  }
+  const filter = document.getElementById("cat-filter");
+  const toggle = document.getElementById("cat-toggle");
+  const menu = document.getElementById("cat-menu");
+  if (!filter || !toggle || !menu) return;
+  const openMenu = () => { menu.hidden = false; toggle.setAttribute("aria-expanded", "true"); };
+  const closeMenu = () => { menu.hidden = true; toggle.setAttribute("aria-expanded", "false"); };
+  toggle.addEventListener("click", () => (menu.hidden ? openMenu() : closeMenu()));
+  menu.addEventListener("click", (e) => {
+    if (e.target.closest("#cat-clear")) listState.category = "all";
+    else {
+      const b = e.target.closest(".thread-option");
+      if (!b) return;
+      listState.category = listState.category === b.dataset.cat ? "all" : b.dataset.cat;
+    }
+    syncCategoryMenu();
+    renderList();
+    closeMenu();
+  });
+  document.addEventListener("click", (e) => { if (!filter.contains(e.target)) closeMenu(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMenu(); });
+})();
 
 // --- tuning panel (troubleshooting) ---------------------------------------
 

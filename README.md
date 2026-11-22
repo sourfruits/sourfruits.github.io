@@ -14,8 +14,8 @@ a little frontmatter; a small build step compiles them all into the JSON the sit
 
 Extras baked in: a multi-select tag filter on the homepage (AND logic, synced to
 the URL via `?tags=`), a **density toggle** that switches the homepage grid between
-a normal view (7 posts/page) and a denser compact view (15/page), draft posts that
-stay hidden until you reveal them, **pinned** posts that sort to the front with a pin
+a normal view (7 posts/page) and a denser compact view (15–16/page, the default), draft posts that
+stay hidden until you reveal them (and then sort first: pinned drafts, then drafts, then pinned posts), **pinned** posts that sort to the front with a pin
 marker, three display modes (light / dark / **Minimal** — see below), gentle load-in
 fade animations (which respect `prefers-reduced-motion`), and — at the bottom of every
 post — previous/next links and a "More like this" row of posts sharing its tags. There's also a small easter egg
@@ -322,13 +322,24 @@ from the same data:
 - **Discovery** — every node that records a `discovered_via`, plus the nodes
   named as each discovery `source` (friends, classes, platforms — all ordinary
   nodes), with an edge from each source to what it led you to. An "engaged" discovery (you really sat with it) draws a
-  solid edge, labelled *Consciousness* on hover; a lighter "aware" one (you'd just
+  solid edge, labelled *Engagement* on hover; a lighter "aware" one (you'd just
   heard of it) draws dashed, labelled *Awareness*. Nodes are green here.
 - **Connections** — the nodes wired together by their `connections`. Each
   connection can carry a `relationship` type, colored per type with a legend;
   directional types (adaptation, influence, authorship) draw an arrow from the
   origin and enlarge the origin node, while the non-directional type (thematic)
   is a plain symmetric line. Nodes are yellow here.
+
+**Graph / List switch.** The Discovery/Connections toggle is hidden (the page is
+Discovery-only); in its place a **Graph / List** switch flips the box to a ranked
+list of every item in the graph. The list ranks by influence (the same `growth`
+score that sizes nodes), can be sorted Most influential / Most recent / A to Z,
+and filtered by a category dropdown built automatically from the `kind` values in
+`data/precursors.txt` (most common first, with counts) — a new kind appears there
+on its own, nothing to maintain. The list covers only the graph canvas, so the docked card stays on the
+right; tapping a row opens that item's card there. Threads and
+the timeline clock sit on the right of the toolbar in Graph view; in List view
+they hide and the list's category + sort dropdowns take their place.
 
 In both views a node is drawn as a **hub** or a **leaf** by its out-degree (how
 much points *out* of it). Hubs are the well-connected origins — larger, hollow
@@ -434,7 +445,7 @@ with `aware`/`engaged` becoming `awareDate`/`engagedDate`).
       dashed edge, labelled *Awareness* on hover, and shows as a bare `<date>` on
       the card. It does **not** count toward a source's size.
     - `engagedDate` — when you **first sat down** with it (read/watched). It draws
-      a solid edge, labelled *Consciousness* on hover, and counts once toward the
+      a solid edge, labelled *Engagement* on hover, and counts once toward the
       source's size. Engagement wins visually: an entry with **both** dates draws
       the solid edge and shows the progression `<awareDate> → <engagedDate>` on the
       card (earlier → later).

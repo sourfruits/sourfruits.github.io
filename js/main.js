@@ -240,7 +240,9 @@ densityToggle.addEventListener("click", (e) => {
   if (btn && btn.dataset.density !== currentView) setDensity(btn.dataset.density);
 });
 
-let initialView = "normal";
+// Default to the compact grid (4 across on desktop, 3 on phones); a visitor's
+// own choice from the toggle is remembered and wins on later visits.
+let initialView = "compact";
 try {
   const saved = localStorage.getItem(DENSITY_KEY);
   if (VIEWS.includes(saved)) initialView = saved;

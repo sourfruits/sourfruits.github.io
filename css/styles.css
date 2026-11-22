@@ -1973,9 +1973,11 @@ a.post-tag:focus-visible { color: var(--ink); }
   letter-spacing: var(--tracking-widest);   /* badge spacing */
   text-transform: uppercase;
 }
+/* Green bar under the title — removed for now. Set display back to block to
+   bring it back. */
 .precursors-title::after {
   content: "";
-  display: block;
+  display: none;   /* was: block */
   width: 44px;
   height: 5px;
   margin: 10px 0 0;   /* left-aligned bar (homepage centers it with auto) */
@@ -2037,12 +2039,12 @@ a.post-tag:focus-visible { color: var(--ink); }
 .precursors-learn[open] .precursors-learn-toggle::before { transform: rotate(90deg); }
 .precursors-learn-toggle:hover { color: var(--ink); }
 
-/* Two side-by-side quiet cards (thin border, no shadow), stacking on narrow
-   screens. */
+/* Quiet cards (thin border, no shadow). Currently a single full-width card
+   ("Why precursors"); switch back to 1fr 1fr for two side-by-side cards. */
 .precursors-learn-cards {
   flex-basis: 100%;      /* wrap to its own full-width row below the meta line */
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 16px;
   margin: 0.75rem 0 0;   /* matches the subtitle/toolbar gaps around the toggle */
 }
@@ -2132,8 +2134,8 @@ a.post-tag:focus-visible { color: var(--ink); }
    (reuses .graph-icon-btn). aria-pressed marks it accent when the row is open. */
 .timeline-btn[hidden] { display: none; }
 .timeline-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
-/* Push Threads + clock to the right; the toolbar's right padding stops them at
-   the graph's right edge (the boundary divider). */
+/* Graph / List switch on the left; push Threads + clock to the right. The
+   toolbar's right padding stops them at the graph's right edge (the divider). */
 .thread-filter { margin-left: auto; }
 /* Tuning is pinned in the card zone at the far right — out of the flex flow so
    it never shifts with the other controls or the mode. */
@@ -2345,6 +2347,166 @@ a.post-tag:focus-visible { color: var(--ink); }
   color: #2b2600;
 }
 .mode-btn:focus-visible { outline: none; color: var(--ink); }
+
+/* Graph / List switch — same look as the old Discovery / Connections toggle
+   (it reuses .mode-toggle for the frame), but its own button class so the
+   mode code never touches it. */
+.view-btn {
+  padding: 6px 14px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  text-align: center;
+  cursor: pointer;
+}
+.view-btn + .view-btn { border-left: 1px solid var(--line); }
+.view-btn:hover { color: var(--ink); }
+.view-btn.is-active { background: var(--accent); color: var(--accent-ink); }
+.view-btn:focus-visible { outline: none; color: var(--ink); }
+.timeline-btn.is-list-hidden { display: none; }
+
+/* List view: covers the graph canvas (the left ~2/3) while "List" is on and
+   scrolls on its own, leaving the docked card (right ~1/3) in place — so the
+   page keeps the same 2/3 · 1/3 split in both views, and tapping a row opens
+   its card right there. The graph keeps running underneath, so flipping back
+   is instant. */
+.list-view {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: var(--graph-panel-w);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.list-view[hidden] { display: none; }
+.cat-filter { position: relative; }
+/* One type scale for every control in the graph box (Graph/List switch,
+   Threads, category + sort dropdowns and their menus): the site's sans at
+   --text-small, regular weight. Buttons otherwise fall back to the browser's
+   own font (Arial) and the homepage tag filter's bolder weight. Selected menu
+   items still go bold (see .thread-option.is-selected). */
+.graph-frame .tag-dropdown-toggle,
+.graph-frame .thread-option,
+.graph-frame .thread-option-count,
+.graph-frame .tag-clear,
+.graph-frame .view-btn {
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  font-weight: var(--weight-normal);
+}
+.graph-frame .thread-option.is-selected { font-weight: var(--weight-bold); }
+/* Category + sort dropdowns sit in the toolbar right after the Graph / List
+   switch, only while List is on (one row of buttons, not two). */
+.list-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.list-tools[hidden] { display: none; }
+/* Threads is a graph-only control (like the clock): hidden in List view, where
+   the category + sort dropdowns take its place on the right. */
+.thread-filter.is-list-hidden { display: none; }
+.list-tools .tag-dropdown-toggle { white-space: nowrap; }
+.lbl-short { display: none; }
+@media (max-width: 560px) {
+  .lbl-long { display: none; }
+  .lbl-short { display: inline; }
+}
+.sort-menu { left: auto; right: 0; min-width: 160px; }   /* opens leftward from the right edge */
+.list-rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  margin: 0;
+  padding: 8px 12px;   /* 12px matches the toolbar, so titles line up with its buttons */
+  list-style: none;
+}
+/* Rows read like a book's table of contents: italic serif number, Georgia
+   title, italic byline, then a dotted leader out to "led to N". */
+.list-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  width: 100%;
+  padding: 6px 0;
+  border: none;
+  background: none;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  text-align: left;
+  cursor: pointer;
+}
+.list-row:hover .list-title { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.list-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* Only present when sorted by influence (no empty column otherwise). */
+.list-rank {
+  flex: 0 0 1.4em;
+  color: var(--muted);
+  font-style: italic;
+  font-size: var(--text-tiny);
+  font-variant-numeric: tabular-nums;
+  text-align: left;
+}
+.list-main {
+  flex: 0 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.list-title {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: var(--text-small);
+}
+.list-year { color: var(--muted); }
+.list-by {
+  flex: 0 3 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--muted);
+  font-style: italic;
+  font-size: var(--text-tiny);
+}
+.list-leader {
+  flex: 1 1 24px;
+  min-width: 24px;
+  border-bottom: 1px dotted var(--line);
+  transform: translateY(-4px);
+}
+.list-count {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  white-space: nowrap;
+}
+.list-empty { padding: 16px 4px; color: var(--muted); font-size: var(--text-small); }
+@media (max-width: 560px) {
+  /* Phones: Tuning is hidden, so the toolbar doesn't need to save room for
+     the side card — let the controls use the full width, tighten them, and
+     only wrap if they truly can't fit on one line. */
+  .graph-toolbar { flex-wrap: wrap; row-gap: 8px; gap: 8px; padding-right: 12px; }
+  .graph-toolbar::after { display: none; }
+  .graph-frame .view-btn { padding: 5px 10px; }
+  .graph-frame .graph-toolbar .tag-dropdown-toggle { padding: 5px 8px; }
+}
+@media (max-width: 560px) {
+  .list-rows { padding: 6px 12px; }
+  /* No room for a leader on phones: drop it and stack the byline under the
+     title instead. */
+  /* The card panel is too narrow to share the screen here, and tapping a row
+     goes to the graph anyway — so on phones the list covers the full width. */
+  .list-view { right: 0; }
+  .list-main { flex: 1 1 auto; flex-direction: column; gap: 1px; }
+  .list-title, .list-by { max-width: 100%; }
+  .list-leader { display: none; }
+}
 
 /* Square icon button (Reset) — same look as the full-screen icon, minus its
    corner positioning, so it sits in the top-right group next to Tuning. */
@@ -2676,6 +2838,14 @@ body.is-graph-faux-fs { overflow: hidden; }
   overflow: hidden;
 }
 .node-detail[hidden] { display: none; }
+/* Phones: the docked panel takes almost half the graph, so hide it (and give
+   its space back to the graph and toolbar) until a node is selected. JS toggles
+   .has-detail on .graph-area in openDetail/closeDetail. */
+@media (max-width: 560px) {
+  .graph-area:not(.has-detail) { --graph-panel-w: 0px; }
+  .graph-area:not(.has-detail) .node-detail { display: none; }
+  .graph-area:not(.has-detail) .graph-toolbar::after { display: none; }
+}
 /* Header stays put; the body takes the remaining height but never scrolls
    itself — the sections inside it scroll. */
 .node-detail > :not(.detail-body) { flex-shrink: 0; }
