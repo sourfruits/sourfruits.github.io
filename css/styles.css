@@ -2402,7 +2402,9 @@ a.post-tag:focus-visible { color: var(--ink); }
 .graph-frame .thread-option.is-selected { font-weight: var(--weight-bold); }
 /* Category + sort dropdowns sit in the toolbar right after the Graph / List
    switch, only while List is on (one row of buttons, not two). */
-.list-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+/* min-height matches the 32px clock button that sits here in Graph view, so the
+   toolbar (and the line under it) stays the same height in both views. */
+.list-tools { display: flex; align-items: center; gap: 8px; margin-left: auto; min-height: 32px; }
 .list-tools[hidden] { display: none; }
 /* Threads is a graph-only control (like the clock): hidden in List view, where
    the category + sort dropdowns take its place on the right. */
