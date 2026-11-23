@@ -26,7 +26,7 @@ const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
 // On the Writing page each piece shows (and is filtered by) just ONE tag: its
 // first tag that isn't "writeup" / "blurb" (those describe length on the
-// homepage grid). So tags: ["writeup", "essay", "movies"] → "essay".
+// homepage grid). So tags: ["writeup", "essay", "film"] → "essay".
 const GRID_ONLY_TAGS = ["writeup", "blurb"];
 const writingTags = (post) =>
   (Array.isArray(post.tags) ? post.tags : []).filter((t) => !GRID_ONLY_TAGS.includes(t)).slice(0, 1);
