@@ -1,6 +1,19 @@
 {
   "nodes": [
     {
+      "id": "rear-window-1954",
+      "label": "Rear Window (1954)",
+      "kind": "film",
+      "creator": "Alfred Hitchcock",
+      "discovered_via": [
+        {
+          "source": "blow-out-1981",
+          "engagedDate": "2026-11-23",
+          "thread": "70s paranoia"
+        }
+      ]
+    },
+    {
       "id": "walt-whitman",
       "label": "Walt Whitman",
       "kind": "writer",
