@@ -61,8 +61,8 @@
       "discovered_via": [
         {
           "source": "out-of-the-past-1947",
-          "thread": "Robert Mitchum",
-          "engagedDate": "2026-11-05"
+          "engagedDate": "2026-11-05",
+          "thread": "Robert Mitchum"
         }
       ]
     },
@@ -74,8 +74,8 @@
       "discovered_via": [
         {
           "source": "cmc-film-noir",
-          "thread": "Film noir",
-          "engagedDate": "2026-10-05"
+          "engagedDate": "2026-10-05",
+          "thread": "Film noir"
         }
       ]
     },
@@ -125,9 +125,9 @@
       "discovered_via": [
         {
           "source": "felix-k",
+          "engagedDate": "2026-10-24",
           "thread": "Arab Israeli conflict",
-          "note": "2026 AFI Fest screening @ the Chinese Theater",
-          "engagedDate": "2026-10-24"
+          "note": "2026 AFI Fest screening @ the Chinese Theater"
         }
       ]
     },
@@ -363,8 +363,8 @@
       "discovered_via": [
         {
           "source": "mahjong-1996",
-          "thread": "Virginie Ledoyen",
-          "engagedDate": "2026-06-04"
+          "engagedDate": "2026-06-04",
+          "thread": "Virginie Ledoyen"
         }
       ]
     },
@@ -425,9 +425,9 @@
       "discovered_via": [
         {
           "source": "camus-the-stranger",
+          "awareDate": "2026-05",
           "engagedDate": "2026-08-02",
-          "thread": "existential fiction",
-          "awareDate": "2026-05"
+          "thread": "existential fiction"
         }
       ],
       "connections": [
@@ -519,8 +519,8 @@
       "discovered_via": [
         {
           "source": "le-samourai-1967",
-          "thread": "lone operator",
-          "awareDate": "2026-04"
+          "awareDate": "2026-04",
+          "thread": "lone operator"
         }
       ]
     },
@@ -606,8 +606,8 @@
       "discovered_via": [
         {
           "source": "dostoevsky-white-nights",
-          "engagedDate": "2026-08-09",
-          "awareDate": "2026-05"
+          "awareDate": "2026-05",
+          "engagedDate": "2026-08-09"
         }
       ]
     },
@@ -709,10 +709,10 @@
       "discovered_via": [
         {
           "source": "le-samourai-1967",
+          "awareDate": "2026-04",
           "engagedDate": "2026-05-18",
           "thread": "lone operator",
-          "note": "Bresson/Melville ascetic dialogue",
-          "awareDate": "2026-04"
+          "note": "Bresson/Melville ascetic dialogue"
         }
       ]
     },
@@ -724,8 +724,8 @@
       "discovered_via": [
         {
           "source": "le-samourai-1967",
-          "thread": "Alain Delon",
-          "engagedDate": "2026-05-17"
+          "engagedDate": "2026-05-17",
+          "thread": "Alain Delon"
         }
       ]
     },
@@ -806,8 +806,8 @@
         },
         {
           "source": "dis-philosophy",
-          "note": "Assigned/chosen for an essay on boredom; loved it.",
-          "engagedDate": "2026-05-12"
+          "engagedDate": "2026-05-12",
+          "note": "Assigned/chosen for an essay on boredom; loved it."
         }
       ],
       "connections": [
@@ -826,8 +826,8 @@
       "discovered_via": [
         {
           "source": "the-parallax-view-1974",
-          "thread": "70s paranoia",
-          "engagedDate": "2026-05-21"
+          "engagedDate": "2026-05-21",
+          "thread": "70s paranoia"
         }
       ]
     },
