@@ -599,7 +599,7 @@
           "relationship": "authorship"
         },
         {
-          "to": "dostoevsky-the-myth-of-sisyphus",
+          "to": "camus-the-myth-of-sisyphus",
           "relationship": "influence",
           "note": "Camus directly cites Dostoevsky in the Myth of Sisyphus."
         }
@@ -760,7 +760,7 @@
       ]
     },
     {
-      "id": "melancholia",
+      "id": "melancholia-2011",
       "label": "Melancholia (2011)",
       "kind": "film",
       "creator": "Lars von Trier",
@@ -977,16 +977,6 @@
         {
           "engagedDate": "2022-06",
           "note": "RMP glory days"
-        }
-      ]
-    },
-    {
-      "id": "susan-sontag",
-      "label": "Susan Sontag",
-      "kind": "writer",
-      "discovered_via": [
-        {
-          "source": "sontag-on-photography"
         }
       ]
     }
