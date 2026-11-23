@@ -127,7 +127,7 @@ discovered:
 
 ### the-dupes-1972
 label: The Dupes (1972)
-creator: Twefik Saleh
+creator: Tewfik Saleh
 kind: film
 discovered:
   - source: kanafani-men-in-the-sun, aware: 2026-10, thread: Arab Israeli conflict

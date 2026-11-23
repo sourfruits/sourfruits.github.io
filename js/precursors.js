@@ -1841,8 +1841,28 @@ var listState = { view: "graph", category: "all", sort: "influence" };
 // The category dropdown is built straight from the `kind` values in
 // precursors.txt — no hand-made grouping to maintain. A new kind (say
 // "poem") shows up in the dropdown on its own the next time the page loads.
+// Kinds can be grouped into named categories in data/categories.txt
+// ("People: writer, person, director, philosopher"). Any kind not listed there
+// is its own category, so a brand-new kind still shows up on its own.
+let kindToCategory = new Map();   // "writer" -> "People"
+function parseCategories(text) {
+  const map = new Map();
+  String(text || "").split(/\r?\n/).forEach((line) => {
+    const s = line.trim();
+    if (!s || s.startsWith("#")) return;
+    const i = s.indexOf(":");
+    if (i < 1) return;
+    const name = s.slice(0, i).trim();
+    s.slice(i + 1).split(",").map((k) => k.trim().toLowerCase()).filter(Boolean)
+      .forEach((k) => map.set(k, name));
+  });
+  return map;
+}
+// The category an item belongs to (its display name, also used as the key).
 function listCategoryOf(node) {
-  return String(node.kind || "").trim().toLowerCase();
+  const kind = String(node.kind || "").trim().toLowerCase();
+  if (!kind) return "";
+  return kindToCategory.get(kind) || capFirst(kind);
 }
 
 // Every item currently in the graph (the built view nodes carry growth and
@@ -1864,6 +1884,12 @@ function monthHeading(dateStr) {
   const m = /^(\d{4})(?:-(\d{2}))?/.exec(dateStr);
   if (!m) return "Undated";
   return m[2] ? `${MONTH_NAMES[parseInt(m[2], 10) - 1]} ${m[1]}` : m[1];
+}
+
+// Known of but not yet engaged with: has an aware date and no engaged date.
+function isAwareOnly(n) {
+  const dvs = discoveredVia(nodeById[n.id] || n);
+  return dvs.some((d) => d.awareDate) && !dvs.some((d) => d.engagedDate);
 }
 
 function byInfluence(a, b) {
@@ -1892,7 +1918,7 @@ function buildCategoryMenu() {
   if (listState.category !== "all" && !counts.has(listState.category)) listState.category = "all";
   const options = kinds.map(([k, n]) => `
       <button type="button" class="thread-option" data-cat="${escapeHTML(k)}">
-        <span class="thread-option-name">${escapeHTML(capFirst(k))}</span>
+        <span class="thread-option-name">${escapeHTML(k)}</span>
         <span class="thread-option-count">${n}</span>
       </button>`).join("");
   menu.innerHTML =
@@ -1916,7 +1942,7 @@ function syncCategoryMenu() {
   // Long label for wide screens, short one for phones (CSS picks which shows).
   if (label) {
     if (cat === "all") setDropdownLabel(label, "All categories", "All");
-    else setDropdownLabel(label, capFirst(cat), capFirst(cat));
+    else setDropdownLabel(label, cat, cat.split(" ")[0]);   // phones: first word ("School")
   }
 }
 
@@ -1928,9 +1954,17 @@ function renderList() {
   let items = listItems();
   if (listState.category !== "all") items = items.filter((n) => listCategoryOf(n) === listState.category);
   if (sort === "az") items.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
-  // Newest first by day; within a month, day-dated items come first, then
-  // month-only ones; influence breaks any remaining ties; undated go last.
-  else if (sort === "recent") items.sort((a, b) => (dayKey(firstDateString(b)) ?? -Infinity) - (dayKey(firstDateString(a)) ?? -Infinity) || byInfluence(a, b));
+  // Diary order: months newest first (undated last). Within a month:
+  //   1. engaged, with a day (newest day first)   2. engaged, month only
+  //   3. aware-only (same day-then-month order)   — influence breaks ties.
+  else if (sort === "recent") {
+    const monthOf = (n) => { const k = dayKey(firstDateString(n)); return k == null ? -Infinity : Math.floor(k / 100); };
+    items.sort((a, b) =>
+      monthOf(b) - monthOf(a)
+      || isAwareOnly(a) - isAwareOnly(b)
+      || (dayKey(firstDateString(b)) ?? -Infinity) - (dayKey(firstDateString(a)) ?? -Infinity)
+      || byInfluence(a, b));
+  }
   else items.sort(byInfluence);
 
   if (!items.length) {
@@ -1950,8 +1984,9 @@ function renderList() {
       }
     }
     const creator = creatorInfo(n);
-    // Byline in italics: the creator if there is one, else the kind ("platform").
-    const by = creator ? creator.name : (n.kind || "");
+    // Byline in italics: the creator if there is one, else the kind ("platform"),
+    // plus "· aware" for items you know of but haven't engaged with yet.
+    const by = [creator ? creator.name : (n.kind || ""), isAwareOnly(n) ? "aware" : ""].filter(Boolean).join(" · ");
     // Pull a trailing "(1967)" off the title so the year can sit quieter.
     const m = /^(.*?)\s*\((\d{4})\)\s*$/.exec(n.label);
     const title = m ? `${escapeHTML(m[1])} <span class="list-year">(${m[2]})</span>` : escapeHTML(n.label);
@@ -2191,8 +2226,12 @@ Promise.all([
   // Posts are only needed to list a node's matching posts in the card; a failure
   // there shouldn't sink the whole graph, so swallow it and carry on.
   fetchPosts().catch(() => []),
+  // Optional category grouping for the list; if it's missing, every kind is
+  // simply its own category.
+  fetch("data/categories.txt").then((r) => (r.ok ? r.text() : "")).catch(() => ""),
 ])
-  .then(([graph, posts]) => {
+  .then(([graph, posts, categoriesText]) => {
+    kindToCategory = parseCategories(categoriesText);
     rawData = graph;
     allPosts = posts;
     // A node may omit `label`; derive it from the id so the label stays coupled

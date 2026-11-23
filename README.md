@@ -334,11 +334,14 @@ from the same data:
 Discovery-only); in its place a **Graph / List** switch flips the box to a ranked
 list of every item in the graph. The list ranks by influence (the same `growth`
 score that sizes nodes), can be sorted Most influential / Most recent / A to Z,
-and filtered by a category dropdown built automatically from the `kind` values in
-`data/precursors.txt` (most common first, with counts) — a new kind appears there
-on its own, nothing to maintain. Sorted by Most recent, the list reads like a
-diary: small month headings (undated items last), newest first — day-dated items
-(`2026-10-14`) ahead of month-only ones within a month, influence breaking ties.
+and filtered by a category dropdown built from the `kind` values in
+`data/precursors.txt` (most common first, with counts). Kinds can be grouped in
+**`data/categories.txt`** (`People: writer, person, director, philosopher`);
+any kind not listed there is its own category, so a new kind still appears on
+its own. That file is read by the page directly — no build step. Sorted by Most recent, the list reads like a
+diary: small month headings (undated items last), newest first. Within a month:
+engaged items with a day (`2026-10-14`), then engaged month-only items, then
+aware-only items (marked "· aware" in the byline); influence breaks ties.
 
 **Which date stands for an item** (timeline, list): its *earliest engaged* date
 across all its discovery entries; only an item with no engaged date at all falls
