@@ -25,22 +25,22 @@
   <main>
     <article class="writing">
       <h1 class="page-heading writing-heading">Writing</h1>
+      <p class="precursors-intro writing-intro">Writing beyond the media archive.</p>
 
-      <!-- Tag filter + drafts toggle (same controls as the homepage grid),
-           driven by js/writing.js. -->
-      <div class="controls writing-controls">
-        <div class="controls-left">
-      <div class="tag-filter" id="tag-filter">
-        <button type="button" class="tag-dropdown-toggle" id="tag-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
-          <span class="tag-dropdown-label" id="tag-dropdown-label">All tags</span>
-          <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-        <div class="tag-dropdown-menu" id="tag-dropdown-menu" role="group" aria-label="Filter posts by tag" hidden>
-          <!-- Clear-all + tag checkboxes are injected here by js/writing.js -->
+      <!-- Tag filter (same as the homepage) on the left; drafts toggle on the
+           right. Both driven by js/writing.js. -->
+      <div class="writing-bar">
+        <div class="tag-filter" id="tag-filter">
+          <button type="button" class="tag-dropdown-toggle" id="tag-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+            <span class="tag-dropdown-label" id="tag-dropdown-label">All tags</span>
+            <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+          <div class="tag-dropdown-menu" id="tag-dropdown-menu" role="group" aria-label="Filter posts by tag" hidden>
+            <!-- Clear-all + tag checkboxes are injected here by js/writing.js -->
+          </div>
         </div>
-      </div>
         <button type="button" class="drafts-toggle" id="drafts-toggle" aria-pressed="false" hidden>
           <svg class="drafts-icon drafts-icon-open" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
@@ -53,8 +53,6 @@
           <span class="drafts-label">Drafts</span>
         </button>
       </div>
-      </div>
-      <hr class="hero-rule">
 
       <!-- Year-grouped list of every post with "show: writing", injected by js/writing.js -->
       <div id="writing-list" class="writing-list"></div>

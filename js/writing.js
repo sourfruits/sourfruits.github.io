@@ -1,7 +1,8 @@
 // Writing page: every post marked "show: writing" (or "show: grid, writing"), as a
-// plain text index grouped by year — no photos. Same tag filter (multi-select,
-// AND logic, synced to ?tags=), drafts toggle, and pinned-first order as the
-// homepage grid (js/main.js); each title opens the normal post page.
+// list grouped under year headings: each entry is title ······ date, then its
+// tag and subtitle, with a thin line between entries. The same tag filter as the
+// homepage (multi-select, AND logic, synced to ?tags=) and a drafts toggle sit
+// above the list. Each title opens the normal post page.
 
 const list = document.getElementById("writing-list");
 const status = document.getElementById("status");
@@ -23,6 +24,13 @@ try { showDrafts = sessionStorage.getItem(DRAFTS_KEY) === "1"; } catch (err) { /
 
 const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
+// On the Writing page each piece shows (and is filtered by) just ONE tag: its
+// first tag that isn't "writeup" / "blurb" (those describe length on the
+// homepage grid). So tags: ["writeup", "essay", "movies"] → "essay".
+const GRID_ONLY_TAGS = ["writeup", "blurb"];
+const writingTags = (post) =>
+  (Array.isArray(post.tags) ? post.tags : []).filter((t) => !GRID_ONLY_TAGS.includes(t)).slice(0, 1);
+
 function tagsFromURL() {
   const raw = new URLSearchParams(window.location.search).get("tags") || "";
   return raw.split(",").map((s) => s.trim()).filter(Boolean);
@@ -38,73 +46,95 @@ function updateURL() {
 function baseSet() {
   return showDrafts ? allPosts : allPosts.filter((p) => !isDraft(p));
 }
+// AND logic: a piece must carry every selected tag. No selection → all.
 function filteredPosts() {
   const base = baseSet();
   if (!selectedTags.size) return base;
   const wanted = [...selectedTags];
-  return base.filter((p) => Array.isArray(p.tags) && wanted.every((t) => p.tags.includes(t)));
+  return base.filter((p) => wanted.every((t) => writingTags(p).includes(t)));
 }
 
-// "Nov 14" — the year is already the group heading. Month-only dates ("2025-03")
-// show just the month; year-only dates show nothing.
-function shortDate(iso) {
+// "Nov 14" — the year is the group heading. Month-only dates show just the
+// month; year-only dates show nothing. In the Pinned and Drafts groups (no year
+// heading) the year is added: "Nov 14, 2025".
+function shortDate(iso, withYear) {
   const parts = String(iso).split("-");
-  if (parts.length < 2) return "";
+  if (parts.length < 2) return withYear ? parts[0] : "";
   const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2] || 1));
-  return parts.length === 2
-    ? d.toLocaleDateString(undefined, { month: "short" })
-    : d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const opts = parts.length === 2 ? { month: "short" } : { month: "short", day: "numeric" };
+  if (withYear) opts.year = "numeric";
+  return d.toLocaleDateString(undefined, opts);
 }
 
-function itemHTML(post) {
-  const draft = isDraft(post);
-  const tags = orderTags(post.tags)
-    .map((t) => `<span class="writing-tag">${escapeHTML(t)}</span>`)
-    .join(`<span class="writing-sep" aria-hidden="true">·</span>`);
-  return `
-    <li>
-      <a class="writing-item${draft ? " is-draft" : ""}" href="post.html?id=${encodeURIComponent(post.id)}">
-        <span class="writing-date">${escapeHTML(shortDate(post.date))}</span>
-        <span class="writing-main">
-          <span class="writing-title">${escapeHTML(post.title)}</span>
-          ${post.subtitle ? `<span class="writing-subtitle">${escapeHTML(post.subtitle)}</span>` : ""}
-          ${tags ? `<span class="writing-tags">${tags}</span>` : ""}
+
+// One entry, two lines: serif title ······ date, then the tags in small grey
+// capitals and the subtitle in grey italics. A thin line separates entries.
+function itemHTML(post, withYear) {
+  const tags = writingTags(post);
+  const by = [
+    tags.length ? `<span class="list-kind">${tags.map(escapeHTML).join(", ")}</span>` : "",
+    post.subtitle ? escapeHTML(post.subtitle) : "",
+  ].filter(Boolean).join(" · ");
+  return `<li><a class="list-row writing-row${isDraft(post) ? " is-draft" : ""}" href="post.html?id=${encodeURIComponent(post.id)}">
+        <span class="list-main">
+          <span class="list-title">${escapeHTML(post.title)}</span>
+          ${by ? `<span class="list-by">${by}</span>` : ""}
         </span>
-      </a>
-    </li>`;
+        <span class="list-leader" aria-hidden="true"></span>
+        <span class="list-count">${escapeHTML(shortDate(post.date, withYear))}</span>
+      </a></li>`;
 }
 
-// Sections, top to bottom, each under a small heading like the years:
-// "Drafts" (only when revealed), "Pinned", then one per year, newest first.
-// Within each, the same order the grid uses.
-function render(posts) {
-  sortPosts(posts, "writing");
-  const groups = [];
+const CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+const collapsedYears = new Set();   // years folded shut by clicking their heading
+
+// Entries grouped under year headings like the Precursors list (black italic
+// serif, with a chevron that folds the year shut and then shows its count).
+// Drafts (when revealed) and Pinned come first under small labels, with the
+// year in their dates.
+function render() {
+  const posts = sortPosts(filteredPosts(), "writing");
   const drafts = posts.filter((p) => isDraft(p));
   const pinned = posts.filter((p) => !isDraft(p) && isPinned(p, "writing"));
-  if (drafts.length) groups.push({ heading: "Drafts", posts: drafts });
-  if (pinned.length) groups.push({ heading: "Pinned", posts: pinned });
-  posts.filter((p) => !isDraft(p) && !isPinned(p, "writing")).forEach((p) => {
-    const y = String(p.date).slice(0, 4);
-    const last = groups[groups.length - 1];
-    if (last && last.year === y) last.posts.push(p);
-    else groups.push({ heading: y, year: y, posts: [p] });
-  });
+  const rest = posts.filter((p) => !isDraft(p) && !isPinned(p, "writing"));
+  const yearCounts = {};
+  rest.forEach((p) => { const y = String(p.date).slice(0, 4); yearCounts[y] = (yearCounts[y] || 0) + 1; });
 
-  list.innerHTML = groups.map((g) => `
-      <section class="writing-group">
-        <h2 class="writing-year">${escapeHTML(g.heading)}</h2>
-        <ul>${g.posts.map(itemHTML).join("")}</ul>
-      </section>`).join("");
+  let html = "";
+  if (drafts.length) html += `<li class="list-month">Drafts</li>` + drafts.map((p) => itemHTML(p, true)).join("");
+  if (pinned.length) html += `<li class="list-month">Pinned</li>` + pinned.map((p) => itemHTML(p, true)).join("");
+  let year = "";
+  rest.forEach((p) => {
+    const y = String(p.date).slice(0, 4);
+    const folded = collapsedYears.has(y);
+    if (y !== year) {
+      html += `<li class="list-yearhead writing-yearhead"><button type="button" class="list-yeartoggle" data-year="${escapeHTML(y)}" aria-expanded="${folded ? "false" : "true"}">` +
+        `<span>${escapeHTML(y)}</span>${CHEVRON}` +
+        (folded ? `<span class="list-yearcount">${yearCounts[y]}</span>` : "") +
+        `</button></li>`;
+      year = y;
+    }
+    if (!folded) html += itemHTML(p, false);
+  });
+  list.innerHTML = html ? `<ol class="writing-index">${html}</ol>` : "";
 
   status.textContent = posts.length
     ? ""
     : (selectedTags.size ? "Nothing matches these tags." : "Nothing here yet.");
 }
 
+list.addEventListener("click", (e) => {
+  const toggle = e.target.closest(".list-yeartoggle");
+  if (!toggle) return;
+  const y = toggle.dataset.year;
+  if (collapsedYears.has(y)) collapsedYears.delete(y); else collapsedYears.add(y);
+  render();
+});
+
+// --- tag dropdown (same behaviour as the homepage's) ---
 function buildMenu(posts) {
   const counts = new Map();
-  posts.forEach((p) => (p.tags || []).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
+  posts.forEach((p) => writingTags(p).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
   allTags = [...counts.keys()].sort((a, b) =>
     counts.get(b) - counts.get(a) || a.localeCompare(b, undefined, { sensitivity: "base" }));
   const check = `<span class="tag-check" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>`;
@@ -134,12 +164,10 @@ function syncMenu(matchCount) {
 }
 
 function applyFilter() {
-  const posts = filteredPosts();
-  syncMenu(posts.length);
-  render(posts);
+  syncMenu(filteredPosts().length);
+  render();
 }
 
-// --- dropdown + toggles (same behaviour as the homepage) ---
 tagToggle.addEventListener("click", () => {
   tagMenu.hidden = !tagMenu.hidden;
   tagToggle.setAttribute("aria-expanded", tagMenu.hidden ? "false" : "true");
@@ -160,6 +188,7 @@ tagMenu.addEventListener("change", (e) => {
 tagMenu.addEventListener("click", (e) => {
   if (e.target.closest("#tag-clear")) { selectedTags.clear(); updateURL(); applyFilter(); }
 });
+
 draftsToggle.addEventListener("click", () => {
   showDrafts = !showDrafts;
   try { sessionStorage.setItem(DRAFTS_KEY, showDrafts ? "1" : "0"); } catch (err) { /* ignore */ }

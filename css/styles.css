@@ -3205,47 +3205,28 @@ body.is-graph-faux-fs { overflow: hidden; }
 .post-body a:hover { color: var(--muted); }
 
 /* ---------- Writing page (writing.html / js/writing.js) ----------
-   A plain text index: year headings, then date · title rows. Uses the post
-   reading width and the same controls as the homepage grid. */
-.writing { max-width: var(--post-width); margin: 0 auto; }
-.writing-heading { margin-bottom: 8px; }
-.writing-controls { padding-top: 8px; margin-bottom: 0; }
-.writing .hero-rule { margin: 12px 0 8px; }
-.writing-group { margin: 0 0 8px; }
-.writing-group ul { list-style: none; margin: 0; padding: 0; }
-.writing-year {
-  font-size: var(--text-small);
-  font-weight: var(--weight-semibold);
-  color: var(--muted);
-  letter-spacing: 0.04em;
-  margin: 28px 0 4px;
-}
-.writing-item {
-  display: grid;
-  grid-template-columns: 4.2em 1fr;
+   The homepage's tag filter and drafts toggle, then a list in the same style
+   as the Precursors list (it reuses .list-row / .list-title / .list-kind /
+   .list-month / .list-yearhead): foldable bold years, small-caps months and
+   one-line rows. */
+.writing { max-width: 680px; margin: 0 auto; }
+.writing-heading { margin-bottom: 10px; }   /* matches the Precursors title → intro gap */
+.writing-intro { margin-bottom: 10px; }
+
+.writing-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: 16px;
-  align-items: baseline;
-  padding: 12px 0;
   border-bottom: 1px solid var(--line-light);
-  color: var(--ink);
-  text-decoration: none;
 }
-.writing-item:hover .writing-title { color: var(--muted); }
-.writing-date { color: var(--muted); font-size: var(--text-small); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.writing-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.writing-title { font-size: var(--text-base); font-weight: var(--weight-semibold); transition: color 0.2s ease; }
-.writing-subtitle { font-family: var(--font-serif); font-style: italic; color: var(--muted); font-size: 0.95rem; }
-.writing-tags { color: var(--muted); font-size: 0.8rem; }
-.writing-sep { margin: 0 6px; }
-.writing-flag {
-  font-size: 0.7rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; margin-left: 6px;
-  vertical-align: 2px;
-}
-.writing-item.is-draft { opacity: 0.6; }
-@media (max-width: 640px) {
-  .writing-item { grid-template-columns: 3.6em 1fr; gap: 12px; }
-}
+/* Filter → line gap matches the homepage's (21px). */
+.writing-bar .tag-filter { margin-bottom: 20px; }
+.writing-bar .drafts-toggle { margin-bottom: 20px; flex-shrink: 0; white-space: nowrap; }
+
+.writing-index { list-style: none; margin: 0; padding: 0; }
+.writing-row { text-decoration: none; }
+.writing-row.is-draft .list-title { color: var(--muted); }
 
 /* "More like this" card for a piece with no photo: an empty square. */
 .related-thumb.is-empty { aspect-ratio: 1 / 1; background: var(--line-light); }
@@ -3258,8 +3239,8 @@ body.is-graph-faux-fs { overflow: hidden; }
 .about-post .post-body > p:last-child { color: var(--muted); }
 
 /* ---------- One title style for every page ----------
-   Every page title matches the post title: sans-serif, 2rem, bold, upright,
-   left-aligned, no green accent bar. The About, Precursors and Writing page
+   Every page title matches the homepage masthead's look: Georgia italic, bold,
+   left-aligned, no green accent bar (posts 2rem). The About, Precursors and Writing page
    titles are extra bold (800) and a step larger (--text-display, 2.4rem —
    the size Precursors used to be). (The homepage's italic "elia website"
    masthead is the one deliberate exception.) Pages without a back link give
@@ -3271,13 +3252,15 @@ body.is-graph-faux-fs { overflow: hidden; }
 .tags-heading,
 #tag-heading,
 .search-heading {
-  font-family: var(--font-sans);
+  font-family: var(--font-serif);
   font-size: var(--text-heading-lg);
   font-weight: var(--weight-bold);
-  font-style: normal;
+  font-style: italic;
   letter-spacing: var(--tracking-normal);
   text-align: left;
 }
+/* Post pages keep their original title look: sans-serif, upright, bold. */
+#post .post-title { font-family: var(--font-sans); font-style: normal; }
 .about-post .post-title,
 .writing-heading,
 .precursors-title { font-weight: var(--weight-heavy); font-size: var(--text-display); }
@@ -3289,3 +3272,39 @@ body.is-graph-faux-fs { overflow: hidden; }
 .precursors-title,
 .tags-heading { margin-top: var(--header-gap-sub); }
 .tags-heading { margin-left: 0; margin-right: 0; }
+
+/* Writing page entries: two lines each — serif title, dotted leader, date;
+   then TAGS · subtitle — with roomy padding and a thin line between entries. */
+.writing-index .list-month { margin-top: 18px; }
+.writing-index .list-row {
+  align-items: baseline;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line-light);
+}
+.writing-index .list-main { flex-direction: column; align-items: flex-start; gap: 3px; min-width: 0; }
+.writing-index .list-title {
+  font-size: 1.06rem;
+  line-height: 1.35;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  padding: 0;
+  margin: 0;
+}
+.writing-index .list-by { font-size: 0.875rem; white-space: normal; }
+.writing-index .list-kind { font-size: 0.75rem; }
+.writing-index .list-count { font-size: 0.875rem; }
+/* Line → first entry: about the homepage's line → grid gap. */
+.writing-index { margin-top: 22px; }
+/* Year headings on Writing: like Precursors' (dark bold serif, foldable). */
+.writing-index .writing-yearhead {
+  font-size: 1.25rem;
+  font-style: normal;
+  color: var(--ink);
+  margin: 22px 0 0;
+}
+/* The first year sits the same distance below the filter line as later years
+   sit below the entry above them. */
+.writing-index .writing-yearhead:first-child { margin-top: 0; }
+.writing-index .writing-yearhead .list-yearcount { font-style: normal; }
