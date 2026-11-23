@@ -1,6 +1,18 @@
 {
   "nodes": [
     {
+      "id": "walt-whitman",
+      "label": "Walt Whitman",
+      "kind": "writer",
+      "discovered_via": [
+        {
+          "source": "jono-c",
+          "engagedDate": "2026-11-18",
+          "thread": "Poetry"
+        }
+      ]
+    },
+    {
       "id": "christina-rossetti",
       "label": "Christina Rossetti",
       "kind": "writer",
@@ -113,20 +125,6 @@
       ]
     },
     {
-      "id": "joan-didion",
-      "label": "Joan Didion",
-      "kind": "writer",
-      "discovered_via": [
-        {
-          "source": "jono-c",
-          "awareDate": "2022-11-04"
-        },
-        {
-          "engagedDate": "2026-10-20"
-        }
-      ]
-    },
-    {
       "id": "didion-the-white-album",
       "label": "The White Album",
       "kind": "book",
@@ -148,6 +146,19 @@
           "source": "kafka-the-trial",
           "awareDate": "2026-06",
           "engagedDate": "2026-10-16"
+        }
+      ]
+    },
+    {
+      "id": "william-wordsworth",
+      "label": "William Wordsworth",
+      "kind": "writer",
+      "discovered_via": [
+        {
+          "source": "rv-hallberg",
+          "engagedDate": "2026-10-16",
+          "thread": "Poetry",
+          "note": "Discussion on The Sublime, somehow"
         }
       ]
     },
@@ -199,6 +210,21 @@
           "source": "kanafani-men-in-the-sun",
           "awareDate": "2026-10",
           "thread": "Arab Israeli conflict"
+        }
+      ]
+    },
+    {
+      "id": "joan-didion",
+      "label": "Joan Didion",
+      "kind": "writer",
+      "discovered_via": [
+        {
+          "source": "jono-c",
+          "awareDate": "2022-11-04"
+        },
+        {
+          "engagedDate": "2026-09-28",
+          "note": "Initially interested in California and narrative. First exposure was to Why I Write, and shimmering images."
         }
       ]
     },
@@ -963,12 +989,6 @@
           "source": "sontag-on-photography"
         }
       ]
-    },
-    {
-      "id": "after-hours-1985",
-      "label": "After Hours (1985)",
-      "kind": "film",
-      "creator": "Martin Scorsese"
     }
   ]
 }
