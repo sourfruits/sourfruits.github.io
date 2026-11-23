@@ -47,6 +47,13 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
+### rear-window-1954
+label: Rear Window (1954)
+kind: film
+creator: Alfred Hitchcock
+discovered:
+  - source: blow-out-1981, engaged: 2026-11-23, thread: 70s paranoia
+
 ### walt-whitman
 label: Walt Whitman
 kind: writer
