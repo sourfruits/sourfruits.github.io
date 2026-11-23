@@ -47,6 +47,18 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ── Categories — group kinds in the Precursors list's dropdown ────────────────
+#
+#   Category name: kind, kind, kind
+#
+# • Any kind NOT listed here still shows up as its own category (e.g. "Film").
+# • Adding a new kind? Add it to a line here to fold it into that category.
+# • This block must stay above the first "###" node.
+
+## categories
+People: writer, person, director, philosopher
+School and classes: school, class
+
 ### rear-window-1954
 label: Rear Window (1954)
 kind: film

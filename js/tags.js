@@ -9,7 +9,7 @@ fetchPosts()
     // Tally how many posts carry each tag.
     const counts = new Map();
     posts.forEach((post) => {
-      if (isDraft(post) || !Array.isArray(post.tags)) return;
+      if (isDraft(post) || !showsIn(post, "grid") || !Array.isArray(post.tags)) return;
       post.tags.forEach((tag) => counts.set(tag, (counts.get(tag) || 0) + 1));
     });
 

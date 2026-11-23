@@ -1,4 +1,16 @@
 {
+  "categories": {
+    "People": [
+      "writer",
+      "person",
+      "director",
+      "philosopher"
+    ],
+    "School and classes": [
+      "school",
+      "class"
+    ]
+  },
   "nodes": [
     {
       "id": "rear-window-1954",

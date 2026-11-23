@@ -31,6 +31,18 @@ function fetchPosts() {
   });
 }
 
+// Where a post appears: its `show` list ("grid", "writing", or both). Posts
+// without one are grid-only — the default, so older posts need no changes.
+function postPlaces(post) {
+  const s = post && post.show;
+  if (Array.isArray(s) && s.length) return s;
+  if (typeof s === "string" && s.trim()) return s.split(",").map((x) => x.trim()).filter(Boolean);
+  return ["grid"];
+}
+function showsIn(post, place) {
+  return postPlaces(post).includes(place);
+}
+
 // Tiebreak for posts sharing the same date: an optional numeric `dateOrder`
 // (lower first). Posts without one sort after those with one, and keep their
 // existing order relative to each other (return 0 → stable sort).
@@ -55,10 +67,17 @@ function isDraft(post) {
   return year >= 2099;
 }
 
-// A post is pinned if it's flagged "pinned": true. Pinned posts sort ahead of
+// Whether a post is pinned on a given page ("grid" — the default — or
+// "writing"). `pinned: true` pins it everywhere it appears; a list
+// ("grid", "writing", or both) pins it only there. Pinned posts sort ahead of
 // everything else regardless of date (drafts can be pinned too).
-function isPinned(post) {
-  return post && post.pinned === true;
+function isPinned(post, place = "grid") {
+  if (!post) return false;
+  const p = post.pinned;
+  if (p === true) return true;
+  if (Array.isArray(p)) return p.includes(place);
+  if (typeof p === "string") return p.split(",").map((x) => x.trim()).includes(place);
+  return false;
 }
 
 // Display order for a list of posts: pinned first, then everyone else. Within
@@ -69,15 +88,15 @@ function isPinned(post) {
 // Order (each group newest first; pinned groups honour pinOrder first):
 //   1. pinned drafts   2. drafts   3. pinned posts   4. everything else
 // Drafts only show when the drafts toggle is on, so visitors just see 3 → 4.
-function sortGroup(post) {
-  const d = isDraft(post), p = isPinned(post);
+function sortGroup(post, place) {
+  const d = isDraft(post), p = isPinned(post, place);
   return d && p ? 0 : d ? 1 : p ? 2 : 3;
 }
-function sortPosts(posts) {
+function sortPosts(posts, place = "grid") {
   return posts.sort((a, b) => {
-    const ga = sortGroup(a), gb = sortGroup(b);
+    const ga = sortGroup(a, place), gb = sortGroup(b, place);
     if (ga !== gb) return ga - gb;
-    if (isPinned(a) && isPinned(b)) {                   // same pinned group → by pinOrder
+    if (isPinned(a, place) && isPinned(b, place)) {                   // same pinned group → by pinOrder
       const oa = Number.isFinite(a.pinOrder) ? a.pinOrder : Infinity;
       const ob = Number.isFinite(b.pinOrder) ? b.pinOrder : Infinity;
       if (oa !== ob) return oa - ob;

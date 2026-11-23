@@ -10,6 +10,10 @@
 //
 // Text format (see the commented template at the top of precursors.txt):
 //
+//   ## categories               optional block BEFORE the first node: one
+//   People: writer, person      "Category name: kind, kind" line per category
+//                               (groups kinds in the Precursors list dropdown)
+//
 //   ### node-id                 a "### id" line starts a node; it runs until the
 //                               next "###"
 //   label: Display Name         required
@@ -102,6 +106,8 @@ function parseItem(line, allowed, ctx) {
 function parse(text) {
   const lines = text.replace(/^﻿/, "").split(/\r?\n/);
   const nodes = [];
+  const categories = {};   // "People" -> ["writer", "person", …]
+  let inCategories = false; // inside the "## categories" block
   let cur = null;    // node being assembled
   let list = null;   // which block indented "- " items attach to
   let seen = false;  // whether any "### id" header has appeared yet
@@ -129,7 +135,26 @@ function parse(text) {
       return;
     }
 
+    // The "## categories" block header — also checked before the comment rule.
+    if (/^##\s+categories$/i.test(trimmed)) {
+      if (seen) throw new Error(`${ctx}: "## categories" must come before the first "### node-id"`);
+      inCategories = true;
+      return;
+    }
+
     if (!trimmed || trimmed.startsWith("#")) return;   // blank line or comment
+
+    // A "Category name: kind, kind" line inside the categories block.
+    if (inCategories && !cur) {
+      const ci = trimmed.indexOf(":");
+      if (ci < 1) throw new Error(`${ctx}: expected "Category name: kind, kind" (got "${trimmed}")`);
+      const name = trimmed.slice(0, ci).trim();
+      const kinds = trimmed.slice(ci + 1).split(",").map((k) => k.trim().toLowerCase()).filter(Boolean);
+      if (!kinds.length) throw new Error(`${ctx}: category "${name}" lists no kinds`);
+      if (name in categories) throw new Error(`${ctx}: duplicate category "${name}"`);
+      categories[name] = kinds;
+      return;
+    }
 
     if (!cur) throw new Error(`${ctx}: content before the first "### node-id" header: "${trimmed}"`);
 
@@ -168,7 +193,7 @@ function parse(text) {
 
   finish();
   if (!seen) throw new Error(`no nodes found (expected at least one "### node-id")`);
-  return nodes;
+  return { nodes, categories };
 }
 
 // Validate each parsed record and assemble the output node in the exact JSON
@@ -248,8 +273,9 @@ function main() {
   } catch (err) {
     throw new Error(`can't read ${SRC_FILE}: ${err.message}`);
   }
-  const nodes = build(parse(raw));
-  writeFileSync(OUT_FILE, JSON.stringify({ nodes }, null, 2) + "\n", "utf8");
+  const parsed = parse(raw);
+  const nodes = build(parsed.nodes);
+  writeFileSync(OUT_FILE, JSON.stringify({ categories: parsed.categories, nodes }, null, 2) + "\n", "utf8");
   console.log(`✓ built data/precursors.json from ${nodes.length} node${nodes.length === 1 ? "" : "s"}`);
 }
 

@@ -253,7 +253,9 @@ setDensity(initialView, false);
 
 fetchPosts()
   .then((posts) => {
-    allPosts = posts;
+    // Only posts marked for the grid (the default) — writing-only pieces live
+    // on writing.html.
+    allPosts = posts.filter((p) => showsIn(p, "grid"));
 
     // Reveal the drafts toggle only when there's at least one draft to show.
     // Drafts are shown by default, so the toggle starts in its pressed state.

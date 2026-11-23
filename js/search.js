@@ -85,7 +85,7 @@ function renderResults(posts) {
         return `
           <li>
             <a class="result-card" href="post.html?id=${encodeURIComponent(post.id)}">
-              <img class="result-thumb" src="${escapeHTML(post.thumb || post.image)}" alt="${escapeHTML(post.title)}" loading="lazy">
+              ${(post.thumb || post.image) ? `<img class="result-thumb" src="${escapeHTML(post.thumb || post.image)}" alt="${escapeHTML(post.title)}" loading="lazy">` : ""}
               <div class="result-body">
                 <h2 class="result-title">${highlight(post.title, query)}</h2>
                 <p class="result-date">${escapeHTML(formatDate(post.date))}</p>

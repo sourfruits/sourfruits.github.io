@@ -1859,20 +1859,16 @@ var listState = { view: "graph", category: "all", sort: "recent", collapsedYears
 // The category dropdown is built straight from the `kind` values in
 // precursors.txt — no hand-made grouping to maintain. A new kind (say
 // "poem") shows up in the dropdown on its own the next time the page loads.
-// Kinds can be grouped into named categories in data/categories.txt
-// ("People: writer, person, director, philosopher"). Any kind not listed there
-// is its own category, so a brand-new kind still shows up on its own.
+// Kinds can be grouped into named categories in the "## categories" block at
+// the top of data/precursors.txt ("People: writer, person, director,
+// philosopher"), which the build copies into precursors.json as
+// { "People": ["writer", …] }. Any kind not listed there is its own category,
+// so a brand-new kind still shows up on its own.
 let kindToCategory = new Map();   // "writer" -> "People"
-function parseCategories(text) {
+function parseCategories(categories) {
   const map = new Map();
-  String(text || "").split(/\r?\n/).forEach((line) => {
-    const s = line.trim();
-    if (!s || s.startsWith("#")) return;
-    const i = s.indexOf(":");
-    if (i < 1) return;
-    const name = s.slice(0, i).trim();
-    s.slice(i + 1).split(",").map((k) => k.trim().toLowerCase()).filter(Boolean)
-      .forEach((k) => map.set(k, name));
+  Object.entries(categories || {}).forEach(([name, kinds]) => {
+    (kinds || []).forEach((k) => map.set(String(k).trim().toLowerCase(), name));
   });
   return map;
 }
@@ -2342,12 +2338,11 @@ Promise.all([
   // Posts are only needed to list a node's matching posts in the card; a failure
   // there shouldn't sink the whole graph, so swallow it and carry on.
   fetchPosts().catch(() => []),
-  // Optional category grouping for the list; if it's missing, every kind is
-  // simply its own category.
-  fetch("data/categories.txt").then((r) => (r.ok ? r.text() : "")).catch(() => ""),
 ])
-  .then(([graph, posts, categoriesText]) => {
-    kindToCategory = parseCategories(categoriesText);
+  .then(([graph, posts]) => {
+    // Optional category grouping (from precursors.txt); if absent, every kind
+    // is simply its own category.
+    kindToCategory = parseCategories(graph.categories);
     rawData = graph;
     allPosts = posts;
     // A node may omit `label`; derive it from the id so the label stays coupled

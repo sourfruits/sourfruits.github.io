@@ -3182,3 +3182,110 @@ body.is-graph-faux-fs { overflow: hidden; }
   .nav-precursors:hover .np-letter,
   .nav-precursors:focus-visible .np-letter { top: 0; }
 }
+
+/* Header links: "about / precursors / substack ↗" — normal weight, slash
+   separators, small arrow on the external Substack link. Overrides the
+   precursors link's semibold so all three match (its hover animation stays). */
+.site-nav { gap: 8px; }
+.site-nav .nav-link { color: var(--ink); font-weight: var(--weight-normal); white-space: nowrap; transition: none; }
+.site-nav .nav-link:hover,
+.site-nav .nav-link:focus-visible { color: var(--muted); }
+.site-nav .nav-precursors:hover,
+.site-nav .nav-precursors:focus-visible { color: var(--ink); }
+.nav-sep { color: var(--line); user-select: none; }
+.nav-ext { font-size: 0.8em; margin-left: 2px; color: var(--muted); }
+.header-logo { white-space: nowrap; }
+@media (max-width: 640px) {
+  .site-nav { gap: 4px; }
+  .header-bar-inner { padding-left: 16px; padding-right: 16px; }
+}
+
+/* Links inside post/About text: site ink colour with an underline, not browser blue. */
+.post-body a { color: var(--ink); text-decoration: underline; text-underline-offset: 2px; }
+.post-body a:hover { color: var(--muted); }
+
+/* ---------- Writing page (writing.html / js/writing.js) ----------
+   A plain text index: year headings, then date · title rows. Uses the post
+   reading width and the same controls as the homepage grid. */
+.writing { max-width: var(--post-width); margin: 0 auto; }
+.writing-heading { margin-bottom: 8px; }
+.writing-controls { padding-top: 8px; margin-bottom: 0; }
+.writing .hero-rule { margin: 12px 0 8px; }
+.writing-group { margin: 0 0 8px; }
+.writing-group ul { list-style: none; margin: 0; padding: 0; }
+.writing-year {
+  font-size: var(--text-small);
+  font-weight: var(--weight-semibold);
+  color: var(--muted);
+  letter-spacing: 0.04em;
+  margin: 28px 0 4px;
+}
+.writing-item {
+  display: grid;
+  grid-template-columns: 4.2em 1fr;
+  gap: 16px;
+  align-items: baseline;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-light);
+  color: var(--ink);
+  text-decoration: none;
+}
+.writing-item:hover .writing-title { color: var(--muted); }
+.writing-date { color: var(--muted); font-size: var(--text-small); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.writing-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.writing-title { font-size: var(--text-base); font-weight: var(--weight-semibold); transition: color 0.2s ease; }
+.writing-subtitle { font-family: var(--font-serif); font-style: italic; color: var(--muted); font-size: 0.95rem; }
+.writing-tags { color: var(--muted); font-size: 0.8rem; }
+.writing-sep { margin: 0 6px; }
+.writing-flag {
+  font-size: 0.7rem; font-weight: var(--weight-semibold); text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; margin-left: 6px;
+  vertical-align: 2px;
+}
+.writing-item.is-draft { opacity: 0.6; }
+@media (max-width: 640px) {
+  .writing-item { grid-template-columns: 3.6em 1fr; gap: 12px; }
+}
+
+/* "More like this" card for a piece with no photo: an empty square. */
+.related-thumb.is-empty { aspect-ratio: 1 / 1; background: var(--line-light); }
+
+
+
+/* ---------- About page ----------
+   Laid out like a post page (same title, byline, rule and serif reading text).
+   The last paragraph is a grey sign-off. */
+.about-post .post-body > p:last-child { color: var(--muted); }
+
+/* ---------- One title style for every page ----------
+   Every page title matches the post title: sans-serif, 2rem, bold, upright,
+   left-aligned, no green accent bar. The About, Precursors and Writing page
+   titles are extra bold (800) and a step larger (--text-display, 2.4rem —
+   the size Precursors used to be). (The homepage's italic "elia website"
+   masthead is the one deliberate exception.) Pages without a back link give
+   the title the same gap below the header. */
+.post-title,
+.page-heading,
+.precursors-title,
+.tag-heading,
+.tags-heading,
+#tag-heading,
+.search-heading {
+  font-family: var(--font-sans);
+  font-size: var(--text-heading-lg);
+  font-weight: var(--weight-bold);
+  font-style: normal;
+  letter-spacing: var(--tracking-normal);
+  text-align: left;
+}
+.about-post .post-title,
+.writing-heading,
+.precursors-title { font-weight: var(--weight-heavy); font-size: var(--text-display); }
+.page-heading::after,
+.precursors-title::after,
+.tags-heading::after { display: none; }
+.about-post .post-title,
+.page-heading,
+.precursors-title,
+.tags-heading { margin-top: var(--header-gap-sub); }
+.tags-heading { margin-left: 0; margin-right: 0; }

@@ -77,7 +77,9 @@ function renderPost(post) {
   const orderedTags = orderTags(post.tags);
   const tags = orderedTags.length
     ? orderedTags
-        .map((t) => `<a class="post-tag" href="tag.html?tag=${encodeURIComponent(t)}">${escapeHTML(t)}</a>`)
+        // Writing-only pieces link their tags to the Writing page's filter;
+        // everything else to the tag grid page.
+        .map((t) => `<a class="post-tag" href="${showsIn(post, "grid") ? "tag.html?tag=" : "writing.html?tags="}${encodeURIComponent(t)}">${escapeHTML(t)}</a>`)
         // A standalone "·" divider sits between tags only — not attached to a tag,
         // and never between the date and the first tag.
         .join(`<span class="post-sep" aria-hidden="true">·</span>`)
@@ -102,10 +104,10 @@ function renderPost(post) {
       ${tags}
     </div>
     <hr class="post-rule">
-    <div class="post-image-frame" style="--post-bg: url('${encodeURI(src)}')">
+    ${src ? `<div class="post-image-frame" style="--post-bg: url('${new URL(src, window.location.href).href}')">
       <img class="post-image" src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}">
     </div>
-    <hr class="post-rule">
+    <hr class="post-rule">` : ""}
     <div class="post-body">${renderContent(post.content)}</div>
   `;
   status.textContent = "";
@@ -259,7 +261,7 @@ function renderRelated(posts, current) {
       .join("");
     return `
       <a class="related-card" href="post.html?id=${encodeURIComponent(post.id)}">
-        <span class="related-thumb"><img src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}" loading="lazy"></span>
+        <span class="related-thumb${src ? "" : " is-empty"}">${src ? `<img src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}" loading="lazy">` : ""}</span>
         <span class="related-title">${escapeHTML(post.title)}</span>
         ${tags ? `<span class="related-tags">${tags}</span>` : ""}
       </a>`;
@@ -291,7 +293,14 @@ if (!id) {
       // but drafts never appear as neighbours or "more like this".
       const published = posts.filter((p) => !isDraft(p));
       renderPost(post);
-      renderPostNav(published, post);
+      // Previous/next step through the list this post "lives" in: grid posts
+      // through the grid, writing-only pieces through the Writing page.
+      const home = showsIn(post, "grid") ? "grid" : "writing";
+      renderPostNav(published.filter((p) => showsIn(p, home)), post);
+      if (home === "writing") {
+        const back = document.querySelector(".back-link");
+        if (back) back.setAttribute("href", "writing.html");
+      }
       renderRelated(published, post);
     })
     .catch((err) => {

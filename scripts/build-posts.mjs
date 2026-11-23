@@ -17,7 +17,7 @@
 //
 // Run:  node scripts/build-posts.mjs
 
-import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, statSync } from "node:fs";
 import { join, dirname, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -25,18 +25,24 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const POSTS_DIR = join(ROOT, "data", "posts");
 const OUT_FILE = join(ROOT, "data", "posts.json");
 
+// Where a post appears: `show: grid` (homepage photo grid — the default when the
+// line is left out), `show: writing` (the Writing page), or `show: grid, writing`
+// (both, from the same file). Grid posts need a photo and a workId; writing-only
+// posts need neither.
+const PLACES = ["grid", "writing"];
+
 // Fields every post must carry in frontmatter. `id` is NOT here — it comes from
 // the filename (<id>.md), so renaming a post is just renaming the file. `thumb`
 // and `image` aren't here either: the site falls back one to the other
 // (thumb || image / image || thumb), so a post needs AT LEAST ONE, not both —
 // that's enforced separately in validate(). Optional extras (subtitle, pinned,
 // pinOrder, draft, …) are passed through when present.
-const REQUIRED = ["title", "date", "tags", "workId"];
+const REQUIRED = ["title", "date", "tags"];
 // Preferred key order in the output objects (tidy, stable diffs). `content`
 // always comes last; any unlisted frontmatter keys are appended before it.
 const KEY_ORDER = [
   "id", "pinned", "pinOrder", "title", "subtitle", "date", "dateOrder",
-  "tags", "postType", "category", "workId", "thumb", "image", "draft",
+  "tags", "show", "postType", "category", "workId", "thumb", "image", "draft",
 ];
 
 // A post's date may carry an optional trailing integer that orders posts sharing
@@ -87,14 +93,31 @@ function parseFile(raw, file) {
 
 // Enforce the shape: required fields, types, non-empty body. (The id isn't
 // validated here — it's the filename, so it can't be missing or duplicated.)
+// Normalise `show` to an array of places: "grid, writing" / ["grid","writing"] /
+// "writing". Throws on an unknown place or an empty value.
+function parseShow(raw, file) {
+  const list = (Array.isArray(raw) ? raw : String(raw).split(","))
+    .map((s) => String(s).trim().toLowerCase()).filter(Boolean);
+  if (!list.length) throw new Error(`${file}: "show" is empty (use grid, writing, or both)`);
+  const bad = list.filter((s) => !PLACES.includes(s));
+  if (bad.length) throw new Error(`${file}: unknown "show" value "${bad.join(", ")}" (use grid, writing, or both)`);
+  return [...new Set(list)];
+}
+
 function validate(data, body, file) {
   const missing = REQUIRED.filter((k) => !(k in data));
   if (missing.length) throw new Error(`${file}: missing required field(s): ${missing.join(", ")}`);
 
-  // thumb/image: at least one must be present (the site falls back one to the
-  // other), and whichever is present must be a non-empty string.
-  if (!("thumb" in data) && !("image" in data)) {
-    throw new Error(`${file}: must have at least one of "thumb" or "image"`);
+  if ("show" in data) data.show = parseShow(data.show, file);
+  const inGrid = !("show" in data) || data.show.includes("grid");
+
+  // Grid posts: a photo (thumb or image — the site falls back one to the other)
+  // and a workId are required. Writing-only posts may skip both.
+  if (inGrid && !("thumb" in data) && !("image" in data)) {
+    throw new Error(`${file}: grid posts must have at least one of "thumb" or "image" (or set "show: writing")`);
+  }
+  if (inGrid && !("workId" in data)) {
+    throw new Error(`${file}: grid posts must have a "workId" (or set "show: writing")`);
   }
 
   const stringFields = ["title", "date"];
@@ -106,15 +129,22 @@ function validate(data, body, file) {
   // workId ties a post to one OR MORE Precursors nodes: a single string, or an
   // array of strings (the post then shows on each of those nodes' cards). Either
   // form is accepted; every id must be a non-empty string.
-  const workIds = Array.isArray(data.workId) ? data.workId : [data.workId];
-  if (!workIds.length || workIds.some((w) => typeof w !== "string" || !w)) {
-    throw new Error(`${file}: "workId" must be a non-empty string or an array of non-empty strings`);
+  if ("workId" in data) {
+    const workIds = Array.isArray(data.workId) ? data.workId : [data.workId];
+    if (!workIds.length || workIds.some((w) => typeof w !== "string" || !w)) {
+      throw new Error(`${file}: "workId" must be a non-empty string or an array of non-empty strings`);
+    }
   }
   if (!Array.isArray(data.tags) || data.tags.some((t) => typeof t !== "string")) {
     throw new Error(`${file}: "tags" must be an array of strings`);
   }
   if ("subtitle" in data && typeof data.subtitle !== "string") throw new Error(`${file}: "subtitle" must be a string`);
-  if ("pinned" in data && typeof data.pinned !== "boolean") throw new Error(`${file}: "pinned" must be true/false`);
+  // pinned: true/false (pinned everywhere the post appears), or the places to
+  // pin it in — "grid", "writing", or "grid, writing".
+  if ("pinned" in data && typeof data.pinned !== "boolean") {
+    try { data.pinned = parseShow(data.pinned, file); }
+    catch (err) { throw new Error(`${file}: "pinned" must be true/false or grid / writing / grid, writing`); }
+  }
   if ("pinOrder" in data && typeof data.pinOrder !== "number") throw new Error(`${file}: "pinOrder" must be a number`);
   if ("draft" in data && typeof data.draft !== "boolean") throw new Error(`${file}: "draft" must be true/false`);
   if (!body.trim()) throw new Error(`${file}: post body (content) is empty`);
@@ -133,18 +163,37 @@ function toPost(id, data, body, file) {
   return post;
 }
 
+// Every .md file under data/posts/, including subfolders (e.g. data/posts/2026/,
+// data/posts/drafts/). Folders are purely for organisation — they change nothing
+// on the site. Returned as paths relative to POSTS_DIR, sorted.
+function listPostFiles(dir, prefix = "") {
+  const out = [];
+  for (const name of readdirSync(dir)) {
+    if (name.startsWith(".")) continue;
+    const full = join(dir, name);
+    if (statSync(full).isDirectory()) out.push(...listPostFiles(full, prefix + name + "/"));
+    else if (name.endsWith(".md")) out.push(prefix + name);
+  }
+  return out.sort();
+}
+
 function main() {
   let files;
   try {
-    files = readdirSync(POSTS_DIR).filter((f) => f.endsWith(".md")).sort();
+    files = listPostFiles(POSTS_DIR);
   } catch (err) {
     throw new Error(`can't read posts directory ${POSTS_DIR}: ${err.message}`);
   }
   if (files.length === 0) throw new Error(`no .md files found in ${POSTS_DIR}`);
 
   const posts = [];
+  const seenIds = new Map();   // id -> file, so the same filename in two folders is caught
   for (const file of files) {
-    const id = basename(file, ".md");   // the filename IS the id
+    const id = basename(file, ".md");   // the filename IS the id (its folder doesn't matter)
+    if (seenIds.has(id)) {
+      throw new Error(`two posts share the filename "${id}.md" (${seenIds.get(id)} and ${file}) — filenames must be unique across all folders`);
+    }
+    seenIds.set(id, file);
     const raw = readFileSync(join(POSTS_DIR, file), "utf8");
     const { data, body } = parseFile(raw, file);
     // A stray frontmatter `id` is ignored (the filename wins) — warn if it would

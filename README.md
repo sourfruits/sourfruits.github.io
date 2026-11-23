@@ -56,13 +56,13 @@ sourfruits-blog/
 │   ├── precursors.js Precursors page — builds the D3 graph from precursors.json
 │   └── about.js      About page — renders the ABOUT_CONTENT Markdown string (marked + DOMPurify), plus footer year + back button
 ├── data/
-│   ├── posts/        ← Your posts: one Markdown file per post (the source of truth)
+│   ├── posts/        ← Your posts: one Markdown file per post (the source of truth), in any folders you like (e.g. one per year: 2026/)
 │   ├── posts.json    ← GENERATED from data/posts/ by the build — don't edit by hand
 │   └── precursors.json  ← The Precursors graph: nodes + connections.
 ├── snippets/
 │   └── carousel.html Stashed carousel markup (not a live page — see Hidden & deleted materials)
 ├── scripts/
-│   └── build-posts.mjs  Compiles data/posts/*.md → data/posts.json (Node, no deps)
+│   └── build-posts.mjs  Compiles data/posts/**/*.md → data/posts.json (Node, no deps)
 ├── .github/workflows/
 │   └── build-posts.yml  Runs the build on every push to main, commits posts.json back
 ├── images/           Post images (see images/README.md)
@@ -113,7 +113,14 @@ after pushing.
 Each post is a Markdown file in `data/posts/`, and **the filename is the post's
 id**: `data/posts/my-first-lemon.md` is the post `my-first-lemon` (its URL is
 `post.html?id=my-first-lemon`). To re-slug a post, just rename the file — there's
-no `id` field to keep in sync. The pages don't read these files directly — the
+no `id` field to keep in sync.
+
+**Folders inside `data/posts/` are just for tidiness** — e.g. one folder per
+year (`data/posts/2026/`). The build reads every
+`.md` file in every folder, and which folder a file sits in changes nothing on the
+site (`draft:` / `show:` / the date decide that). Moving a file between folders is
+safe; the only rule is that **filenames must be unique across all folders**, since
+the filename is the id — the build stops with a clear error if two match. The pages don't read these files directly — the
 build compiles them all into `data/posts.json`, which is what the site fetches.
 **Don't edit `data/posts.json` by hand — it's generated and gets overwritten.**
 
@@ -162,7 +169,13 @@ Fields (same names/shape as before — they just live in frontmatter now):
   posts that share the *same* date, append a number: `date: "2026-06-29 1"` (lower
   first). The build splits that into a clean `date` plus a `dateOrder` the sorts use.
 - `tags` — a list, e.g. `["citrus", "kitchen"]`.
-- `workId` — required; ties the post to a Precursors node (the graph's detail card
+- `show` — optional; where the post appears. `show: grid` (the homepage photo grid)
+  is the default when the line is left out. `show: writing` lists it only on the
+  **Writing** page (`writing.html`, a text index grouped by year — no photo needed).
+  `show: grid, writing` puts the same post in both places (one file, no duplicate).
+  Writing-only posts don't need `thumb`/`image` or `workId`, their tags link to the
+  Writing page's filter, and their previous/next links step through the Writing list.
+- `workId` — required for grid posts; ties the post to a Precursors node (the graph's detail card
   lists posts whose `workId` equals its node id). If the post isn't tied to a node,
   just set it to the same value as `id`. It can be a **single id** (`workId: "my-first-lemon"`)
   or an **array of ids** (`workId: ["four-nights-of-a-dreamer-1971", "pickpocket"]`) —
@@ -175,8 +188,10 @@ Fields (same names/shape as before — they just live in frontmatter now):
   in practice you must supply both. Point them at the same file if you only have one.)
 - `draft` — optional; `draft: true` (or a date `2099-…` or later) hides the post
   until the Drafts toggle reveals it.
-- `pinned` — optional; `pinned: true` sorts the post to the front of the homepage
-  grid and shows a small pin marker on its thumbnail. Use `pinOrder: <number>`
+- `pinned` — optional; `pinned: true` sorts the post to the front of every page
+  it appears on (homepage grid and/or Writing). To pin it on just one, list the
+  page: `pinned: grid`, `pinned: writing`, or `pinned: grid, writing`. On the grid,
+  a pinned post shows a small pin marker on its thumbnail. Use `pinOrder: <number>`
   (lower first) to order several pinned posts. Pins only apply on the homepage grid
   — not on the carousel, tag, or search views.
 - The Markdown **body** is the post's `content` — write it normally (real line
@@ -190,7 +205,8 @@ Fields (same names/shape as before — they just live in frontmatter now):
 
 The build **fails loudly** (clear message, non-zero exit — so nothing broken gets
 committed) if a file is malformed or missing a required field. The required fields
-are `title, date, tags, workId, thumb, image` — note that `id` is **not** one of them:
+are `title, date, tags` — plus, for grid posts (the default), `workId` and at least
+one of `thumb` / `image` — note that `id` is **not** one of them:
 it comes from the filename, not frontmatter. Optional extras (`subtitle`, `draft`,
 `pinned`, `pinOrder`, …) are passed through when present.
 
@@ -336,9 +352,10 @@ list of every item in the graph. The list ranks by influence (the same `growth`
 score that sizes nodes), can be sorted By date (the default) / By influence / A to Z,
 and filtered by a category dropdown built from the `kind` values in
 `data/precursors.txt` (most common first, with counts). Kinds can be grouped in
-**`data/categories.txt`** (`People: writer, person, director, philosopher`);
-any kind not listed there is its own category, so a new kind still appears on
-its own. That file is read by the page directly — no build step. Sorted By date, the list reads like a
+the **`## categories`** block at the top of `data/precursors.txt`
+(`People: writer, person, director, philosopher`), which the build copies into
+`precursors.json`; any kind not listed there is its own category, so a new kind
+still appears on its own. Sorted By date, the list reads like a
 diary: small month headings (undated items last), newest first. Within a month:
 engaged items with a day (`2026-10-14`), then engaged month-only items, then
 aware-only items; influence breaks ties. Each row ends with its date minus the

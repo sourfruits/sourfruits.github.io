@@ -13,7 +13,7 @@
   // independently on hover. `--dy` is that letter's little vertical nudge; `--d`
   // staggers the transition so they don't all move as one block. The empty
   // <svg> is filled on hover with the connecting lines/dots (see below).
-  const PRECURSORS = "see more";
+  const PRECURSORS = "precursors";
   const JITTER = [-3, 2, -2, 3, -1, 2, -3, 2, -2, 1];  // px, gentle up/down
   const precursorsLetters = [...PRECURSORS].map((ch, i) =>
     `<span class="np-letter" style="--dy:${JITTER[i % JITTER.length]}px;--d:${(i * 0.015).toFixed(3)}s">${ch}</span>`
@@ -22,9 +22,11 @@
   // Primary nav links + search, shared by the top bar (interior pages) and the
   // homepage hero. Only one of the two layouts renders per page, so the
   // easter-egg selectors (.nav-precursors, .header-search) stay unambiguous.
-  // About link hidden — re-add `<a class="nav-link" href="about.html">About</a>`
-  // to navLinks (and the mobile-nav block below) to restore it.
   const navLinks = `
+            <a class="nav-link" href="about.html">about</a>
+            <span class="nav-sep" aria-hidden="true">/</span>
+            <a class="nav-link" href="writing.html">writing</a>
+            <span class="nav-sep" aria-hidden="true">/</span>
             <a class="nav-link nav-precursors" href="precursors.html">${precursorsLetters}<svg class="np-graph" aria-hidden="true"></svg></a>`;
   const searchMarkup = `
           <form class="header-search" action="search.html" method="get" role="search">
@@ -58,8 +60,9 @@
       </div>
     </div>
     <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
-      <a class="nav-link" href="precursors.html">Precursors</a>
-      <!-- About link hidden — re-insert <a class="nav-link" href="about.html">About</a> here to restore it. -->
+      <a class="nav-link" href="about.html">about</a>
+      <a class="nav-link" href="writing.html">writing</a>
+      <a class="nav-link" href="precursors.html">precursors</a>
     </nav>
   `;
 
