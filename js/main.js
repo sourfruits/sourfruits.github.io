@@ -14,7 +14,7 @@ const densityToggle = document.querySelector(".density-toggle");
 const draftsToggle = document.getElementById("drafts-toggle");
 const draftsLabel = draftsToggle.querySelector(".drafts-label");
 
-const DENSITY_KEY = "grid-density";
+const DENSITY_KEY = "grid-density-v2";   // v2: older saves recorded the default, not a real choice
 const VIEWS = ["normal", "compact"];
 // Posts per page for each view — different  on desktop and mobile (number
 // of columns depends on page width).
@@ -222,7 +222,7 @@ draftsToggle.addEventListener("click", () => {
 // the CSS — normal 3/1, compact 4/3 for desktop/phone), highlighting the active
 // button, remembering the choice, and re-rendering. Skips the re-render before
 // posts load.
-function setDensity(next) {
+function setDensity(next, remember = true) {
   currentView = next;
   grid.classList.toggle("is-compact", next === "compact");
   densityToggle.querySelectorAll(".density-btn").forEach((btn) => {
@@ -230,7 +230,9 @@ function setDensity(next) {
     btn.classList.toggle("is-active", active);
     btn.setAttribute("aria-pressed", active ? "true" : "false");
   });
-  try { localStorage.setItem(DENSITY_KEY, next); } catch (err) { /* ignore */ }
+  // Only remember a choice the visitor actually made (a toggle click), not the
+  // default — so changing the default later reaches everyone who never chose.
+  if (remember) { try { localStorage.setItem(DENSITY_KEY, next); } catch (err) { /* ignore */ } }
   if (allPosts.length) applyFilter();
 }
 
@@ -240,14 +242,14 @@ densityToggle.addEventListener("click", (e) => {
   if (btn && btn.dataset.density !== currentView) setDensity(btn.dataset.density);
 });
 
-// Default to the compact grid (4 across on desktop, 3 on phones); a visitor's
+// Default to the normal grid (3 across on desktop, 1 on phones); a visitor's
 // own choice from the toggle is remembered and wins on later visits.
-let initialView = "compact";
+let initialView = "normal";
 try {
   const saved = localStorage.getItem(DENSITY_KEY);
   if (VIEWS.includes(saved)) initialView = saved;
 } catch (err) { /* ignore */ }
-setDensity(initialView);
+setDensity(initialView, false);
 
 fetchPosts()
   .then((posts) => {

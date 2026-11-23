@@ -14,7 +14,7 @@ a little frontmatter; a small build step compiles them all into the JSON the sit
 
 Extras baked in: a multi-select tag filter on the homepage (AND logic, synced to
 the URL via `?tags=`), a **density toggle** that switches the homepage grid between
-a normal view (7 posts/page) and a denser compact view (15–16/page, the default), draft posts that
+a normal view (7 posts/page, the default) and a denser compact view (15–16/page), draft posts that
 stay hidden until you reveal them (and then sort first: pinned drafts, then drafts, then pinned posts), **pinned** posts that sort to the front with a pin
 marker, three display modes (light / dark / **Minimal** — see below), gentle load-in
 fade animations (which respect `prefers-reduced-motion`), and — at the bottom of every
