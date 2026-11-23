@@ -2464,6 +2464,10 @@ a.post-tag:focus-visible { color: var(--ink); }
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--text-small);
+  /* Room below the text so the hover underline isn't clipped by overflow:hidden
+     (the negative margin keeps row spacing unchanged). */
+  padding-bottom: 4px;
+  margin-bottom: -4px;
 }
 .list-year { color: var(--muted); }
 .list-by {
