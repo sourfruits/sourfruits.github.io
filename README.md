@@ -343,8 +343,8 @@ diary: small month headings (undated items last), newest first. Within a month:
 engaged items with a day (`2026-10-14`), then engaged month-only items, then
 aware-only items; influence breaks ties. Each row ends with its date minus the
 year ("Apr 15", or "Apr" for month-only), with "aware ·" before it for
-aware-only items. The other sorts show "led to N" there instead, and put
-"· aware" in the byline.
+aware-only items. The other sorts show "led to N" there instead (and don't
+mark aware-only items at all).
 
 **Which date stands for an item** (timeline, list): its *earliest engaged* date
 across all its discovery entries; only an item with no engaged date at all falls
@@ -352,13 +352,15 @@ back to its earliest aware date. The timeline steps by month, so day dates only
 affect ordering inside the list.
 
 In By date, year headings (and in A to Z, letter headings) can be clicked to fold
-that group away; a folded group shows its count.
+that group away; a folded group shows its count. In A to Z, a leading "The", "A" or "An" moves
+to the end and the title files under its next word ("Stranger, The" under S).
 
 **What "engaged" means:** for a film, the day you watched it; for a book, the day
 you *started* reading it (so something that led you elsewhere mid-read still
 lines up, and unfinished books still count). The list covers only the graph canvas, so the docked card stays on the
 right; tapping a row opens that item's card there (you stay in the list), and the
-card's "View in graph →" flips to the graph on that item. Threads and
+card's footer has "View in graph →" (in Graph view it has "View in list →",
+which jumps to that item's row). Threads and
 the timeline clock sit on the right of the toolbar in Graph view; in List view
 they hide and the list's category + sort dropdowns take their place.
 

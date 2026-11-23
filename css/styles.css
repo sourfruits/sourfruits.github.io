@@ -2939,11 +2939,17 @@ body.is-graph-faux-fs { overflow: hidden; }
   cursor: pointer;
 }
 .detail-close:hover { color: var(--ink); }
-/* "View in graph →" in the card header — only while the List view is on. */
-.detail-viewgraph {
-  display: none;
-  align-self: flex-start;
-  margin: 6px 0 0;
+/* Card footer: pinned under the scrolling body (never scrolls away), holding
+   "View in graph →" in List view or "View in list →" in Graph view. */
+.detail-foot {
+  flex-shrink: 0;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line-light);
+  text-align: right;
+}
+.detail-viewgraph,
+.detail-viewlist {
   padding: 0;
   border: none;
   background: none;
@@ -2952,8 +2958,13 @@ body.is-graph-faux-fs { overflow: hidden; }
   font-size: var(--text-small);
   cursor: pointer;
 }
+.detail-viewgraph { display: none; }
 .graph-area.in-list .detail-viewgraph { display: inline-block; }
-.detail-viewgraph:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.graph-area.in-list .detail-viewlist { display: none; }
+.detail-viewgraph:hover,
+.detail-viewlist:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+/* Brief highlight on the row "View in list" jumped to. */
+.list-row.is-flash { background: rgb(from var(--accent) r g b / 0.14); transition: background 0.6s ease; }
 
 /* Small uppercase eyebrow (the kind/category) above the title. */
 .detail-eyebrow {

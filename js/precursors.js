@@ -890,8 +890,6 @@ function openDetail(node, event, skipCamera) {
   if (creator) {
     head += `<div class="detail-byline">${creatorCredit(creator.role)} ${escapeHTML(creator.name)}</div>`;
   }
-  // Only shown while the List view is on (CSS): flips to the graph on this node.
-  head += `<button type="button" class="detail-viewgraph">View in graph →</button>`;
 
   // Everything below the header goes in a scrollable body, so the header stays
   // fixed while the content fills (and scrolls within) the panel's height.
@@ -976,7 +974,13 @@ function openDetail(node, event, skipCamera) {
             `<ul class="detail-post-list">${items}</ul></div>`;
   }
 
-  detail.innerHTML = head + `<div class="detail-body">${body}</div>`;
+  // Fixed footer under the scrolling body: "View in graph →" while the List
+  // view is on, "View in list →" while the graph is (CSS shows one or the other).
+  const foot = `<div class="detail-foot">` +
+    `<button type="button" class="detail-viewgraph">View in graph →</button>` +
+    `<button type="button" class="detail-viewlist">View in list →</button>` +
+    `</div>`;
+  detail.innerHTML = head + `<div class="detail-body">${body}</div>` + foot;
 
   // The header stays fixed; the body fills the panel height and its connections
   // list scrolls (CSS). The panel is docked, so there's no positioning to do.
@@ -1050,6 +1054,10 @@ if (detail) {
       setView("graph");
       const node = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
       if (node) openDetail(node);   // re-pans the camera to it
+      return;
+    }
+    if (e.target.closest(".detail-viewlist")) {
+      showInList(detailNodeId);
       return;
     }
     const threadEl = e.target.closest("[data-thread]");
@@ -1903,6 +1911,17 @@ function monthHeading(dateStr) {
   return m[2] ? `${MONTH_NAMES[parseInt(m[2], 10) - 1]} ${m[1]}` : m[1];
 }
 
+// Index-style pieces of a title for A to Z: "The Trial (1962)" →
+// { base: "The Trial", year: "1962", article: "The", rest: "Trial",
+//   sortKey: "Trial" }. Leading articles: The, A, An.
+function indexTitle(label) {
+  const s = String(label || "");
+  const y = /^(.*?)\s*\((\d{4})\)\s*$/.exec(s);
+  const base = y ? y[1] : s;
+  const a = /^(The|A|An)\s+(.+)$/.exec(base);
+  return { base, year: y ? y[2] : "", article: a ? a[1] : "", rest: a ? a[2] : base, sortKey: a ? a[2] : base };
+}
+
 // Known of but not yet engaged with: has an aware date and no engaged date.
 function isAwareOnly(n) {
   const dvs = discoveredVia(nodeById[n.id] || n);
@@ -1970,7 +1989,7 @@ function renderList() {
   const sort = listState.sort;
   let items = listItems();
   if (listState.category !== "all") items = items.filter((n) => listCategoryOf(n) === listState.category);
-  if (sort === "az") items.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+  if (sort === "az") items.sort((a, b) => indexTitle(a.label).sortKey.localeCompare(indexTitle(b.label).sortKey, undefined, { sensitivity: "base" }));
   // Diary order: months newest first (undated last). Within a month:
   //   1. engaged, with a day (newest day first)   2. engaged, month only
   //   3. aware-only (same day-then-month order)   — influence breaks ties.
@@ -1998,7 +2017,7 @@ function renderList() {
   // A to Z gets the same collapsible headings, one per first letter
   // (accents folded, so "Él" files under E; anything else under "#").
   const letterOf = (n) => {
-    const c = String(n.label || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().charAt(0).toUpperCase();
+    const c = indexTitle(n.label).sortKey.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().charAt(0).toUpperCase();
     return /[A-Z]/.test(c) ? c : "#";
   };
   const groupOf = sort === "recent" ? yearOf : sort === "az" ? letterOf : null;
@@ -2027,20 +2046,21 @@ function renderList() {
       }
     }
     const creator = creatorInfo(n);
-    // Italic byline: the type, then the credited creator, then "aware" (By date
-    // shows "aware" at the right end instead).
+    // Italic byline: the type, then the credited creator.
     // The type is set in small spaced capitals (like the card's FILM / BOOK
     // label) so it reads apart from the italic name: "Peter Yates · FILM".
     // Order: TYPE · creator credited like the card ("dir." for films, "by"
-    // otherwise) · aware — e.g. "FILM · dir. Peter Yates", "WRITER".
+    // otherwise) — e.g. "FILM · dir. Peter Yates", "WRITER".
     const by = [
       n.kind ? `<span class="list-kind">${escapeHTML(n.kind.toLowerCase())}</span>` : "",
       creator ? `${creatorCredit(creator.role)} ${escapeHTML(creator.name)}` : "",
-      isAwareOnly(n) && sort !== "recent" ? "aware" : "",
-    ].filter(Boolean).join(" · ");
+    ].filter(Boolean).join(" · ");   // ("aware" only appears in By date, by the date)
     // Pull a trailing "(1967)" off the title so the year can sit quieter.
-    const m = /^(.*?)\s*\((\d{4})\)\s*$/.exec(n.label);
-    const title = m ? `${escapeHTML(m[1])} <span class="list-year">(${m[2]})</span>` : escapeHTML(n.label);
+    // In A to Z, a leading "The / A / An" moves to the end, index style:
+    // "Stranger, The", "Friends of Eddie Coyle, The (1973)".
+    const it = indexTitle(n.label);
+    const shown = sort === "az" && it.article ? `${it.rest}, ${it.article}` : it.base;
+    const title = it.year ? `${escapeHTML(shown)} <span class="list-year">(${it.year})</span>` : escapeHTML(shown);
     // Right-hand end of the dotted leader: in "By date", the date without
     // its year (the month heading already says it) — "Apr 15" for a day date,
     // "Apr" for month-only — preceded by "aware ·" for aware-only items;
@@ -2063,6 +2083,29 @@ function renderList() {
         <span class="list-count">${right}</span>
       </button></li>`;
   }).join("");
+}
+
+// Flip to the List view and scroll this item's row into view (the card stays
+// open beside it). If a filter or a folded group hides the row, clear them first.
+function showInList(id) {
+  setView("list");
+  const rowsEl = document.getElementById("list-rows");
+  const find = () => rowsEl && [...rowsEl.querySelectorAll(".list-row")].find((r) => r.dataset.nodeId === id);
+  let row = find();
+  if (!row) {
+    listState.category = "all";
+    listState.collapsedYears.clear();
+    syncCategoryMenu();
+    renderList();
+    row = find();
+  }
+  if (row && rowsEl) {
+    // Scroll only the list box (not the page) so the row sits mid-list.
+    const lr = rowsEl.getBoundingClientRect(), rr = row.getBoundingClientRect();
+    rowsEl.scrollTop += (rr.top - lr.top) - (lr.height - rr.height) / 2;
+    row.classList.add("is-flash");
+    setTimeout(() => row.classList.remove("is-flash"), 1200);
+  }
 }
 
 function setView(view) {
