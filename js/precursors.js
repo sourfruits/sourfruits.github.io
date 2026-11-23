@@ -1575,18 +1575,35 @@ function entryTimelineDate(d) {
   return d.engagedDate || d.awareDate || null;
 }
 
-// The month a node was first discovered (earliest representative date across its
-// dv entries), or null if it has no dated discovery (those stay visible at every
-// position).
+// The month a node was first discovered (see nodeFirstDate), as a month key, or
+// null if it has no dated discovery (those stay visible at every position).
 function nodeDiscoveryKey(node) {
-  let min = Infinity;
-  discoveredVia(node).forEach((d) => {
-    const date = entryTimelineDate(d);
-    if (!date) return;
-    const k = dateKey(date);
-    if (k != null && k < min) min = k;
-  });
-  return isFinite(min) ? min : null;
+  const s = nodeFirstDate(node);
+  return s ? dateKey(s) : null;
+}
+
+// Day-precision sort key: YYYYMMDD as a number, with a missing month or day
+// as 00 — so within a month, day-dated items sort ahead of month-only ones
+// (newest first), and a year-only date sorts below that year's months.
+function dayKey(s) {
+  if (!s) return null;
+  const parts = String(s).split("-");
+  const y = parseInt(parts[0], 10);
+  if (isNaN(y)) return null;
+  const m = parts.length >= 2 ? parseInt(parts[1], 10) || 0 : 0;
+  const d = parts.length >= 3 ? parseInt(parts[2], 10) || 0 : 0;
+  return y * 10000 + m * 100 + d;
+}
+
+// The one date that stands for a node (timeline, list, "Most recent"): its
+// EARLIEST ENGAGED date across all its discovery entries; only when it has no
+// engaged date at all does it fall back to its earliest aware date. (So a
+// separate, earlier "aware" entry never pulls a node's date back.)
+function nodeFirstDate(node) {
+  const earliest = (dates) => dates.reduce((best, s) => (best == null || dayKey(s) < dayKey(best) ? s : best), null);
+  const dvs = discoveredVia(node);
+  const engaged = earliest(dvs.map((d) => d.engagedDate).filter(Boolean));
+  return engaged || earliest(dvs.map((d) => d.awareDate).filter(Boolean));
 }
 
 // Every calendar month from the earliest to the latest discovery, inclusive —
@@ -1834,15 +1851,19 @@ function listItems() {
   return simulation ? simulation.nodes().slice() : [];
 }
 
-// Earliest dated discovery as its original string ("2024-03"), for display.
+// The node's representative date as its original string ("2024-03"), for display.
 function firstDateString(node) {
-  let best = null, bestKey = Infinity;
-  discoveredVia(node).forEach((d) => {
-    const s = entryTimelineDate(d);
-    const k = s ? dateKey(s) : null;
-    if (k != null && k < bestKey) { bestKey = k; best = s; }
-  });
-  return best;
+  return nodeFirstDate(node);
+}
+
+// Heading for the diary-style "Most recent" list: "October 2026" for a month
+// date, just "2024" for a year-only date, "Undated" when there's none.
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function monthHeading(dateStr) {
+  if (!dateStr) return "Undated";
+  const m = /^(\d{4})(?:-(\d{2}))?/.exec(dateStr);
+  if (!m) return "Undated";
+  return m[2] ? `${MONTH_NAMES[parseInt(m[2], 10) - 1]} ${m[1]}` : m[1];
 }
 
 function byInfluence(a, b) {
@@ -1907,29 +1928,36 @@ function renderList() {
   let items = listItems();
   if (listState.category !== "all") items = items.filter((n) => listCategoryOf(n) === listState.category);
   if (sort === "az") items.sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
-  else if (sort === "recent") items.sort((a, b) => (nodeDiscoveryKey(b) ?? -Infinity) - (nodeDiscoveryKey(a) ?? -Infinity) || byInfluence(a, b));
+  // Newest first by day; within a month, day-dated items come first, then
+  // month-only ones; influence breaks any remaining ties; undated go last.
+  else if (sort === "recent") items.sort((a, b) => (dayKey(firstDateString(b)) ?? -Infinity) - (dayKey(firstDateString(a)) ?? -Infinity) || byInfluence(a, b));
   else items.sort(byInfluence);
 
   if (!items.length) {
     rowsEl.innerHTML = `<li class="list-empty">Nothing matches these filters.</li>`;
     return;
   }
+  // "Most recent" reads like a diary: a small month heading over each group
+  // instead of repeating the date on every row; undated items go last.
+  let lastHeading = null;
   rowsEl.innerHTML = items.map((n, i) => {
+    let heading = "";
+    if (sort === "recent") {
+      const label = monthHeading(firstDateString(n));
+      if (label !== lastHeading) {
+        heading = `<li class="list-month">${escapeHTML(label)}</li>`;
+        lastHeading = label;
+      }
+    }
     const creator = creatorInfo(n);
     // Byline in italics: the creator if there is one, else the kind ("platform").
     const by = creator ? creator.name : (n.kind || "");
     // Pull a trailing "(1967)" off the title so the year can sit quieter.
     const m = /^(.*?)\s*\((\d{4})\)\s*$/.exec(n.label);
     const title = m ? `${escapeHTML(m[1])} <span class="list-year">(${m[2]})</span>` : escapeHTML(n.label);
-    let right = "";
-    if (sort === "recent") {
-      const d = firstDateString(n);
-      right = d ? escapeHTML(formatDiscoveryDate(d)) : "";
-    } else {
-      const led = (n.discoveryOut || []).length;
-      right = led ? `led to ${led}` : "";
-    }
-    return `<li><button type="button" class="list-row" data-node-id="${escapeHTML(n.id)}">
+    const led = (n.discoveryOut || []).length;
+    const right = led ? `led to ${led}` : "";
+    return `${heading}<li><button type="button" class="list-row" data-node-id="${escapeHTML(n.id)}">
         ${sort === "influence" ? `<span class="list-rank">${i + 1}</span>` : ""}
         <span class="list-main">
           <span class="list-title">${title}</span>

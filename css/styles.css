@@ -2492,6 +2492,18 @@ a.post-tag:focus-visible { color: var(--ink); }
   font-size: var(--text-tiny);
   white-space: nowrap;
 }
+/* Month headings in the "Most recent" sort — same small spaced capitals as the
+   Learn more card label, so the list reads like a dated diary. */
+.list-month {
+  margin: 14px 0 2px;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps-wide);
+  text-transform: uppercase;
+}
+.list-month:first-child { margin-top: 4px; }
 .list-empty { padding: 16px 4px; color: var(--muted); font-size: var(--text-small); }
 @media (max-width: 560px) {
   /* Phones: Tuning is hidden, so the toolbar doesn't need to save room for

@@ -336,7 +336,14 @@ list of every item in the graph. The list ranks by influence (the same `growth`
 score that sizes nodes), can be sorted Most influential / Most recent / A to Z,
 and filtered by a category dropdown built automatically from the `kind` values in
 `data/precursors.txt` (most common first, with counts) — a new kind appears there
-on its own, nothing to maintain. The list covers only the graph canvas, so the docked card stays on the
+on its own, nothing to maintain. Sorted by Most recent, the list reads like a
+diary: small month headings (undated items last), newest first — day-dated items
+(`2026-10-14`) ahead of month-only ones within a month, influence breaking ties.
+
+**Which date stands for an item** (timeline, list): its *earliest engaged* date
+across all its discovery entries; only an item with no engaged date at all falls
+back to its earliest aware date. The timeline steps by month, so day dates only
+affect ordering inside the list. The list covers only the graph canvas, so the docked card stays on the
 right; tapping a row opens that item's card there. Threads and
 the timeline clock sit on the right of the toolbar in Graph view; in List view
 they hide and the list's category + sort dropdowns take their place.
