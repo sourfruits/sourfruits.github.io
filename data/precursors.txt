@@ -344,7 +344,7 @@ connections:
   - to: dostoevsky-notes-from-underground, relationship: authorship
   - to: dostoevsky-white-nights, relationship: authorship
   - to: dostoevsky-crime-and-punishment, relationship: authorship
-  - to: dostoevsky-the-myth-of-sisyphus, relationship: influence, note: Camus directly cites Dostoevsky in the Myth of Sisyphus.
+  - to: camus-the-myth-of-sisyphus, relationship: influence, note: Camus directly cites Dostoevsky in the Myth of Sisyphus.
 discovered:
   - source: dostoevsky-notes-from-underground, engaged: 2026-05
 
@@ -416,7 +416,7 @@ kind: film
 discovered:
   - source: le-samourai-1967, aware: 2026-04, thread: lone operator
 
-### melancholia
+### melancholia-2011
 label: Melancholia (2011)
 kind: film
 creator: Lars von Trier
@@ -525,9 +525,3 @@ label: Jono C
 kind: person
 discovered:
   - engaged: 2022-06, note: RMP glory days
-
-### susan-sontag
-label: Susan Sontag
-kind: writer
-discovered:
-  - source: sontag-on-photography
