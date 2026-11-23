@@ -2,7 +2,7 @@
 title: "Four Nights of a Dreamer (1971)"
 subtitle: "Quatre nuits d’un rêveur"
 date: "2026-05-29"
-tags: ["blurb", "film"]
+tags: ["notes", "film"]
 workId: "four-nights-of-a-dreamer-1971"
 image: "images/four-nights-of-a-dreamer/image.jpg"
 ---

@@ -1,7 +1,7 @@
 ---
 title: "Notes from Underground by Fyodor Dostoevsky"
 date: "2026-08-17"
-tags: ["blurb", "books"]
+tags: ["notes", "books"]
 workId: "dostoevsky-notes-from-underground"
 image: "images/notes-from-underground/image.jpg"
 ---

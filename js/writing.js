@@ -25,9 +25,9 @@ try { showDrafts = sessionStorage.getItem(DRAFTS_KEY) === "1"; } catch (err) { /
 const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
 // On the Writing page each piece shows (and is filtered by) just ONE tag: its
-// first tag that isn't "writeup" / "blurb" (those describe length on the
-// homepage grid). So tags: ["writeup", "essay", "film"] → "essay".
-const GRID_ONLY_TAGS = ["writeup", "blurb"];
+// first tag that isn't "longform" / "notes" (those describe length on the
+// homepage grid). So tags: ["longform", "essay", "film"] → "essay".
+const GRID_ONLY_TAGS = ["longform", "notes"];
 const writingTags = (post) =>
   (Array.isArray(post.tags) ? post.tags : []).filter((t) => !GRID_ONLY_TAGS.includes(t)).slice(0, 1);
 
@@ -67,21 +67,18 @@ function shortDate(iso, withYear) {
 }
 
 
-// One entry, two lines: serif title ······ date, then the tags in small grey
-// capitals and the subtitle in grey italics. A thin line separates entries.
+// One entry: the date in a left column (month and day — the year is the
+// heading above), then the title, the italic subtitle, and the tag underneath.
+// A thin line separates entries.
 function itemHTML(post, withYear) {
   const tags = writingTags(post);
-  const by = [
-    tags.length ? `<span class="list-kind">${tags.map(escapeHTML).join(", ")}</span>` : "",
-    post.subtitle ? escapeHTML(post.subtitle) : "",
-  ].filter(Boolean).join(" · ");
-  return `<li><a class="list-row writing-row${isDraft(post) ? " is-draft" : ""}" href="post.html?id=${encodeURIComponent(post.id)}">
-        <span class="list-main">
-          <span class="list-title">${escapeHTML(post.title)}</span>
-          ${by ? `<span class="list-by">${by}</span>` : ""}
+  return `<li><a class="writing-entry${isDraft(post) ? " is-draft" : ""}" href="post.html?id=${encodeURIComponent(post.id)}">
+        <span class="writing-date">${escapeHTML(shortDate(post.date, withYear))}</span>
+        <span class="writing-body">
+          <span class="writing-title">${escapeHTML(post.title)}</span>
+          ${post.subtitle ? `<span class="writing-sub">${escapeHTML(post.subtitle)}</span>` : ""}
+          ${tags.length ? `<span class="writing-tags">${tags.map(escapeHTML).join(" · ")}</span>` : ""}
         </span>
-        <span class="list-leader" aria-hidden="true"></span>
-        <span class="list-count">${escapeHTML(shortDate(post.date, withYear))}</span>
       </a></li>`;
 }
 

@@ -73,7 +73,7 @@ function renderPost(post) {
   document.title = `${post.title} — Sourfruits`;
   setPostMeta(post);
 
-  // Content-type tags ("writeup"/"blurb") lead; the rest keep their order.
+  // Content-type tags ("longform"/"notes") lead; the rest keep their order.
   const orderedTags = orderTags(post.tags);
   const tags = orderedTags.length
     ? orderedTags

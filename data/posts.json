@@ -5,7 +5,7 @@
     "subtitle": "--",
     "date": "2099-11-18",
     "tags": [
-      "blurb",
+      "notes",
       "books"
     ],
     "workId": "hopkins-poems-and-prose",
@@ -18,8 +18,8 @@
     "subtitle": "xx",
     "date": "2099-10-19",
     "tags": [
-      "blurb",
-      "writeup",
+      "notes",
+      "longform",
       "books"
     ],
     "workId": "didion-the-white-album",
@@ -33,7 +33,7 @@
     "date": "2099-08-10",
     "tags": [
       "music",
-      "writeup"
+      "longform"
     ],
     "workId": [
       "charli-xcx-music-fashion-film",
@@ -48,7 +48,7 @@
     "subtitle": "floridian greatness",
     "date": "2099-07-22",
     "tags": [
-      "blurb",
+      "notes",
       "music"
     ],
     "workId": "454-casts-of-a-dreamer",
@@ -64,7 +64,7 @@
     "tags": [
       "film",
       "philosophy",
-      "writeup"
+      "longform"
     ],
     "workId": "stranger-than-paradise-1984",
     "image": "images/stranger-than-paradise-heidegger/image.jpeg",
@@ -79,7 +79,7 @@
     "subtitle": "On autumn, time, and memory",
     "date": "2026-11-14",
     "tags": [
-      "writeup",
+      "longform",
       "essay",
       "film"
     ],
@@ -100,7 +100,7 @@
     "title": "Men in the Sun by Ghassan Kanafani",
     "date": "2026-11-02",
     "tags": [
-      "blurb",
+      "notes",
       "books"
     ],
     "workId": "kanafani-men-in-the-sun",
@@ -113,7 +113,7 @@
     "subtitle": "Ascenseur pour l'échafaud",
     "date": "2026-10-26",
     "tags": [
-      "blurb",
+      "notes",
       "film"
     ],
     "workId": "elevator-to-the-gallows-1958",
@@ -125,7 +125,7 @@
     "title": "But Beautiful by Geoff Dyer",
     "date": "2026-10-19",
     "tags": [
-      "blurb",
+      "notes",
       "books"
     ],
     "workId": "dyer-but-beautiful",
@@ -137,7 +137,7 @@
     "title": "Primetime (2026)",
     "date": "2026-10-02",
     "tags": [
-      "writeup",
+      "longform",
       "film"
     ],
     "workId": "primetime-2026",
@@ -149,7 +149,7 @@
     "title": "Framing and Composition in The Maltese Falcon",
     "date": "2026-09-02",
     "tags": [
-      "writeup",
+      "longform",
       "film"
     ],
     "workId": "the-maltese-falcon-1941",
@@ -161,7 +161,7 @@
     "title": "Notes from Underground by Fyodor Dostoevsky",
     "date": "2026-08-17",
     "tags": [
-      "blurb",
+      "notes",
       "books"
     ],
     "workId": "dostoevsky-notes-from-underground",
@@ -174,7 +174,7 @@
     "subtitle": "and Other Stories by Leo Tolstoy",
     "date": "2026-08-02",
     "tags": [
-      "writeup",
+      "longform",
       "books"
     ],
     "workId": "tolstoy-how-much-land",
@@ -188,7 +188,7 @@
     "date": "2026-07-21",
     "tags": [
       "books",
-      "blurb"
+      "notes"
     ],
     "workId": "kafka-the-trial",
     "image": "images/the-trial/image.jpg",
@@ -200,7 +200,7 @@
     "date": "2026-06-19",
     "tags": [
       "film",
-      "blurb"
+      "notes"
     ],
     "workId": "from-russia-with-love-1963",
     "image": "images/from-russia-with-love/image.jpg",
@@ -212,7 +212,7 @@
     "subtitle": "Quatre nuits d’un rêveur",
     "date": "2026-05-29",
     "tags": [
-      "blurb",
+      "notes",
       "film"
     ],
     "workId": "four-nights-of-a-dreamer-1971",
@@ -225,7 +225,7 @@
     "subtitle": "I am literally Bruce Lee",
     "date": "2026-03-28",
     "tags": [
-      "writeup",
+      "longform",
       "film"
     ],
     "workId": "enter-the-dragon-1973",

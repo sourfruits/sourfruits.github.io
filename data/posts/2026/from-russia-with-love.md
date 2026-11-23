@@ -1,7 +1,7 @@
 ---
 title: "From Russia with Love (1963)"
 date: "2026-06-19"
-tags: ["film", "blurb"]
+tags: ["film", "notes"]
 workId: "from-russia-with-love-1963"
 image: "images/from-russia-with-love/image.jpg"
 ---

@@ -2,7 +2,7 @@
 title: "Elevator to the Gallows (1958)"
 subtitle: "Ascenseur pour l'échafaud"
 date: "2026-10-26"
-tags: ["blurb", "film"]
+tags: ["notes", "film"]
 workId: "elevator-to-the-gallows-1958"
 image: "images/elevator-to-the-gallows/image.jpg"
 ---

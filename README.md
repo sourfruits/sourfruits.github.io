@@ -176,8 +176,8 @@ Fields (same names/shape as before — they just live in frontmatter now):
   Writing-only posts don't need `thumb`/`image` or `workId`, their tags link to the
   Writing page's filter, and their previous/next links step through the Writing list.
   On the Writing page each piece shows — and is filtered by — just its **first tag
-  that isn't `writeup` / `blurb`**, so put the kind of writing first:
-  `tags: ["writeup", "essay", "film"]` shows "essay" there.
+  that isn't `longform` / `notes`**, so put the kind of writing first:
+  `tags: ["longform", "essay", "film"]` shows "essay" there.
 - `workId` — required for grid posts; ties the post to a Precursors node (the graph's detail card
   lists posts whose `workId` equals its node id). If the post isn't tied to a node,
   just set it to the same value as `id`. It can be a **single id** (`workId: "my-first-lemon"`)
