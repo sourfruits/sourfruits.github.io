@@ -25,9 +25,9 @@
   // About link hidden — re-add `<a class="nav-link" href="about.html">about</a>`
   // (plus a nav-sep) to navLinks and the mobile-nav block to restore it.
   const navLinks = `
-            <a class="nav-link nav-precursors" href="precursors.html">${precursorsLetters}<svg class="np-graph" aria-hidden="true"></svg></a>
+            <a class="nav-link" href="writing.html">writing</a>
             <span class="nav-sep" aria-hidden="true">/</span>
-            <a class="nav-link" href="writing.html">writing</a>`;
+            <a class="nav-link nav-precursors" href="precursors.html">${precursorsLetters}<svg class="np-graph" aria-hidden="true"></svg></a>`;
   const searchMarkup = `
           <form class="header-search" action="search.html" method="get" role="search">
             <input type="search" name="q" class="header-search-input" aria-label="Search posts" autocomplete="off">
@@ -60,8 +60,8 @@
       </div>
     </div>
     <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile">
-      <a class="nav-link" href="precursors.html">precursors</a>
       <a class="nav-link" href="writing.html">writing</a>
+      <a class="nav-link" href="precursors.html">precursors</a>
     </nav>
   `;
 
