@@ -115,13 +115,6 @@ discovered:
   - source: sontag-on-photography, aware:2026-08, thread: Theory
   - source: edward-said, engaged: 2026-10-24
 
-### joan-didion
-label: Joan Didion
-kind: writer
-discovered:
-  - source: jono-c, aware: 2022-11-04
-  - engaged: 2026-10-20
-
 ### didion-the-white-album
 label: The White Album
 kind: book
@@ -135,6 +128,12 @@ kind: film
 creator: Orson Welles
 discovered:
   - source: kafka-the-trial, aware: 2026-06, engaged: 2026-10-16
+
+### william-wordsworth
+label: William Wordsworth
+kind: writer
+discovered:
+  - source: rv-hallberg, engaged: 2026-10-16, note: "Discussion on The Sublime, somehow", thread: Poetry
 
 ### out-of-the-past-1947
 label: Out of the Past (1947)
@@ -162,6 +161,13 @@ creator: Tewfik Saleh
 kind: film
 discovered:
   - source: kanafani-men-in-the-sun, aware: 2026-10, thread: Arab Israeli conflict
+
+### joan-didion
+label: Joan Didion
+kind: writer
+discovered:
+  - source: jono-c, aware: 2022-11-04
+  - engaged: 2026-09-28, note: "Initially interested in California and narrative. First exposure was to Why I Write, and shimmering images."
 
 ### dyer-but-beautiful
 label: But Beautiful
