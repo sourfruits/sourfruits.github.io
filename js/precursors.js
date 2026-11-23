@@ -890,6 +890,8 @@ function openDetail(node, event, skipCamera) {
   if (creator) {
     head += `<div class="detail-byline">${creatorCredit(creator.role)} ${escapeHTML(creator.name)}</div>`;
   }
+  // Only shown while the List view is on (CSS): flips to the graph on this node.
+  head += `<button type="button" class="detail-viewgraph">View in graph →</button>`;
 
   // Everything below the header goes in a scrollable body, so the header stays
   // fixed while the content fills (and scrolls within) the panel's height.
@@ -1043,6 +1045,13 @@ if (detail) {
   // as the thread menu). Checked before the node link so a thread sub-line inside
   // a row never falls through to opening a node.
   detail.addEventListener("click", (e) => {
+    if (e.target.closest(".detail-viewgraph")) {
+      const id = detailNodeId;
+      setView("graph");
+      const node = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
+      if (node) openDetail(node);   // re-pans the camera to it
+      return;
+    }
     const threadEl = e.target.closest("[data-thread]");
     if (threadEl && detail.contains(threadEl)) { selectThread(threadEl.getAttribute("data-thread")); return; }
     const link = e.target.closest("[data-node-id]");
@@ -1595,7 +1604,7 @@ function dayKey(s) {
   return y * 10000 + m * 100 + d;
 }
 
-// The one date that stands for a node (timeline, list, "Most recent"): its
+// The one date that stands for a node (timeline, list, "By date"): its
 // EARLIEST ENGAGED date across all its discovery entries; only when it has no
 // engaged date at all does it fall back to its earliest aware date. (So a
 // separate, earlier "aware" entry never pulls a node's date back.)
@@ -1834,9 +1843,9 @@ if (fsBtn) {
 // The Graph / List switch in the toolbar flips the graph box to a ranked list of
 // every item in the graph. The list has its own category dropdown (built like
 // the Threads menu) and a sort. Threads and the clock are graph-only. Tapping a row
-// flips back to the graph and opens that item's card (camera pans to it).
+// opens that item's card in the side panel; the card's "View in graph" flips over.
 // `var` so the hoisted guard in renderList() is safe if it's called early.
-var listState = { view: "graph", category: "all", sort: "influence" };
+var listState = { view: "graph", category: "all", sort: "recent", collapsedYears: new Set() };   // "recent" = By date (the default)
 
 // The category dropdown is built straight from the `kind` values in
 // precursors.txt — no hand-made grouping to maintain. A new kind (say
@@ -1876,9 +1885,17 @@ function firstDateString(node) {
   return nodeFirstDate(node);
 }
 
-// Heading for the diary-style "Most recent" list: "October 2026" for a month
+// Heading for the diary-style "By date" list: "October 2026" for a month
 // date, just "2024" for a year-only date, "Undated" when there's none.
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+// A date without its year, for rows under a month heading: "Apr 15" for a
+// day date, "Apr" for month-only, "" for year-only or none.
+function shortDate(dateStr) {
+  const m = /^(\d{4})-(\d{2})(?:-(\d{2}))?/.exec(dateStr || "");
+  if (!m) return "";
+  const mon = MONTH_NAMES[parseInt(m[2], 10) - 1].slice(0, 3);
+  return m[3] ? `${mon} ${parseInt(m[3], 10)}` : mon;
+}
 function monthHeading(dateStr) {
   if (!dateStr) return "Undated";
   const m = /^(\d{4})(?:-(\d{2}))?/.exec(dateStr);
@@ -1971,32 +1988,76 @@ function renderList() {
     rowsEl.innerHTML = `<li class="list-empty">Nothing matches these filters.</li>`;
     return;
   }
-  // "Most recent" reads like a diary: a small month heading over each group
+  // "By date" reads like a diary: a small month heading over each group
   // instead of repeating the date on every row; undated items go last.
-  let lastHeading = null;
+  // Year headings, with month subheadings under them ("Undated" sits at the
+  // year level). A year-only date goes at the end of its year, no month line.
+  // Year headings are buttons that fold their year away (open by default);
+  // a folded year shows its item count.
+  const yearOf = (n) => { const m = /^(\d{4})/.exec(firstDateString(n) || ""); return m ? m[1] : "Undated"; };
+  // A to Z gets the same collapsible headings, one per first letter
+  // (accents folded, so "Él" files under E; anything else under "#").
+  const letterOf = (n) => {
+    const c = String(n.label || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().charAt(0).toUpperCase();
+    return /[A-Z]/.test(c) ? c : "#";
+  };
+  const groupOf = sort === "recent" ? yearOf : sort === "az" ? letterOf : null;
+  const yearCounts = {};
+  if (groupOf) items.forEach((n) => { const y = groupOf(n); yearCounts[y] = (yearCounts[y] || 0) + 1; });
+  let lastYear = null, lastMonth = null;
   rowsEl.innerHTML = items.map((n, i) => {
     let heading = "";
-    if (sort === "recent") {
-      const label = monthHeading(firstDateString(n));
-      if (label !== lastHeading) {
-        heading = `<li class="list-month">${escapeHTML(label)}</li>`;
-        lastHeading = label;
+    if (groupOf) {
+      const d = sort === "recent" ? /^(\d{4})(?:-(\d{2}))?/.exec(firstDateString(n) || "") : null;
+      const year = groupOf(n);
+      const month = d && d[2] ? MONTH_NAMES[parseInt(d[2], 10) - 1] : null;
+      const folded = listState.collapsedYears.has(year);
+      if (year !== lastYear) {
+        heading += `<li class="list-yearhead"><button type="button" class="list-yeartoggle" data-year="${escapeHTML(year)}" aria-expanded="${folded ? "false" : "true"}">` +
+          `<span>${escapeHTML(year)}</span>` +
+          `<svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>` +
+          (folded ? `<span class="list-yearcount">${yearCounts[year]}</span>` : "") +
+          `</button></li>`;
+        lastYear = year; lastMonth = null;
+      }
+      if (folded) return heading;   // folded year: heading only, no months or rows
+      if (month && month !== lastMonth) {
+        heading += `<li class="list-month">${escapeHTML(month)}</li>`;
+        lastMonth = month;
       }
     }
     const creator = creatorInfo(n);
-    // Byline in italics: the creator if there is one, else the kind ("platform"),
-    // plus "· aware" for items you know of but haven't engaged with yet.
-    const by = [creator ? creator.name : (n.kind || ""), isAwareOnly(n) ? "aware" : ""].filter(Boolean).join(" · ");
+    // Italic byline: the type, then the credited creator, then "aware" (By date
+    // shows "aware" at the right end instead).
+    // The type is set in small spaced capitals (like the card's FILM / BOOK
+    // label) so it reads apart from the italic name: "Peter Yates · FILM".
+    // Order: TYPE · creator credited like the card ("dir." for films, "by"
+    // otherwise) · aware — e.g. "FILM · dir. Peter Yates", "WRITER".
+    const by = [
+      n.kind ? `<span class="list-kind">${escapeHTML(n.kind.toLowerCase())}</span>` : "",
+      creator ? `${creatorCredit(creator.role)} ${escapeHTML(creator.name)}` : "",
+      isAwareOnly(n) && sort !== "recent" ? "aware" : "",
+    ].filter(Boolean).join(" · ");
     // Pull a trailing "(1967)" off the title so the year can sit quieter.
     const m = /^(.*?)\s*\((\d{4})\)\s*$/.exec(n.label);
     const title = m ? `${escapeHTML(m[1])} <span class="list-year">(${m[2]})</span>` : escapeHTML(n.label);
-    const led = (n.discoveryOut || []).length;
-    const right = led ? `led to ${led}` : "";
+    // Right-hand end of the dotted leader: in "By date", the date without
+    // its year (the month heading already says it) — "Apr 15" for a day date,
+    // "Apr" for month-only — preceded by "aware ·" for aware-only items;
+    // otherwise how many things it led to.
+    let right = "";
+    if (sort === "recent") {
+      const d = shortDate(firstDateString(n));
+      right = escapeHTML([isAwareOnly(n) ? "aware" : "", d].filter(Boolean).join(" · "));
+    } else {
+      const led = (n.discoveryOut || []).length;
+      right = led ? `led to ${led}` : "";
+    }
     return `${heading}<li><button type="button" class="list-row" data-node-id="${escapeHTML(n.id)}">
         ${sort === "influence" ? `<span class="list-rank">${i + 1}</span>` : ""}
         <span class="list-main">
           <span class="list-title">${title}</span>
-          ${by ? `<span class="list-by">${escapeHTML(by)}</span>` : ""}
+          ${by ? `<span class="list-by">${by}</span>` : ""}
         </span>
         <span class="list-leader" aria-hidden="true"></span>
         <span class="list-count">${right}</span>
@@ -2018,6 +2079,7 @@ function setView(view) {
   // Threads is graph-only too: the list shows everything, filtered by category.
   if (threadFilter) threadFilter.classList.toggle("is-list-hidden", view === "list");
   if (listEl) listEl.hidden = view !== "list";
+  if (graphArea) graphArea.classList.toggle("in-list", view === "list");
   const tools = document.getElementById("list-tools");
   if (tools) tools.hidden = view !== "list";
   if (view === "list") { buildCategoryMenu(); renderList(); }
@@ -2029,11 +2091,19 @@ function setView(view) {
   });
   const rowsEl = document.getElementById("list-rows");
   if (rowsEl) rowsEl.addEventListener("click", (e) => {
+    const yt = e.target.closest(".list-yeartoggle");
+    if (yt) {
+      const y = yt.dataset.year;
+      if (listState.collapsedYears.has(y)) listState.collapsedYears.delete(y);
+      else listState.collapsedYears.add(y);
+      renderList();
+      return;
+    }
     const row = e.target.closest(".list-row");
     if (!row) return;
     const id = row.dataset.nodeId;
-    // Flip back to the graph and open the item's card (the camera pans to it).
-    setView("graph");
+    // Stay in the list: open the item's card in the side panel. (The camera
+    // still pans to it behind the list; the card's "View in graph" flips over.)
     const node = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
     if (node) openDetail(node);
   });

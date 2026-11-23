@@ -20,6 +20,7 @@
 #   - source: some-node-id, aware: 2023-04, engaged: 2026-05, thread: 70s paranoia, note: the story, mechanism: platform-letterboxd
 #   - aware: 2024                 # every field optional, but an entry can't be empty
 #                                 # dates are YYYY, YYYY-MM, or YYYY-MM-DD
+#                                 # engaged = watched (film) / STARTED reading (book)
 #
 # Notes:
 #   • Blank lines and lines starting with "#" are ignored.
@@ -58,14 +59,14 @@ label: The Friends of Eddie Coyle (1973)
 kind: film
 creator: Peter Yates
 discovered:
-  - source: out-of-the-past-1947, aware: 2026-11, thread: Robert Mitchum
+  - source: out-of-the-past-1947, engaged: 2026-11-05, thread: Robert Mitchum
 
 ### out-of-the-past-1947
 label: Out of the Past (1947)
 kind: film
-creator: Jacques Torneur
+creator: Jacques Tourneur
 discovered:
-  - source: cmc-film-noir, engaged: 2026-10, thread: Film noir
+  - source: cmc-film-noir, engaged: 2026-10-05, thread: Film noir
 
 ### susan-sontag
 label: Susan Sontag
@@ -78,14 +79,14 @@ label: Elevator to the Gallows (1958)
 kind: film
 creator: Louis Malle
 discovered:
-  - source: dyer-but-beautiful, engaged: 2026-10
+  - source: dyer-but-beautiful, engaged: 2026-10-26
 
 ### dyer-but-beautiful
 label: But Beautiful
 kind: book
 creator: Geoff Dyer
 discovered:
-  - source: rv-hallberg, engaged: 2026-10
+  - source: rv-hallberg, engaged: 2026-09-23
 
 ### felix-k
 label: Felix K
@@ -95,7 +96,7 @@ kind: person
 label: Edward Said: Between Worlds (2026)
 kind: film
 discovered:
-  - source: felix-k, engaged: 2026-10, thread: Arab Israeli conflict, note: 2026 AFI Fest screening @ the Chinese Theater
+  - source: felix-k, engaged: 2026-10-24, thread: Arab Israeli conflict, note: 2026 AFI Fest screening @ the Chinese Theater
 
 ### edward-said
 label: Edward Said
@@ -123,7 +124,7 @@ label: Men in the Sun
 creator: Ghassan Kanafani
 kind: book
 discovered:
-  - source: between-worlds-2026, engaged: 2026-10, thread: Arab Israeli conflict
+  - source: between-worlds-2026, engaged: 2026-10-29, thread: Arab Israeli conflict
 
 ### the-dupes-1972
 label: The Dupes (1972)
@@ -158,7 +159,7 @@ label: The Maltese Falcon (1941)
 kind: film
 creator: John Huston
 discovered:
-  - source: cmc-film-noir, engaged: 2026-09, thread: Film noir
+  - source: cmc-film-noir, engaged: 2026-08-31, thread: Film noir
 
 ### after-hours-1985
 label: After Hours (1985)
@@ -170,22 +171,24 @@ label: Blow Out (1981)
 kind: film
 creator: Brian de Palma
 discovered:
-  - source: the-parallax-view-1974, engaged: 2023-04, thread: 70s paranoia
+  - source: the-parallax-view-1974, engaged: 2023-04-10, thread: 70s paranoia
 
 ### blow-up-1966
 label: Blow-Up (1966)
 kind: film
+creator: Michelangelo Antonioni
 connections:
   - to: the-conversation-1974, relationship: influence
   - to: blow-out-1981, relationship: influence
 discovered:
-  - source: blow-out-1981, engaged: 2026-03
+  - source: blow-out-1981, aware: 2026-03
 
 ### brazil-1985
 label: Brazil (1985)
 kind: film
+creator: Terry Gilliam
 discovered:
-  - source: letterboxd, engaged: 2026-04, note: Part of a Denmark movie-binge phase.
+  - source: letterboxd, engaged: 2026-04-01, note: Part of a Denmark movie-binge phase.
 
 ### camus-the-myth-of-sisyphus
 label: The Myth of Sisyphus
@@ -201,14 +204,14 @@ label: The Stranger
 kind: book
 creator: Albert Camus
 discovered:
-  - source: dis-copenhagen, engaged: 2026-03, note: Borrowed from the DIS library.
+  - source: dis-copenhagen, engaged: 2026-03-12, note: Borrowed from the DIS library.
 
 ### chan-is-missing-1982
 label: Chan Is Missing (1982)
 kind: film
 creator: Wayne Wang
 discovered:
-  - source: letterboxd, engaged: 2026-05
+  - source: letterboxd, engaged: 2026-06-09
 
 ### charli-xcx-music-fashion-film
 label: "Music, Fashion, Film"
@@ -222,13 +225,13 @@ label: Cold Water (1994)
 kind: film
 creator: Olivier Assayas
 discovered:
-  - source: mahjong-1996, engaged: 2026-06, thread: Virginie Ledoyen
+  - source: mahjong-1996, engaged: 2026-06-04, thread: Virginie Ledoyen
 
 ### criterion-channel
 label: The Criterion Channel
 kind: platform
 discovered:
-  - engaged: 2026-05, source: letterboxd
+  - engaged: 2026-05-16, source: letterboxd
 
 ### dis-copenhagen
 label: DIS Copenhagen
@@ -256,7 +259,7 @@ kind: book
 connections:
   - to: camus-the-stranger, relationship: influence
 discovered:
-  - source: camus-the-stranger, engaged: 2026-05, thread: existential fiction
+  - source: camus-the-stranger, aware: 2026-05, engaged: 2026-08-02, thread: existential fiction
 
 ### dostoevsky-white-nights
 label: White Nights
@@ -265,20 +268,20 @@ connections:
   - to: four-nights-of-a-dreamer-1971, relationship: adaptation
   - to: le-notti-bianche-1957, relationship: adaptation
 discovered:
-  - source: fyodor-dostoevsky, engaged: 2026-05, note: Picked it up in a bookstore in Denmark for the flight home.
+  - source: fyodor-dostoevsky, engaged: 2026-05-16, note: Picked it up in a bookstore in Denmark for the flight home.
 
 ### four-nights-of-a-dreamer-1971
 label: Four Nights of a Dreamer (1971)
 kind: film
 discovered:
-  - source: dostoevsky-white-nights, engaged: 2026-05
+  - source: dostoevsky-white-nights, engaged: 2026-05-24
 
 ### from-russia-with-love-1963
 label: From Russia With Love (1963)
 kind: film
 creator: Terence Young
 discovered:
-  - source: criterion-channel, engaged: 2026-06
+  - source: criterion-channel, engaged: 2026-06-19
 
 ### fyodor-dostoevsky
 label: Fyodor Dostoevsky
@@ -295,7 +298,7 @@ discovered:
 label: Ghost Dog: The Way of the Samurai (1999)
 kind: film
 discovered:
-  - source: le-samourai-1967, engaged: 2026-04, thread: lone operator
+  - source: le-samourai-1967, aware: 2026-04, thread: lone operator
 
 ### jim-jarmusch
 label: Jim Jarmusch
@@ -316,7 +319,7 @@ connections:
   - to: after-hours-1985, relationship: influence
   - to: brazil-1985, relationship: influence
 discovered:
-  - source: camus-the-stranger, engaged: 2026-06, thread: existential fiction
+  - source: camus-the-stranger, engaged: 2026-06-21, thread: existential fiction
 
 ### kierkegaard-either-or
 label: Either/Or
@@ -330,8 +333,9 @@ discovered:
 ### le-notti-bianche-1957
 label: Le Notti Bianche (1957)
 kind: film
+creator: Luchino Visconti
 discovered:
-  - source: dostoevsky-white-nights, engaged: 2026-05
+  - source: dostoevsky-white-nights, aware: 2026-05, engaged: 2026-08-09
 
 ### le-samourai-1967
 label: Le Samouraï (1967)
@@ -343,7 +347,7 @@ connections:
   - to: pickpocket-1959, relationship: thematic
   - to: the-conversation-1974, relationship: thematic, note: Existentialist studies of lone operators who build their identity around mastery of their craft
 discovered:
-  - source: the-parallax-view-1974, engaged: 2026-03, thread: 70s paranoia, mechanism: letterboxd, note: this movie is soooooooooooooo cool and awesome and it inspired me to want to be a better man honestly
+  - source: the-parallax-view-1974, engaged: 2026-04-09, thread: 70s paranoia, mechanism: letterboxd, note: this movie is soooooooooooooo cool and awesome and it inspired me to want to be a better man honestly
 
 ### letterboxd
 label: Letterboxd
@@ -356,15 +360,16 @@ label: Mahjong (1996)
 kind: film
 creator: Edward Yang
 discovered:
-  - source: letterboxd, engaged: 2026-05
+  - source: letterboxd, engaged: 2026-05-23
 
 ### melancholia
 label: Melancholia (2011)
 kind: film
+creator: Lars von Trier
 connections:
   - to: kierkegaard-either-or, relationship: thematic
 discovered:
-  - source: dis-philosophy, engaged: 2026-03
+  - source: dis-philosophy, engaged: 2026-03-31
 
 ### percy-the-moviegoer
 label: The Moviegoer
@@ -377,14 +382,14 @@ discovered:
 label: Pickpocket (1959)
 kind: film
 discovered:
-  - source: le-samourai-1967, engaged: 2026-04, thread: lone operator, note: Bresson/Melville ascetic dialogue
+  - source: le-samourai-1967, aware: 2026-04, engaged: 2026-05-18, thread: lone operator, note: Bresson/Melville ascetic dialogue
 
 ### purple-noon-1960
 label: Purple Noon (1960)
 kind: film
 creator: René Clément
 discovered:
-  - source: le-samourai-1967, engaged: 2026-05, thread: Alain Delon
+  - source: le-samourai-1967, engaged: 2026-05-17, thread: Alain Delon
 
 ### robert-bresson
 label: Robert Bresson
@@ -421,14 +426,14 @@ connections:
   - to: chan-is-missing-1982, relationship: thematic, note: Influential black and white 1980s indie film about aimless wandering
 discovered:
   - source: jim-jarmusch
-  - source: dis-philosophy, engaged: 2026-05, note: Assigned/chosen for an essay on boredom; loved it.
+  - source: dis-philosophy, engaged: 2026-05-12, note: Assigned/chosen for an essay on boredom; loved it.
 
 ### the-conformist-1970
 label: The Conformist (1970)
 kind: film
 creator: Bernardo Bertolucci
 discovered:
-  - source: the-parallax-view-1974, engaged: 2026-05, thread: 70s paranoia
+  - source: the-parallax-view-1974, engaged: 2026-05-21, thread: 70s paranoia
 
 ### the-conversation-1974
 label: The Conversation (1974)
@@ -437,32 +442,32 @@ creator: Francis Ford Coppola
 connections:
   - to: the-parallax-view-1974, relationship: thematic
 discovered:
-  - source: the-parallax-view-1974, aware: 2023-04, engaged: 2026-04, thread: 70s paranoia
+  - source: the-parallax-view-1974, aware: 2023-04, engaged: 2026-04-15, thread: 70s paranoia
 
 ### the-parallax-view-1974
 label: The Parallax View (1974)
 kind: film
 creator: Alan J. Pakula
 discovered:
-  - engaged: 2023-04, note: General interest in spy/paranoia thrillers around this time; no specific trigger.
+  - engaged: 2023-04-09, note: General interest in spy/paranoia thrillers around this time; no specific trigger.
 
 ### the-taste-of-tea-2004
 label: The Taste of Tea (2004)
 kind: film
 creator: Katsuhito Ishii
 discovered:
-  - source: letterboxd, engaged: 2026-05
+  - source: letterboxd, engaged: 2026-05-09
 
 ### the-trial-1962
 label: The Trial (1962)
 kind: film
 creator: Orson Welles
 discovered:
-  - source: kafka-the-trial, aware: 2026-06, engaged: 2026-10
+  - source: kafka-the-trial, aware: 2026-06, engaged: 2026-10-16
 
 ### thief-1981
 label: Thief (1981)
 kind: film
 creator: Michael Mann
 discovered:
-  - source: le-samourai-1967, engaged: 2026-05, thread: lone operator
+  - source: le-samourai-1967, engaged: 2026-05-07, thread: lone operator

@@ -333,21 +333,32 @@ from the same data:
 **Graph / List switch.** The Discovery/Connections toggle is hidden (the page is
 Discovery-only); in its place a **Graph / List** switch flips the box to a ranked
 list of every item in the graph. The list ranks by influence (the same `growth`
-score that sizes nodes), can be sorted Most influential / Most recent / A to Z,
+score that sizes nodes), can be sorted By date (the default) / By influence / A to Z,
 and filtered by a category dropdown built from the `kind` values in
 `data/precursors.txt` (most common first, with counts). Kinds can be grouped in
 **`data/categories.txt`** (`People: writer, person, director, philosopher`);
 any kind not listed there is its own category, so a new kind still appears on
-its own. That file is read by the page directly — no build step. Sorted by Most recent, the list reads like a
+its own. That file is read by the page directly — no build step. Sorted By date, the list reads like a
 diary: small month headings (undated items last), newest first. Within a month:
 engaged items with a day (`2026-10-14`), then engaged month-only items, then
-aware-only items (marked "· aware" in the byline); influence breaks ties.
+aware-only items; influence breaks ties. Each row ends with its date minus the
+year ("Apr 15", or "Apr" for month-only), with "aware ·" before it for
+aware-only items. The other sorts show "led to N" there instead, and put
+"· aware" in the byline.
 
 **Which date stands for an item** (timeline, list): its *earliest engaged* date
 across all its discovery entries; only an item with no engaged date at all falls
 back to its earliest aware date. The timeline steps by month, so day dates only
-affect ordering inside the list. The list covers only the graph canvas, so the docked card stays on the
-right; tapping a row opens that item's card there. Threads and
+affect ordering inside the list.
+
+In By date, year headings (and in A to Z, letter headings) can be clicked to fold
+that group away; a folded group shows its count.
+
+**What "engaged" means:** for a film, the day you watched it; for a book, the day
+you *started* reading it (so something that led you elsewhere mid-read still
+lines up, and unfinished books still count). The list covers only the graph canvas, so the docked card stays on the
+right; tapping a row opens that item's card there (you stay in the list), and the
+card's "View in graph →" flips to the graph on that item. Threads and
 the timeline clock sit on the right of the toolbar in Graph view; in List view
 they hide and the list's category + sort dropdowns take their place.
 

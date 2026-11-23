@@ -2480,6 +2480,15 @@ a.post-tag:focus-visible { color: var(--ink); }
   font-style: italic;
   font-size: var(--text-tiny);
 }
+/* The type in a byline: small spaced capitals in the sans, not italic —
+   the same voice as the card's FILM / BOOK label. */
+.list-kind {
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-size: 0.72rem;
+  letter-spacing: var(--tracking-caps);
+  text-transform: uppercase;
+}
 .list-leader {
   flex: 1 1 24px;
   min-width: 24px;
@@ -2503,7 +2512,41 @@ a.post-tag:focus-visible { color: var(--ink); }
   letter-spacing: var(--tracking-caps-wide);
   text-transform: uppercase;
 }
-.list-month:first-child { margin-top: 4px; }
+/* Year headings above the month subheadings in "By date" — serif, like the
+   titles, so the year reads as the section and the month as the label under it. */
+.list-yearhead {
+  margin: 26px 0 0;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: var(--text-base);
+  font-weight: var(--weight-bold);
+}
+/* The year is a button that folds its year away; chevron points down when
+   open, right when folded, and a folded year shows its count. */
+.list-yeartoggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.list-yeartoggle .chevron { color: var(--muted); transition: transform 0.15s ease; }
+.list-yeartoggle[aria-expanded="false"] .chevron { transform: rotate(-90deg); }
+.list-yeartoggle:hover .chevron { color: var(--ink); }
+.list-yeartoggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.list-yearcount {
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  font-weight: var(--weight-normal);
+  font-variant-numeric: tabular-nums;
+}
+.list-yearhead:first-child { margin-top: 6px; }
+.list-yearhead + .list-month { margin-top: 6px; }
 .list-empty { padding: 16px 4px; color: var(--muted); font-size: var(--text-small); }
 @media (max-width: 560px) {
   /* Phones: Tuning is hidden, so the toolbar doesn't need to save room for
@@ -2518,9 +2561,9 @@ a.post-tag:focus-visible { color: var(--ink); }
   .list-rows { padding: 6px 12px; }
   /* No room for a leader on phones: drop it and stack the byline under the
      title instead. */
-  /* The card panel is too narrow to share the screen here, and tapping a row
-     goes to the graph anyway — so on phones the list covers the full width. */
-  .list-view { right: 0; }
+  /* Phones: the list covers the full width until a row is tapped; then the
+     card slides in beside it (same split as the graph). */
+  .graph-area:not(.has-detail) .list-view { right: 0; }
   .list-main { flex: 1 1 auto; flex-direction: column; gap: 1px; }
   .list-title, .list-by { max-width: 100%; }
   .list-leader { display: none; }
@@ -2896,6 +2939,21 @@ body.is-graph-faux-fs { overflow: hidden; }
   cursor: pointer;
 }
 .detail-close:hover { color: var(--ink); }
+/* "View in graph →" in the card header — only while the List view is on. */
+.detail-viewgraph {
+  display: none;
+  align-self: flex-start;
+  margin: 6px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  cursor: pointer;
+}
+.graph-area.in-list .detail-viewgraph { display: inline-block; }
+.detail-viewgraph:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 
 /* Small uppercase eyebrow (the kind/category) above the title. */
 .detail-eyebrow {
