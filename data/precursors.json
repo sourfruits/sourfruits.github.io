@@ -1,55 +1,21 @@
 {
   "nodes": [
     {
-      "id": "claremont-mckenna-college",
-      "label": "Claremont McKenna College",
-      "kind": "school",
-      "discovered_via": [
-        {
-          "engagedDate": "2023-08"
-        }
-      ]
-    },
-    {
-      "id": "cmc-voice-lessons",
-      "label": "Voice Lessons",
-      "kind": "class",
-      "creator": "Tamara Bevard",
-      "discovered_via": [
-        {
-          "source": "claremont-mckenna-college",
-          "engagedDate": "2026-09"
-        }
-      ]
-    },
-    {
       "id": "christina-rossetti",
       "label": "Christina Rossetti",
       "kind": "writer",
       "discovered_via": [
         {
           "source": "gerard-manley-hopkins",
-          "engagedDate": "2026-11",
+          "engagedDate": "2026-11-12",
           "thread": "Poetry",
           "note": "Victorian inspiration, 'A Better Resurrection'"
         },
         {
           "source": "cmc-voice-lessons",
           "awareDate": "2026-11",
-          "note": "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor"
-        }
-      ]
-    },
-    {
-      "id": "gerard-manley-hopkins",
-      "label": "Gerard Manley Hopkins",
-      "kind": "writer",
-      "discovered_via": [
-        {
-          "source": "rv-hallberg",
-          "engagedDate": "2026-11",
-          "thread": "Poetry",
-          "note": "First aware through Gaffney FWS, inspired to explore poetry"
+          "note": "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor",
+          "engagedDate": "2026-11-11"
         }
       ]
     },
@@ -67,25 +33,40 @@
       ]
     },
     {
-      "id": "out-of-the-past-1947",
-      "label": "Out of the Past (1947)",
-      "kind": "film",
-      "creator": "Jacques Tourneur",
+      "id": "gerard-manley-hopkins",
+      "label": "Gerard Manley Hopkins",
+      "kind": "writer",
       "discovered_via": [
         {
-          "source": "cmc-film-noir",
-          "engagedDate": "2026-10-05",
-          "thread": "Film noir"
+          "source": "rv-hallberg",
+          "engagedDate": "2026-11-03",
+          "thread": "Poetry",
+          "note": "First aware through Gaffney FWS, inspired to explore poetry"
         }
       ]
     },
     {
-      "id": "susan-sontag",
-      "label": "Susan Sontag",
-      "kind": "writer",
+      "id": "hopkins-poems-and-prose",
+      "label": "Poems and Prose",
+      "kind": "book",
+      "creator": "Gerard Manley Hopkins",
       "discovered_via": [
         {
-          "source": "sontag-on-photography"
+          "source": "gerard-manley-hopkins",
+          "engagedDate": "2026-11-03"
+        }
+      ]
+    },
+    {
+      "id": "kanafani-men-in-the-sun",
+      "label": "Men in the Sun",
+      "kind": "book",
+      "creator": "Ghassan Kanafani",
+      "discovered_via": [
+        {
+          "source": "between-worlds-2026",
+          "engagedDate": "2026-10-29",
+          "thread": "Arab Israeli conflict"
         }
       ]
     },
@@ -102,23 +83,6 @@
       ]
     },
     {
-      "id": "dyer-but-beautiful",
-      "label": "But Beautiful",
-      "kind": "book",
-      "creator": "Geoff Dyer",
-      "discovered_via": [
-        {
-          "source": "rv-hallberg",
-          "engagedDate": "2026-09-23"
-        }
-      ]
-    },
-    {
-      "id": "felix-k",
-      "label": "Felix K",
-      "kind": "person"
-    },
-    {
       "id": "between-worlds-2026",
       "label": "Edward Said: Between Worlds (2026)",
       "kind": "film",
@@ -128,18 +92,6 @@
           "engagedDate": "2026-10-24",
           "thread": "Arab Israeli conflict",
           "note": "2026 AFI Fest screening @ the Chinese Theater"
-        }
-      ]
-    },
-    {
-      "id": "edward-said",
-      "label": "Edward Said",
-      "kind": "writer",
-      "discovered_via": [
-        {
-          "source": "between-worlds-2026",
-          "engagedDate": "2026-10",
-          "thread": "Arab Israeli conflict"
         }
       ]
     },
@@ -156,7 +108,71 @@
         },
         {
           "source": "edward-said",
-          "engagedDate": "2026-10"
+          "engagedDate": "2026-10-24"
+        }
+      ]
+    },
+    {
+      "id": "joan-didion",
+      "label": "Joan Didion",
+      "kind": "writer",
+      "discovered_via": [
+        {
+          "source": "jono-c",
+          "awareDate": "2022-11-04"
+        },
+        {
+          "engagedDate": "2026-10-20"
+        }
+      ]
+    },
+    {
+      "id": "didion-the-white-album",
+      "label": "The White Album",
+      "kind": "book",
+      "creator": "Joan Didion",
+      "discovered_via": [
+        {
+          "source": "joan-didion",
+          "engagedDate": "2026-10-20"
+        }
+      ]
+    },
+    {
+      "id": "the-trial-1962",
+      "label": "The Trial (1962)",
+      "kind": "film",
+      "creator": "Orson Welles",
+      "discovered_via": [
+        {
+          "source": "kafka-the-trial",
+          "awareDate": "2026-06",
+          "engagedDate": "2026-10-16"
+        }
+      ]
+    },
+    {
+      "id": "out-of-the-past-1947",
+      "label": "Out of the Past (1947)",
+      "kind": "film",
+      "creator": "Jacques Tourneur",
+      "discovered_via": [
+        {
+          "source": "cmc-film-noir",
+          "engagedDate": "2026-10-05",
+          "thread": "Film noir"
+        }
+      ]
+    },
+    {
+      "id": "edward-said",
+      "label": "Edward Said",
+      "kind": "writer",
+      "discovered_via": [
+        {
+          "source": "between-worlds-2026",
+          "engagedDate": "2026-10",
+          "thread": "Arab Israeli conflict"
         }
       ]
     },
@@ -169,19 +185,6 @@
         {
           "source": "between-worlds-2026",
           "awareDate": "2026-10",
-          "thread": "Arab Israeli conflict"
-        }
-      ]
-    },
-    {
-      "id": "kanafani-men-in-the-sun",
-      "label": "Men in the Sun",
-      "kind": "book",
-      "creator": "Ghassan Kanafani",
-      "discovered_via": [
-        {
-          "source": "between-worlds-2026",
-          "engagedDate": "2026-10-29",
           "thread": "Arab Israeli conflict"
         }
       ]
@@ -200,6 +203,48 @@
       ]
     },
     {
+      "id": "dyer-but-beautiful",
+      "label": "But Beautiful",
+      "kind": "book",
+      "creator": "Geoff Dyer",
+      "discovered_via": [
+        {
+          "source": "rv-hallberg",
+          "engagedDate": "2026-09-23"
+        }
+      ]
+    },
+    {
+      "id": "dostoevsky-crime-and-punishment",
+      "label": "Crime and Punishment",
+      "kind": "book",
+      "discovered_via": [
+        {
+          "source": "fyodor-dostoevsky",
+          "awareDate": "2026-05",
+          "engagedDate": "2026-09-07"
+        }
+      ],
+      "connections": [
+        {
+          "to": "pickpocket-1959",
+          "relationship": "influence"
+        }
+      ]
+    },
+    {
+      "id": "cmc-film-noir",
+      "label": "LIT134: Film Noir",
+      "kind": "class",
+      "creator": "Robert von Hallberg",
+      "discovered_via": [
+        {
+          "source": "claremont-mckenna-college",
+          "engagedDate": "2026-09"
+        }
+      ]
+    },
+    {
       "id": "rv-hallberg",
       "label": "Robert von Hallberg",
       "kind": "person",
@@ -211,20 +256,10 @@
       ]
     },
     {
-      "id": "danny-h",
-      "label": "Danny H",
-      "kind": "person"
-    },
-    {
-      "id": "holden-t",
-      "label": "Holden T",
-      "kind": "person"
-    },
-    {
-      "id": "cmc-film-noir",
-      "label": "LIT134: Film Noir",
+      "id": "cmc-voice-lessons",
+      "label": "Voice Lessons",
       "kind": "class",
-      "creator": "Robert von Hallberg",
+      "creator": "Tamara Bevard",
       "discovered_via": [
         {
           "source": "claremont-mckenna-college",
@@ -246,175 +281,28 @@
       ]
     },
     {
-      "id": "after-hours-1985",
-      "label": "After Hours (1985)",
-      "kind": "film",
-      "creator": "Martin Scorsese"
-    },
-    {
-      "id": "blow-out-1981",
-      "label": "Blow Out (1981)",
-      "kind": "film",
-      "creator": "Brian de Palma",
-      "discovered_via": [
-        {
-          "source": "the-parallax-view-1974",
-          "engagedDate": "2023-04-10",
-          "thread": "70s paranoia"
-        }
-      ]
-    },
-    {
-      "id": "blow-up-1966",
-      "label": "Blow-Up (1966)",
-      "kind": "film",
-      "creator": "Michelangelo Antonioni",
-      "discovered_via": [
-        {
-          "source": "blow-out-1981",
-          "awareDate": "2026-03"
-        }
-      ],
-      "connections": [
-        {
-          "to": "the-conversation-1974",
-          "relationship": "influence"
-        },
-        {
-          "to": "blow-out-1981",
-          "relationship": "influence"
-        }
-      ]
-    },
-    {
-      "id": "brazil-1985",
-      "label": "Brazil (1985)",
-      "kind": "film",
-      "creator": "Terry Gilliam",
-      "discovered_via": [
-        {
-          "source": "letterboxd",
-          "engagedDate": "2026-04-01",
-          "note": "Part of a Denmark movie-binge phase."
-        }
-      ]
-    },
-    {
-      "id": "camus-the-myth-of-sisyphus",
-      "label": "The Myth of Sisyphus",
+      "id": "sontag-on-photography",
+      "label": "On Photography",
       "kind": "book",
-      "creator": "Albert Camus",
+      "creator": "Susan Sontag",
       "discovered_via": [
         {
-          "source": "camus-the-stranger",
-          "engagedDate": "2026-04"
-        }
-      ],
-      "connections": [
-        {
-          "to": "camus-the-stranger",
-          "relationship": "thematic"
+          "source": "charli-xcx-music-fashion-film",
+          "engagedDate": "2026-08-18",
+          "note": "camera: the sociology of being on film"
         }
       ]
     },
     {
-      "id": "camus-the-stranger",
-      "label": "The Stranger",
-      "kind": "book",
-      "creator": "Albert Camus",
-      "discovered_via": [
-        {
-          "source": "dis-copenhagen",
-          "engagedDate": "2026-03-12",
-          "note": "Borrowed from the DIS library."
-        }
-      ]
-    },
-    {
-      "id": "chan-is-missing-1982",
-      "label": "Chan Is Missing (1982)",
+      "id": "le-notti-bianche-1957",
+      "label": "Le Notti Bianche (1957)",
       "kind": "film",
-      "creator": "Wayne Wang",
+      "creator": "Luchino Visconti",
       "discovered_via": [
         {
-          "source": "letterboxd",
-          "engagedDate": "2026-06-09"
-        }
-      ]
-    },
-    {
-      "id": "charli-xcx-music-fashion-film",
-      "label": "Music, Fashion, Film",
-      "kind": "album",
-      "creator": "Charli XCX",
-      "discovered_via": [
-        {
-          "source": "holden-t",
-          "engagedDate": "2026-07",
-          "note": "played Girl, so confusing on aux"
-        }
-      ]
-    },
-    {
-      "id": "cold-water-1994",
-      "label": "Cold Water (1994)",
-      "kind": "film",
-      "creator": "Olivier Assayas",
-      "discovered_via": [
-        {
-          "source": "mahjong-1996",
-          "engagedDate": "2026-06-04",
-          "thread": "Virginie Ledoyen"
-        }
-      ]
-    },
-    {
-      "id": "criterion-channel",
-      "label": "The Criterion Channel",
-      "kind": "platform",
-      "discovered_via": [
-        {
-          "source": "letterboxd",
-          "engagedDate": "2026-05-16"
-        }
-      ]
-    },
-    {
-      "id": "dis-copenhagen",
-      "label": "DIS Copenhagen",
-      "kind": "school",
-      "discovered_via": [
-        {
-          "source": "claremont-mckenna-college",
-          "engagedDate": "2026-01"
-        }
-      ]
-    },
-    {
-      "id": "dis-philosophy",
-      "label": "DIS Philosophy",
-      "kind": "class",
-      "discovered_via": [
-        {
-          "source": "dis-copenhagen",
-          "engagedDate": "2026-01"
-        }
-      ]
-    },
-    {
-      "id": "dostoevsky-crime-and-punishment",
-      "label": "Crime and Punishment",
-      "kind": "book",
-      "discovered_via": [
-        {
-          "source": "fyodor-dostoevsky",
-          "awareDate": "2026-05"
-        }
-      ],
-      "connections": [
-        {
-          "to": "pickpocket-1959",
-          "relationship": "influence"
+          "source": "dostoevsky-white-nights",
+          "awareDate": "2026-05",
+          "engagedDate": "2026-08-09"
         }
       ]
     },
@@ -438,110 +326,15 @@
       ]
     },
     {
-      "id": "dostoevsky-white-nights",
-      "label": "White Nights",
-      "kind": "book",
+      "id": "charli-xcx-music-fashion-film",
+      "label": "Music, Fashion, Film",
+      "kind": "album",
+      "creator": "Charli XCX",
       "discovered_via": [
         {
-          "source": "fyodor-dostoevsky",
-          "engagedDate": "2026-05-16",
-          "note": "Picked it up in a bookstore in Denmark for the flight home."
-        }
-      ],
-      "connections": [
-        {
-          "to": "four-nights-of-a-dreamer-1971",
-          "relationship": "adaptation"
-        },
-        {
-          "to": "le-notti-bianche-1957",
-          "relationship": "adaptation"
-        }
-      ]
-    },
-    {
-      "id": "four-nights-of-a-dreamer-1971",
-      "label": "Four Nights of a Dreamer (1971)",
-      "kind": "film",
-      "discovered_via": [
-        {
-          "source": "dostoevsky-white-nights",
-          "engagedDate": "2026-05-24"
-        }
-      ]
-    },
-    {
-      "id": "from-russia-with-love-1963",
-      "label": "From Russia With Love (1963)",
-      "kind": "film",
-      "creator": "Terence Young",
-      "discovered_via": [
-        {
-          "source": "criterion-channel",
-          "engagedDate": "2026-06-19"
-        }
-      ]
-    },
-    {
-      "id": "fyodor-dostoevsky",
-      "label": "Fyodor Dostoevsky",
-      "kind": "writer",
-      "discovered_via": [
-        {
-          "source": "dostoevsky-notes-from-underground",
-          "engagedDate": "2026-05"
-        }
-      ],
-      "connections": [
-        {
-          "to": "dostoevsky-notes-from-underground",
-          "relationship": "authorship"
-        },
-        {
-          "to": "dostoevsky-white-nights",
-          "relationship": "authorship"
-        },
-        {
-          "to": "dostoevsky-crime-and-punishment",
-          "relationship": "authorship"
-        },
-        {
-          "to": "dostoevsky-the-myth-of-sisyphus",
-          "relationship": "influence",
-          "note": "Camus directly cites Dostoevsky in the Myth of Sisyphus."
-        }
-      ]
-    },
-    {
-      "id": "ghost-dog-1999",
-      "label": "Ghost Dog: The Way of the Samurai (1999)",
-      "kind": "film",
-      "discovered_via": [
-        {
-          "source": "le-samourai-1967",
-          "awareDate": "2026-04",
-          "thread": "lone operator"
-        }
-      ]
-    },
-    {
-      "id": "jim-jarmusch",
-      "label": "Jim Jarmusch",
-      "kind": "director",
-      "discovered_via": [
-        {
-          "source": "ghost-dog-1999",
-          "engagedDate": "2026-05"
-        }
-      ],
-      "connections": [
-        {
-          "to": "stranger-than-paradise-1984",
-          "relationship": "authorship"
-        },
-        {
-          "to": "ghost-dog-1999",
-          "relationship": "authorship"
+          "source": "holden-t",
+          "engagedDate": "2026-07",
+          "note": "played Girl, so confusing on aux"
         }
       ]
     },
@@ -577,37 +370,274 @@
       ]
     },
     {
-      "id": "kierkegaard-either-or",
-      "label": "Either/Or",
-      "kind": "book",
+      "id": "from-russia-with-love-1963",
+      "label": "From Russia With Love (1963)",
+      "kind": "film",
+      "creator": "Terence Young",
       "discovered_via": [
         {
-          "source": "soren-kierkegaard",
-          "awareDate": "2024"
-        },
-        {
-          "source": "dis-philosophy",
-          "engagedDate": "2026-03",
-          "note": "Read excerpt: The Unhappiest One"
-        }
-      ],
-      "connections": [
-        {
-          "to": "melancholia-2011",
-          "relationship": "thematic"
+          "source": "criterion-channel",
+          "engagedDate": "2026-06-19"
         }
       ]
     },
     {
-      "id": "le-notti-bianche-1957",
-      "label": "Le Notti Bianche (1957)",
+      "id": "chan-is-missing-1982",
+      "label": "Chan Is Missing (1982)",
       "kind": "film",
-      "creator": "Luchino Visconti",
+      "creator": "Wayne Wang",
+      "discovered_via": [
+        {
+          "source": "letterboxd",
+          "engagedDate": "2026-06-09"
+        }
+      ]
+    },
+    {
+      "id": "cold-water-1994",
+      "label": "Cold Water (1994)",
+      "kind": "film",
+      "creator": "Olivier Assayas",
+      "discovered_via": [
+        {
+          "source": "mahjong-1996",
+          "engagedDate": "2026-06-04",
+          "thread": "Virginie Ledoyen"
+        }
+      ]
+    },
+    {
+      "id": "four-nights-of-a-dreamer-1971",
+      "label": "Four Nights of a Dreamer (1971)",
+      "kind": "film",
       "discovered_via": [
         {
           "source": "dostoevsky-white-nights",
-          "awareDate": "2026-05",
-          "engagedDate": "2026-08-09"
+          "engagedDate": "2026-05-24"
+        }
+      ]
+    },
+    {
+      "id": "mahjong-1996",
+      "label": "Mahjong (1996)",
+      "kind": "film",
+      "creator": "Edward Yang",
+      "discovered_via": [
+        {
+          "source": "letterboxd",
+          "engagedDate": "2026-05-23"
+        }
+      ]
+    },
+    {
+      "id": "the-conformist-1970",
+      "label": "The Conformist (1970)",
+      "kind": "film",
+      "creator": "Bernardo Bertolucci",
+      "discovered_via": [
+        {
+          "source": "the-parallax-view-1974",
+          "engagedDate": "2026-05-21",
+          "thread": "70s paranoia"
+        }
+      ]
+    },
+    {
+      "id": "pickpocket-1959",
+      "label": "Pickpocket (1959)",
+      "kind": "film",
+      "discovered_via": [
+        {
+          "source": "le-samourai-1967",
+          "awareDate": "2026-04",
+          "engagedDate": "2026-05-18",
+          "thread": "lone operator",
+          "note": "Bresson/Melville ascetic dialogue"
+        }
+      ]
+    },
+    {
+      "id": "purple-noon-1960",
+      "label": "Purple Noon (1960)",
+      "kind": "film",
+      "creator": "René Clément",
+      "discovered_via": [
+        {
+          "source": "le-samourai-1967",
+          "engagedDate": "2026-05-17",
+          "thread": "Alain Delon"
+        }
+      ]
+    },
+    {
+      "id": "dostoevsky-white-nights",
+      "label": "White Nights",
+      "kind": "book",
+      "discovered_via": [
+        {
+          "source": "fyodor-dostoevsky",
+          "engagedDate": "2026-05-16",
+          "note": "Picked it up in a bookstore in Denmark for the flight home."
+        }
+      ],
+      "connections": [
+        {
+          "to": "four-nights-of-a-dreamer-1971",
+          "relationship": "adaptation"
+        },
+        {
+          "to": "le-notti-bianche-1957",
+          "relationship": "adaptation"
+        }
+      ]
+    },
+    {
+      "id": "criterion-channel",
+      "label": "The Criterion Channel",
+      "kind": "platform",
+      "discovered_via": [
+        {
+          "source": "letterboxd",
+          "engagedDate": "2026-05-16"
+        }
+      ]
+    },
+    {
+      "id": "stranger-than-paradise-1984",
+      "label": "Stranger Than Paradise (1984)",
+      "kind": "film",
+      "discovered_via": [
+        {
+          "source": "jim-jarmusch"
+        },
+        {
+          "source": "dis-philosophy",
+          "engagedDate": "2026-05-12",
+          "note": "Assigned/chosen for an essay on boredom; loved it."
+        }
+      ],
+      "connections": [
+        {
+          "to": "chan-is-missing-1982",
+          "relationship": "thematic",
+          "note": "Influential black and white 1980s indie film about aimless wandering"
+        }
+      ]
+    },
+    {
+      "id": "the-taste-of-tea-2004",
+      "label": "The Taste of Tea (2004)",
+      "kind": "film",
+      "creator": "Katsuhito Ishii",
+      "discovered_via": [
+        {
+          "source": "letterboxd",
+          "engagedDate": "2026-05-09"
+        }
+      ]
+    },
+    {
+      "id": "thief-1981",
+      "label": "Thief (1981)",
+      "kind": "film",
+      "creator": "Michael Mann",
+      "discovered_via": [
+        {
+          "source": "le-samourai-1967",
+          "engagedDate": "2026-05-07",
+          "thread": "lone operator"
+        }
+      ]
+    },
+    {
+      "id": "fyodor-dostoevsky",
+      "label": "Fyodor Dostoevsky",
+      "kind": "writer",
+      "discovered_via": [
+        {
+          "source": "dostoevsky-notes-from-underground",
+          "engagedDate": "2026-05"
+        }
+      ],
+      "connections": [
+        {
+          "to": "dostoevsky-notes-from-underground",
+          "relationship": "authorship"
+        },
+        {
+          "to": "dostoevsky-white-nights",
+          "relationship": "authorship"
+        },
+        {
+          "to": "dostoevsky-crime-and-punishment",
+          "relationship": "authorship"
+        },
+        {
+          "to": "dostoevsky-the-myth-of-sisyphus",
+          "relationship": "influence",
+          "note": "Camus directly cites Dostoevsky in the Myth of Sisyphus."
+        }
+      ]
+    },
+    {
+      "id": "jim-jarmusch",
+      "label": "Jim Jarmusch",
+      "kind": "director",
+      "discovered_via": [
+        {
+          "source": "ghost-dog-1999",
+          "engagedDate": "2026-05"
+        }
+      ],
+      "connections": [
+        {
+          "to": "stranger-than-paradise-1984",
+          "relationship": "authorship"
+        },
+        {
+          "to": "ghost-dog-1999",
+          "relationship": "authorship"
+        }
+      ]
+    },
+    {
+      "id": "robert-bresson",
+      "label": "Robert Bresson",
+      "kind": "director",
+      "discovered_via": [
+        {
+          "source": "pickpocket-1959",
+          "engagedDate": "2026-05"
+        }
+      ],
+      "connections": [
+        {
+          "to": "pickpocket-1959",
+          "relationship": "authorship"
+        },
+        {
+          "to": "four-nights-of-a-dreamer-1971",
+          "relationship": "authorship"
+        }
+      ]
+    },
+    {
+      "id": "the-conversation-1974",
+      "label": "The Conversation (1974)",
+      "kind": "film",
+      "creator": "Francis Ford Coppola",
+      "discovered_via": [
+        {
+          "source": "the-parallax-view-1974",
+          "awareDate": "2023-04",
+          "engagedDate": "2026-04-15",
+          "thread": "70s paranoia"
+        }
+      ],
+      "connections": [
+        {
+          "to": "the-parallax-view-1974",
+          "relationship": "thematic"
         }
       ]
     },
@@ -648,26 +678,58 @@
       ]
     },
     {
-      "id": "letterboxd",
-      "label": "Letterboxd",
-      "kind": "platform",
+      "id": "brazil-1985",
+      "label": "Brazil (1985)",
+      "kind": "film",
+      "creator": "Terry Gilliam",
       "discovered_via": [
         {
-          "source": "dis-copenhagen",
-          "engagedDate": "2026-05",
-          "note": "Started binging and logging movies fr in Copenhagen"
+          "source": "letterboxd",
+          "engagedDate": "2026-04-01",
+          "note": "Part of a Denmark movie-binge phase."
         }
       ]
     },
     {
-      "id": "mahjong-1996",
-      "label": "Mahjong (1996)",
-      "kind": "film",
-      "creator": "Edward Yang",
+      "id": "camus-the-myth-of-sisyphus",
+      "label": "The Myth of Sisyphus",
+      "kind": "book",
+      "creator": "Albert Camus",
       "discovered_via": [
         {
-          "source": "letterboxd",
-          "engagedDate": "2026-05-23"
+          "source": "camus-the-stranger",
+          "engagedDate": "2026-04-01"
+        }
+      ],
+      "connections": [
+        {
+          "to": "camus-the-stranger",
+          "relationship": "thematic"
+        }
+      ]
+    },
+    {
+      "id": "percy-the-moviegoer",
+      "label": "The Moviegoer",
+      "kind": "book",
+      "creator": "Walker Percy",
+      "discovered_via": [
+        {
+          "source": "camus-the-stranger",
+          "engagedDate": "2026-04",
+          "thread": "existential fiction"
+        }
+      ]
+    },
+    {
+      "id": "ghost-dog-1999",
+      "label": "Ghost Dog: The Way of the Samurai (1999)",
+      "kind": "film",
+      "discovered_via": [
+        {
+          "source": "le-samourai-1967",
+          "awareDate": "2026-04",
+          "thread": "lone operator"
         }
       ]
     },
@@ -690,63 +752,30 @@
       ]
     },
     {
-      "id": "percy-the-moviegoer",
-      "label": "The Moviegoer",
+      "id": "camus-the-stranger",
+      "label": "The Stranger",
       "kind": "book",
-      "creator": "Walker Percy",
+      "creator": "Albert Camus",
       "discovered_via": [
         {
-          "source": "camus-the-stranger",
-          "engagedDate": "2026-04",
-          "thread": "existential fiction"
+          "source": "dis-copenhagen",
+          "engagedDate": "2026-03-12",
+          "note": "Borrowed from the DIS library."
         }
       ]
     },
     {
-      "id": "pickpocket-1959",
-      "label": "Pickpocket (1959)",
-      "kind": "film",
+      "id": "letterboxd",
+      "label": "Letterboxd",
+      "kind": "platform",
       "discovered_via": [
         {
-          "source": "le-samourai-1967",
-          "awareDate": "2026-04",
-          "engagedDate": "2026-05-18",
-          "thread": "lone operator",
-          "note": "Bresson/Melville ascetic dialogue"
-        }
-      ]
-    },
-    {
-      "id": "purple-noon-1960",
-      "label": "Purple Noon (1960)",
-      "kind": "film",
-      "creator": "René Clément",
-      "discovered_via": [
-        {
-          "source": "le-samourai-1967",
-          "engagedDate": "2026-05-17",
-          "thread": "Alain Delon"
-        }
-      ]
-    },
-    {
-      "id": "robert-bresson",
-      "label": "Robert Bresson",
-      "kind": "director",
-      "discovered_via": [
-        {
-          "source": "pickpocket-1959",
-          "engagedDate": "2026-05"
-        }
-      ],
-      "connections": [
-        {
-          "to": "pickpocket-1959",
-          "relationship": "authorship"
+          "awareDate": "2023-02-14"
         },
         {
-          "to": "four-nights-of-a-dreamer-1971",
-          "relationship": "authorship"
+          "source": "dis-copenhagen",
+          "engagedDate": "2026-03-11",
+          "note": "Copenhagen binge"
         }
       ]
     },
@@ -784,70 +813,91 @@
       ]
     },
     {
-      "id": "sontag-on-photography",
-      "label": "On Photography",
+      "id": "kierkegaard-either-or",
+      "label": "Either/Or",
       "kind": "book",
-      "creator": "Susan Sontag",
       "discovered_via": [
         {
-          "source": "charli-xcx-music-fashion-film",
-          "engagedDate": "2026-08",
-          "note": "camera: the sociology of being on film"
-        }
-      ]
-    },
-    {
-      "id": "stranger-than-paradise-1984",
-      "label": "Stranger Than Paradise (1984)",
-      "kind": "film",
-      "discovered_via": [
-        {
-          "source": "jim-jarmusch"
+          "source": "soren-kierkegaard",
+          "awareDate": "2024"
         },
         {
           "source": "dis-philosophy",
-          "engagedDate": "2026-05-12",
-          "note": "Assigned/chosen for an essay on boredom; loved it."
+          "engagedDate": "2026-03",
+          "note": "Read excerpt: The Unhappiest One"
         }
       ],
       "connections": [
         {
-          "to": "chan-is-missing-1982",
-          "relationship": "thematic",
-          "note": "Influential black and white 1980s indie film about aimless wandering"
-        }
-      ]
-    },
-    {
-      "id": "the-conformist-1970",
-      "label": "The Conformist (1970)",
-      "kind": "film",
-      "creator": "Bernardo Bertolucci",
-      "discovered_via": [
-        {
-          "source": "the-parallax-view-1974",
-          "engagedDate": "2026-05-21",
-          "thread": "70s paranoia"
-        }
-      ]
-    },
-    {
-      "id": "the-conversation-1974",
-      "label": "The Conversation (1974)",
-      "kind": "film",
-      "creator": "Francis Ford Coppola",
-      "discovered_via": [
-        {
-          "source": "the-parallax-view-1974",
-          "awareDate": "2023-04",
-          "engagedDate": "2026-04-15",
-          "thread": "70s paranoia"
-        }
-      ],
-      "connections": [
-        {
-          "to": "the-parallax-view-1974",
+          "to": "melancholia-2011",
           "relationship": "thematic"
+        }
+      ]
+    },
+    {
+      "id": "blow-up-1966",
+      "label": "Blow-Up (1966)",
+      "kind": "film",
+      "creator": "Michelangelo Antonioni",
+      "discovered_via": [
+        {
+          "source": "blow-out-1981",
+          "awareDate": "2026-03"
+        }
+      ],
+      "connections": [
+        {
+          "to": "the-conversation-1974",
+          "relationship": "influence"
+        },
+        {
+          "to": "blow-out-1981",
+          "relationship": "influence"
+        }
+      ]
+    },
+    {
+      "id": "dis-philosophy",
+      "label": "DIS Philosophy",
+      "kind": "class",
+      "discovered_via": [
+        {
+          "source": "dis-copenhagen",
+          "engagedDate": "2026-01"
+        }
+      ]
+    },
+    {
+      "id": "dis-copenhagen",
+      "label": "DIS Copenhagen",
+      "kind": "school",
+      "discovered_via": [
+        {
+          "source": "claremont-mckenna-college",
+          "engagedDate": "2026-01"
+        }
+      ]
+    },
+    {
+      "id": "claremont-mckenna-college",
+      "label": "Claremont McKenna College",
+      "kind": "school",
+      "discovered_via": [
+        {
+          "engagedDate": "2023-08"
+        }
+      ]
+    },
+    {
+      "id": "blow-out-1981",
+      "label": "Blow Out (1981)",
+      "kind": "film",
+      "creator": "Brian de Palma",
+      "discovered_via": [
+        {
+          "source": "the-parallax-view-1974",
+          "engagedDate": "2023-04-10",
+          "thread": "70s paranoia"
         }
       ]
     },
@@ -864,42 +914,61 @@
       ]
     },
     {
-      "id": "the-taste-of-tea-2004",
-      "label": "The Taste of Tea (2004)",
-      "kind": "film",
-      "creator": "Katsuhito Ishii",
+      "id": "felix-k",
+      "label": "Felix K",
+      "kind": "person",
       "discovered_via": [
         {
-          "source": "letterboxd",
-          "engagedDate": "2026-05-09"
+          "engagedDate": "2023"
         }
       ]
     },
     {
-      "id": "the-trial-1962",
-      "label": "The Trial (1962)",
-      "kind": "film",
-      "creator": "Orson Welles",
+      "id": "holden-t",
+      "label": "Holden T",
+      "kind": "person",
       "discovered_via": [
         {
-          "source": "kafka-the-trial",
-          "awareDate": "2026-06",
-          "engagedDate": "2026-10-16"
+          "engagedDate": "2023"
         }
       ]
     },
     {
-      "id": "thief-1981",
-      "label": "Thief (1981)",
-      "kind": "film",
-      "creator": "Michael Mann",
+      "id": "danny-h",
+      "label": "Danny H",
+      "kind": "person",
       "discovered_via": [
         {
-          "source": "le-samourai-1967",
-          "engagedDate": "2026-05-07",
-          "thread": "lone operator"
+          "engagedDate": "2023"
         }
       ]
+    },
+    {
+      "id": "jono-c",
+      "label": "Jono C",
+      "kind": "person",
+      "discovered_via": [
+        {
+          "engagedDate": "2022-06",
+          "note": "RMP glory days"
+        }
+      ]
+    },
+    {
+      "id": "susan-sontag",
+      "label": "Susan Sontag",
+      "kind": "writer",
+      "discovered_via": [
+        {
+          "source": "sontag-on-photography"
+        }
+      ]
+    },
+    {
+      "id": "after-hours-1985",
+      "label": "After Hours (1985)",
+      "kind": "film",
+      "creator": "Martin Scorsese"
     }
   ]
 }

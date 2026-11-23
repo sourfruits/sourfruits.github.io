@@ -963,6 +963,7 @@ function openDetail(node, event, skipCamera) {
   // single id or an array of them — a post can belong to several works),
   // newest first, each a link to the post.
   const matchedPosts = allPosts
+    .filter((p) => !isDraft(p))   // drafts stay private: never listed on a card
     .filter((p) => Array.isArray(p.workId) ? p.workId.includes(node.id) : p.workId === node.id)
     .slice()
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0));
@@ -2029,7 +2030,9 @@ function renderList() {
     if (groupOf) {
       const d = sort === "recent" ? /^(\d{4})(?:-(\d{2}))?/.exec(firstDateString(n) || "") : null;
       const year = groupOf(n);
-      const month = d && d[2] ? MONTH_NAMES[parseInt(d[2], 10) - 1] : null;
+      // Year-only dates ("2023") get their own "Month unknown" subheading at the
+      // end of the year, so they don't look like they belong to the month above.
+      const month = d ? (d[2] ? MONTH_NAMES[parseInt(d[2], 10) - 1] : "Month unknown") : null;
       const folded = listState.collapsedYears.has(year);
       if (year !== lastYear) {
         heading += `<li class="list-yearhead"><button type="button" class="list-yeartoggle" data-year="${escapeHTML(year)}" aria-expanded="${folded ? "false" : "true"}">` +
