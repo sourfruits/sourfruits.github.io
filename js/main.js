@@ -336,7 +336,7 @@ fetchPosts()
     // The tiles fade in on this first load only; later filter changes (tabs,
     // tags, drafts, Clear all) swap them instantly rather than replaying the
     // fade, which looked like the page reloading.
-    setTimeout(() => grid.classList.add("is-settled"), 1200);
+    setTimeout(() => grid.classList.add("is-settled"), 2000);
   })
   .catch((err) => {
     status.textContent = "Couldn't load posts. If you opened this file directly, run a local server (see the README).";

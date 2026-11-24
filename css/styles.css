@@ -1942,9 +1942,8 @@ a.post-tag:focus-visible { color: var(--ink); }
 /* 1. Hero/intro shows immediately on load — no fade-in. */
 
 /* 2. Grid tiles stagger in (fade only, no drift); per-tile animation-delay is
-   set inline in JS (0.1s base + 0.025s per tile, left-to-right, top-to-bottom),
-   so a full page is in within about 0.8s. */
-.tile { animation: fadeIn 0.3s ease both; }
+   set inline in JS (0.15s base + 0.05s per tile, left-to-right, top-to-bottom). */
+.tile { animation: fadeIn 0.5s ease both; }
 
 /* Pinned posts sort to the front (see sortPosts), so they already carry the
    lowest inline animation-delays and fade in first as part of the normal
