@@ -6,7 +6,7 @@ workId: the-maltese-falcon-1941
 image: "images/the-maltese-falcon/image.jpg"
 ---
 
-*Originally written for LIT134: Special Studies in Film*
+*Originally written for Intro to Film Noir*
 
 The characters of the Maltese Falcon hide their motives from each other, and often from themselves. Characters express themselves through lies and euphemism (the Fat Man says Wilmer is "like a son," but the audience knows he is considering betraying him). Huston formally reflects this theme through a visual emphasis on character faces. Besides a few establishing shots, the camera stays on character reactions, which Huston conceals through shadows and lighting inspired by German Expressionism. The brim of Sam Spade's hat casts a shade over his shifty eyes. O'Shaughnessy steps out unseen from a dark alleyway. When she is taken away by the police, a shadow covers her face -- is there a tear in her eye? What does she feel? The audience does not know for certain. Perhaps, in the midst of her web of deception, she does not either. 
 

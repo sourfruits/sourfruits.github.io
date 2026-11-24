@@ -70,14 +70,14 @@ discovered:
 label: Walt Whitman
 kind: writer
 discovered:
-  - source: jono-c, engaged: 2026-11-18, thread: Poetry
+  - source: jono, engaged: 2026-11-18, thread: Poetry
 
 ### christina-rossetti
 label: Christina Rossetti
 kind: writer
 discovered:
   - source: gerard-manley-hopkins, engaged: 2026-11-12, thread: Poetry, note: "Victorian inspiration, 'A Better Resurrection'"
-  - source: cmc-voice-lessons, aware: 2026-11, engaged: 2026-11-11, note: "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor"
+  - source: voice-lessons, aware: 2026-11, engaged: 2026-11-11, note: "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor"
 
 ### the-friends-of-eddie-coyle-1973
 label: The Friends of Eddie Coyle (1973)
@@ -90,7 +90,7 @@ discovered:
 label: Gerard Manley Hopkins
 kind: writer
 discovered:
-  - source: rv-hallberg, engaged: 2026-11-03, thread: Poetry, note: "First aware through Gaffney FWS, inspired to explore poetry"
+  - source: rvh, engaged: 2026-11-03, thread: Poetry, note: "First aware through Gaffney FWS, inspired to explore poetry"
 
 ### hopkins-poems-and-prose
 label: Poems and Prose
@@ -117,7 +117,7 @@ discovered:
 label: Edward Said: Between Worlds (2026)
 kind: film
 discovered:
-  - source: felix-k, engaged: 2026-10-24, thread: Arab Israeli conflict, note: 2026 AFI Fest screening @ the Chinese Theater
+  - source: felix, engaged: 2026-10-24, thread: Arab Israeli conflict, note: 2026 AFI Fest screening @ the Chinese Theater
 
 ### said-orientalism
 label: Orientalism
@@ -145,14 +145,14 @@ discovered:
 label: William Wordsworth
 kind: writer
 discovered:
-  - source: rv-hallberg, engaged: 2026-10-16, note: "Discussion on The Sublime, somehow", thread: Poetry
+  - source: rvh, engaged: 2026-10-16, note: "Discussion on The Sublime, somehow", thread: Poetry
 
 ### out-of-the-past-1947
 label: Out of the Past (1947)
 kind: film
 creator: Jacques Tourneur
 discovered:
-  - source: cmc-film-noir, engaged: 2026-10-05, thread: Film noir
+  - source: intro-to-film-noir, engaged: 2026-10-05, thread: Film noir
 
 ### edward-said
 label: Edward Said
@@ -178,7 +178,7 @@ discovered:
 label: Joan Didion
 kind: writer
 discovered:
-  - source: jono-c, aware: 2022-11-04
+  - source: jono, aware: 2022-11-04
   - engaged: 2026-09-28, note: "Initially interested in California and narrative. First exposure was to Why I Write, and shimmering images."
 
 ### dyer-but-beautiful
@@ -186,7 +186,7 @@ label: But Beautiful
 kind: book
 creator: Geoff Dyer
 discovered:
-  - source: rv-hallberg, engaged: 2026-09-23
+  - source: rvh, engaged: 2026-09-23
 
 ### dostoevsky-crime-and-punishment
 label: Crime and Punishment
@@ -196,32 +196,32 @@ connections:
 discovered:
   - source: fyodor-dostoevsky, aware: 2026-05, engaged: 2026-09-07
 
-### cmc-film-noir
-label: LIT134: Film Noir
+### intro-to-film-noir
+label: Intro to Film Noir
 kind: class
-creator: Robert von Hallberg
+creator: R.v.H.
 discovered:
-  - engaged: 2026-09, source: claremont-mckenna-college
+  - engaged: 2026-09, source: college
 
-### rv-hallberg
-label: Robert von Hallberg
+### rvh
+label: R.v.H.
 kind: person
 discovered:
-  - source: cmc-film-noir, engaged: 2026-09
+  - source: intro-to-film-noir, engaged: 2026-09
 
-### cmc-voice-lessons
+### voice-lessons
 label: Voice Lessons
 kind: class
-creator: Tamara Bevard
+creator: Tamara
 discovered:
-  - engaged: 2026-09, source: claremont-mckenna-college
+  - engaged: 2026-09, source: college
 
 ### the-maltese-falcon-1941
 label: The Maltese Falcon (1941)
 kind: film
 creator: John Huston
 discovered:
-  - source: cmc-film-noir, engaged: 2026-08-31, thread: Film noir
+  - source: intro-to-film-noir, engaged: 2026-08-31, thread: Film noir
 
 ### sontag-on-photography
 label: On Photography
@@ -250,7 +250,7 @@ label: "Music, Fashion, Film"
 kind: album
 creator: Charli XCX
 discovered:
-  - source: holden-t, engaged: 2026-07, note: "played Girl, so confusing on aux"
+  - source: holden, engaged: 2026-07, note: "played Girl, so confusing on aux"
 
 ### kafka-the-trial
 label: The Trial
@@ -340,7 +340,7 @@ connections:
   - to: chan-is-missing-1982, relationship: thematic, note: Influential black and white 1980s indie film about aimless wandering
 discovered:
   - source: jim-jarmusch
-  - source: dis-philosophy, engaged: 2026-05-12, note: Assigned/chosen for an essay on boredom; loved it.
+  - source: philosophy-abroad, engaged: 2026-05-12, note: Assigned/chosen for an essay on boredom; loved it.
 
 ### the-taste-of-tea-2004
 label: The Taste of Tea (2004)
@@ -442,21 +442,21 @@ creator: Lars von Trier
 connections:
   - to: kierkegaard-either-or, relationship: thematic
 discovered:
-  - source: dis-philosophy, engaged: 2026-03-31
+  - source: philosophy-abroad, engaged: 2026-03-31
 
 ### camus-the-stranger
 label: The Stranger
 kind: book
 creator: Albert Camus
 discovered:
-  - source: dis-copenhagen, engaged: 2026-03-12, note: Borrowed from the DIS library.
+  - source: study-abroad-copenhagen, engaged: 2026-03-12, note: Borrowed from the library.
 
 ### letterboxd
 label: Letterboxd
 kind: platform
 discovered:
   - aware: 2023-02-14
-  - source: dis-copenhagen, engaged: 2026-03-11, note: Copenhagen binge
+  - source: study-abroad-copenhagen, engaged: 2026-03-11, note: Copenhagen binge
 
 ### soren-kierkegaard
 label: Soren Kierkegaard
@@ -467,8 +467,8 @@ connections:
   - to: camus-the-stranger, relationship: influence
   - to: percy-the-moviegoer, relationship: influence
 discovered:
-  - source: danny-h, aware: 2024
-  - source: dis-philosophy, engaged: 2026-03
+  - source: danny, aware: 2024
+  - source: philosophy-abroad, engaged: 2026-03
 
 ### kierkegaard-either-or
 label: Either/Or
@@ -477,7 +477,7 @@ connections:
   - to: melancholia-2011, relationship: thematic
 discovered:
   - source: soren-kierkegaard, aware: 2024
-  - source: dis-philosophy, engaged: 2026-03, note: Read excerpt: The Unhappiest One
+  - source: philosophy-abroad, engaged: 2026-03, note: Read excerpt: The Unhappiest One
 
 ### blow-up-1966
 label: Blow-Up (1966)
@@ -489,20 +489,20 @@ connections:
 discovered:
   - source: blow-out-1981, aware: 2026-03
 
-### dis-philosophy
-label: DIS Philosophy
+### philosophy-abroad
+label: Philosophy (study abroad)
 kind: class
 discovered:
-  - engaged: 2026-01, source: dis-copenhagen
+  - engaged: 2026-01, source: study-abroad-copenhagen
 
-### dis-copenhagen
-label: DIS Copenhagen
+### study-abroad-copenhagen
+label: Study abroad, Copenhagen
 kind: school
 discovered:
-  - engaged: 2026-01, source: claremont-mckenna-college
+  - engaged: 2026-01, source: college
 
-### claremont-mckenna-college
-label: Claremont McKenna College
+### college
+label: College
 kind: school
 discovered:
   - engaged: 2023-08
@@ -521,26 +521,26 @@ creator: Alan J. Pakula
 discovered:
   - engaged: 2023-04-09, note: General interest in spy/paranoia thrillers around this time; no specific trigger.
 
-### felix-k
-label: Felix K
+### felix
+label: Felix
 kind: person
 discovered:
   - engaged: 2023
 
-### holden-t
-label: Holden T
+### holden
+label: Holden
 kind: person
 discovered:
   - engaged: 2023
 
-### danny-h
-label: Danny H
+### danny
+label: Danny
 kind: person
 discovered:
   - engaged: 2023
 
-### jono-c
-label: Jono C
+### jono
+label: Jono
 kind: person
 discovered:
   - engaged: 2022-06, note: RMP glory days

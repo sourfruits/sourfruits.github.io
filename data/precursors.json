@@ -31,7 +31,7 @@
       "kind": "writer",
       "discovered_via": [
         {
-          "source": "jono-c",
+          "source": "jono",
           "engagedDate": "2026-11-18",
           "thread": "Poetry"
         }
@@ -49,7 +49,7 @@
           "note": "Victorian inspiration, 'A Better Resurrection'"
         },
         {
-          "source": "cmc-voice-lessons",
+          "source": "voice-lessons",
           "awareDate": "2026-11",
           "engagedDate": "2026-11-11",
           "note": "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor"
@@ -75,7 +75,7 @@
       "kind": "writer",
       "discovered_via": [
         {
-          "source": "rv-hallberg",
+          "source": "rvh",
           "engagedDate": "2026-11-03",
           "thread": "Poetry",
           "note": "First aware through Gaffney FWS, inspired to explore poetry"
@@ -125,7 +125,7 @@
       "kind": "film",
       "discovered_via": [
         {
-          "source": "felix-k",
+          "source": "felix",
           "engagedDate": "2026-10-24",
           "thread": "Arab Israeli conflict",
           "note": "2026 AFI Fest screening @ the Chinese Theater"
@@ -180,7 +180,7 @@
       "kind": "writer",
       "discovered_via": [
         {
-          "source": "rv-hallberg",
+          "source": "rvh",
           "engagedDate": "2026-10-16",
           "thread": "Poetry",
           "note": "Discussion on The Sublime, somehow"
@@ -194,7 +194,7 @@
       "creator": "Jacques Tourneur",
       "discovered_via": [
         {
-          "source": "cmc-film-noir",
+          "source": "intro-to-film-noir",
           "engagedDate": "2026-10-05",
           "thread": "Film noir"
         }
@@ -244,7 +244,7 @@
       "kind": "writer",
       "discovered_via": [
         {
-          "source": "jono-c",
+          "source": "jono",
           "awareDate": "2022-11-04"
         },
         {
@@ -260,7 +260,7 @@
       "creator": "Geoff Dyer",
       "discovered_via": [
         {
-          "source": "rv-hallberg",
+          "source": "rvh",
           "engagedDate": "2026-09-23"
         }
       ]
@@ -284,36 +284,36 @@
       ]
     },
     {
-      "id": "cmc-film-noir",
-      "label": "LIT134: Film Noir",
+      "id": "intro-to-film-noir",
+      "label": "Intro to Film Noir",
       "kind": "class",
-      "creator": "Robert von Hallberg",
+      "creator": "R.v.H.",
       "discovered_via": [
         {
-          "source": "claremont-mckenna-college",
+          "source": "college",
           "engagedDate": "2026-09"
         }
       ]
     },
     {
-      "id": "rv-hallberg",
-      "label": "Robert von Hallberg",
+      "id": "rvh",
+      "label": "R.v.H.",
       "kind": "person",
       "discovered_via": [
         {
-          "source": "cmc-film-noir",
+          "source": "intro-to-film-noir",
           "engagedDate": "2026-09"
         }
       ]
     },
     {
-      "id": "cmc-voice-lessons",
+      "id": "voice-lessons",
       "label": "Voice Lessons",
       "kind": "class",
-      "creator": "Tamara Bevard",
+      "creator": "Tamara",
       "discovered_via": [
         {
-          "source": "claremont-mckenna-college",
+          "source": "college",
           "engagedDate": "2026-09"
         }
       ]
@@ -325,7 +325,7 @@
       "creator": "John Huston",
       "discovered_via": [
         {
-          "source": "cmc-film-noir",
+          "source": "intro-to-film-noir",
           "engagedDate": "2026-08-31",
           "thread": "Film noir"
         }
@@ -383,7 +383,7 @@
       "creator": "Charli XCX",
       "discovered_via": [
         {
-          "source": "holden-t",
+          "source": "holden",
           "engagedDate": "2026-07",
           "note": "played Girl, so confusing on aux"
         }
@@ -562,7 +562,7 @@
           "source": "jim-jarmusch"
         },
         {
-          "source": "dis-philosophy",
+          "source": "philosophy-abroad",
           "engagedDate": "2026-05-12",
           "note": "Assigned/chosen for an essay on boredom; loved it."
         }
@@ -791,7 +791,7 @@
       "creator": "Lars von Trier",
       "discovered_via": [
         {
-          "source": "dis-philosophy",
+          "source": "philosophy-abroad",
           "engagedDate": "2026-03-31"
         }
       ],
@@ -809,9 +809,9 @@
       "creator": "Albert Camus",
       "discovered_via": [
         {
-          "source": "dis-copenhagen",
+          "source": "study-abroad-copenhagen",
           "engagedDate": "2026-03-12",
-          "note": "Borrowed from the DIS library."
+          "note": "Borrowed from the library."
         }
       ]
     },
@@ -824,7 +824,7 @@
           "awareDate": "2023-02-14"
         },
         {
-          "source": "dis-copenhagen",
+          "source": "study-abroad-copenhagen",
           "engagedDate": "2026-03-11",
           "note": "Copenhagen binge"
         }
@@ -836,11 +836,11 @@
       "kind": "philosopher",
       "discovered_via": [
         {
-          "source": "danny-h",
+          "source": "danny",
           "awareDate": "2024"
         },
         {
-          "source": "dis-philosophy",
+          "source": "philosophy-abroad",
           "engagedDate": "2026-03"
         }
       ],
@@ -873,7 +873,7 @@
           "awareDate": "2024"
         },
         {
-          "source": "dis-philosophy",
+          "source": "philosophy-abroad",
           "engagedDate": "2026-03",
           "note": "Read excerpt: The Unhappiest One"
         }
@@ -908,30 +908,30 @@
       ]
     },
     {
-      "id": "dis-philosophy",
-      "label": "DIS Philosophy",
+      "id": "philosophy-abroad",
+      "label": "Philosophy (study abroad)",
       "kind": "class",
       "discovered_via": [
         {
-          "source": "dis-copenhagen",
+          "source": "study-abroad-copenhagen",
           "engagedDate": "2026-01"
         }
       ]
     },
     {
-      "id": "dis-copenhagen",
-      "label": "DIS Copenhagen",
+      "id": "study-abroad-copenhagen",
+      "label": "Study abroad, Copenhagen",
       "kind": "school",
       "discovered_via": [
         {
-          "source": "claremont-mckenna-college",
+          "source": "college",
           "engagedDate": "2026-01"
         }
       ]
     },
     {
-      "id": "claremont-mckenna-college",
-      "label": "Claremont McKenna College",
+      "id": "college",
+      "label": "College",
       "kind": "school",
       "discovered_via": [
         {
@@ -965,8 +965,8 @@
       ]
     },
     {
-      "id": "felix-k",
-      "label": "Felix K",
+      "id": "felix",
+      "label": "Felix",
       "kind": "person",
       "discovered_via": [
         {
@@ -975,8 +975,8 @@
       ]
     },
     {
-      "id": "holden-t",
-      "label": "Holden T",
+      "id": "holden",
+      "label": "Holden",
       "kind": "person",
       "discovered_via": [
         {
@@ -985,8 +985,8 @@
       ]
     },
     {
-      "id": "danny-h",
-      "label": "Danny H",
+      "id": "danny",
+      "label": "Danny",
       "kind": "person",
       "discovered_via": [
         {
@@ -995,8 +995,8 @@
       ]
     },
     {
-      "id": "jono-c",
-      "label": "Jono C",
+      "id": "jono",
+      "label": "Jono",
       "kind": "person",
       "discovered_via": [
         {

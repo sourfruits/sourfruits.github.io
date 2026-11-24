@@ -439,7 +439,7 @@ connections:                     # optional — one "- " item per line
   - to: after-hours, relationship: influence, note: how the two connect
   - to: brazil                   # bare "to" = untyped plain line; relationship/note optional
 discovered:                      # optional — one "- " item per line
-  - source: dis-philosophy, aware: 2024, engaged: 2026-03, thread: existential fiction, note: Read for class, mechanism: platform-letterboxd
+  - source: philosophy-abroad, aware: 2024, engaged: 2026-03, thread: existential fiction, note: Read for class, mechanism: platform-letterboxd
   - engaged: 2026-05             # every field optional, but an entry can't be empty
 
 ### four-nights-of-a-dreamer
@@ -471,7 +471,7 @@ with `aware`/`engaged` becoming `awareDate`/`engagedDate`).
   re-slug it.
 - `label` — the display name shown next to the node. Optional: if omitted, it's
   derived from the id by dropping the leading `{type}-` segment and title-casing
-  the rest (`class-dis-philosophy` → "Dis Philosophy"), so it stays coupled to
+  the rest (`class-philosophy-abroad` → "Philosophy Abroad"), so it stays coupled to
   the id. Set it explicitly when the id doesn't humanize cleanly (most content
   nodes do this — `soren-kierkegaard` → "Soren Kierkegaard").
 - `kind` — an open string, not a fixed list (`film`, `book`, `philosopher`,
@@ -499,7 +499,7 @@ with `aware`/`engaged` becoming `awareDate`/`engagedDate`).
   discovered more than once, by different routes), each an object with:
   - `source` — **another node's id**: where it came from. Sources are ordinary
     nodes, so friends, classes, and platforms are just nodes too (id convention
-    `{type}-{descriptor}`, e.g. `person-danny-h`, `class-dis-philosophy`,
+    `{type}-{descriptor}`, e.g. `person-danny`, `class-philosophy-abroad`,
     `platform-letterboxd` — the `{type}-{descriptor}` id humanizes into a label on
     its own, so they usually need only an `id` and `kind`). The id must exist as a
     node — an unknown source draws no edge (and logs a warning). Omit `source`

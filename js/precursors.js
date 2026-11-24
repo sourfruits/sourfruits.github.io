@@ -2346,7 +2346,7 @@ Promise.all([
     rawData = graph;
     allPosts = posts;
     // A node may omit `label`; derive it from the id so the label stays coupled
-    // to the id (e.g. "class-dis-philosophy" → "Dis Philosophy").
+    // to the id (e.g. "class-intro-to-film-noir" → "Intro To Film Noir").
     graph.nodes.forEach((n) => { if (!n.label) n.label = humanizeId(n.id); });
     graph.nodes.forEach((n) => { nodeById[n.id] = n; });
     status.textContent = "";
