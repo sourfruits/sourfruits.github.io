@@ -3460,10 +3460,10 @@ body.is-graph-faux-fs { overflow: hidden; }
    stanza a paragraph with a little more air between stanzas. */
 .post-body.is-poem p { margin-bottom: 1.6em; line-height: 1.75; }
 
-/* Title → description: big titles carry a lot of empty space under their
-   letters, so the description is pulled up to sit ~19px below the letters on
-   every page (Writing's "g" hangs lower, so it needs less pull). */
-.precursors-title { margin-bottom: -5px; }
+/* Title → description: one shared gap for the page titles (Precursors,
+   Writing). Big titles carry extra space under their letters, so this small
+   pull-up leaves the description ~16px below the title. */
+.precursors-title,
 .writing-heading { margin-bottom: -1px; }
 
 /* Homepage: the big centred title needs a little more air above it than other
