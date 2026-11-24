@@ -27,9 +27,12 @@
       <h1 class="page-heading writing-heading">Writing</h1>
       <p class="precursors-intro writing-intro">Essays, poems, and reflections beyond the grid.</p>
 
-      <!-- Tag filter (same as the homepage) on the left; drafts toggle on the
-           right. Both driven by js/writing.js. -->
+      <!-- One tab per form (essay, poem… from data/tags.txt) on the left, as
+           shortcuts into the "All tags" dropdown on the right. Driven by
+           js/writing.js. -->
       <div class="writing-bar">
+        <div class="form-tabs" id="form-tabs" role="group" aria-label="Filter by form" hidden></div>
+        <div class="writing-bar-right">
         <div class="tag-filter" id="tag-filter">
           <button type="button" class="tag-dropdown-toggle" id="tag-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
             <span class="tag-dropdown-label" id="tag-dropdown-label">All tags</span>
@@ -37,8 +40,8 @@
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
           </button>
-          <div class="tag-dropdown-menu" id="tag-dropdown-menu" role="group" aria-label="Filter posts by tag" hidden>
-            <!-- Clear-all + tag checkboxes are injected here by js/writing.js -->
+          <div class="tag-dropdown-menu" id="tag-dropdown-menu" role="group" aria-label="Filter by tag" hidden>
+            <!-- Clear-all + subject checkboxes are injected here by js/writing.js -->
           </div>
         </div>
         <button type="button" class="drafts-toggle" id="drafts-toggle" aria-pressed="false" hidden>
@@ -52,6 +55,7 @@
           </svg>
           <span class="drafts-label">Drafts</span>
         </button>
+        </div>
       </div>
 
       <!-- Year-grouped list of every post with "show: writing", injected by js/writing.js -->

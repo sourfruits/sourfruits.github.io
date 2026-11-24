@@ -693,7 +693,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   left: 0;
   z-index: 20;
   min-width: 170px;
-  max-height: 240px;
+  max-height: 300px;   /* room for ~8 tags before the list scrolls */
   /* Flex column: the tag list scrolls, the divider + Clear all stay pinned at
      the bottom. No horizontal padding so row hovers run edge to edge. */
   display: flex;
@@ -750,7 +750,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 3px 12px;
   font-size: var(--text-small);
   color: var(--ink);
   cursor: pointer;
@@ -3502,3 +3502,147 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* Header link for the current page: bold, so you can see where you are. */
 .site-nav .nav-link { display: inline-block; text-align: center; }   /* room reserved for bold (js/header.js) */
 .site-nav .nav-link.is-current { font-weight: var(--weight-semibold); }
+
+/* Homepage: the Drafts switch as the last row of the tags menu, under a line. */
+.drafts-toggle.drafts-in-menu {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 5px 12px;
+  margin-top: 4px;
+  border-top: 1px solid var(--line);
+  text-align: left;
+  font-weight: var(--weight-normal);   /* plain, like the tag rows above it */
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.drafts-toggle.drafts-in-menu:hover { background: rgb(from var(--accent) r g b / 0.12); }
+
+/* Post heading rhythm: title, subtitle, byline and date line sit an even ~12px
+   apart. Their line-heights are tightened so the gaps are set by the margins,
+   not by the extra leading of each font size (which made them uneven). */
+#post .post-title { line-height: 1.2; margin-bottom: 6px; }
+#post .post-subtitle { line-height: 1.4; margin-bottom: 6px; }
+#post .post-byline { line-height: 1.4; margin-bottom: 6px; }
+#post .post-meta { line-height: 1.4; }
+
+/* Tag menus: hairline between tag kinds (length / form / subject, see
+   data/tags.txt). */
+.tag-group-line { height: 1px; margin: 3px 12px; background: var(--line-light); }
+
+/* Writing toolbar: form tabs (All · Essay · Poem…) on the left, sitting on the
+   bar's bottom line; subject dropdown + Drafts on the right. */
+.writing-bar-right { display: flex; align-items: flex-end; gap: 16px; margin-left: auto; }
+.form-tabs { display: flex; flex-wrap: wrap; gap: 0 20px; }
+.form-tab {
+  padding: 0 0 calc(var(--space-lg) - 1px);
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 1.5px solid transparent;
+  background: none;
+  font: inherit;
+  font-size: var(--text-small);
+  font-weight: var(--weight-normal);   /* plain, like the header links; the */
+  color: var(--muted);                 /* current tab goes dark + semibold  */
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.form-tab:hover { color: var(--ink); }
+.form-tab.is-on { color: var(--ink); font-weight: var(--weight-semibold); border-bottom-color: var(--ink); }
+.form-tab-count { font-weight: var(--weight-normal); margin-left: 2px; }
+/* Reserve each tab's bold width so the row doesn't shift when one is picked. */
+.form-tab-name { display: inline-flex; flex-direction: column; }
+.form-tab-name::after { content: attr(data-label); font-weight: var(--weight-semibold); height: 0; overflow: hidden; visibility: hidden; }
+.writing-bar .tag-dropdown-toggle { white-space: nowrap; }
+/* Phone: subjects + Drafts on their own row above; the form tabs sit on the
+   line below and scroll sideways if there are many. */
+@media (max-width: 640px) {
+  .writing-bar { flex-wrap: wrap; gap: 0; }
+  .writing-bar-right { order: -1; width: 100%; margin-left: 0; justify-content: space-between; }
+  .writing-bar-right .tag-filter,
+  .writing-bar-right .drafts-toggle { margin-bottom: 14px; }
+  .form-tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+  .form-tab { white-space: nowrap; margin-bottom: 0; }
+}
+/* The Writing subject menu hangs from the right (its button sits at the right
+   end of the bar), so it doesn't run off the page. */
+.writing-bar-right .tag-dropdown-menu { left: auto; right: 0; }
+/* Inside the menu, Drafts drops the bottom margin it has when it sits in the
+   Writing bar (that left an empty strip under it). */
+.tag-dropdown-menu .drafts-toggle.drafts-in-menu { margin-bottom: 0; }
+/* The current form tab is underlined right under its word (not down on the
+   bar's line, where it floated far below the text). */
+.form-tab, .form-tab.is-on { border-bottom-color: transparent; }
+.form-tab.is-on .form-tab-name {
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 6px;
+}
+
+/* Homepage toolbar (same family as Writing's): length tabs on the left; the
+   subject dropdown + density toggle on the right. The tabs here sit in a
+   centred row, so they don't need Writing's bottom padding. */
+.controls-right { display: flex; align-items: center; gap: 18px; margin-left: auto; }
+.controls-right .tag-dropdown-menu { left: auto; right: 0; }
+.controls .form-tab { padding: 0; margin: 0; }
+@media (max-width: 640px) {
+  .controls .form-tabs { flex-wrap: nowrap; gap: 0 16px; }
+  .controls .form-tab { white-space: nowrap; }
+}
+.controls-right .tag-dropdown-toggle { white-space: nowrap; }
+/* Phone: subjects + density on a row above, the length tabs on their own row
+   below (same stacking as the Writing bar). */
+@media (max-width: 640px) {
+  .controls { flex-wrap: wrap; row-gap: 14px; }
+  .controls-right { order: -1; width: 100%; margin-left: 0; justify-content: space-between; }
+}
+
+/* After the first load, filtering swaps tiles without replaying their fade-in
+   (js/main.js adds .is-settled). */
+.grid.is-settled .tile { animation: none; }
+
+/* The "All tags" / "All subjects" dropdown buttons: regular weight, like the
+   tabs beside them (they were semibold, which read as heavy). */
+.controls .tag-dropdown-toggle,
+.writing-bar .tag-dropdown-toggle { font-weight: var(--weight-normal); }
+/* Dropdown row hovers: a faint grey wash instead of the green accent. */
+.tag-option:hover,
+.tag-clear:hover:not(:disabled),
+.drafts-toggle.drafts-in-menu:hover { background: rgb(from var(--ink) r g b / 0.06); }
+
+/* ---------- Tabs on the divider (Letterboxd-style) ----------
+   The current tab's 2px line sits ON the bar's divider, the width of its word.
+   Everything in the bar sits the same --tab-gap above that line. */
+:root { --tab-gap: 10px; }
+.form-tab.is-on .form-tab-name { text-decoration: none; }
+.form-tab,
+.controls .form-tab {
+  padding: 0 0 var(--tab-gap);
+  margin-bottom: -1px;               /* overlap the 1px divider */
+  border-bottom: 2px solid transparent;
+}
+.form-tab.is-on { border-bottom-color: var(--ink); }
+
+/* Writing: the divider is the bar's own bottom border. */
+.writing-bar .tag-filter,
+.writing-bar-right .drafts-toggle { margin-bottom: calc(var(--tab-gap) + 3px); }   /* text lines up with the tabs' */
+
+/* Homepage: the toolbar sits right on the divider (hero-rule) below it. */
+.controls { align-items: flex-end; margin-bottom: 0; }
+.controls + .hero-rule { margin-top: 0; }
+.controls-right { margin-bottom: calc(var(--tab-gap) - 1px); }
+
+@media (max-width: 640px) {
+  .writing-bar-right .tag-filter,
+  .writing-bar-right .drafts-toggle { margin-bottom: 14px; }
+  /* The tab row scrolls sideways here, which would clip a tab's overlap, so
+     the whole row overlaps the divider instead. */
+  .form-tab, .controls .form-tab { margin-bottom: 0; }
+  .form-tabs { margin-bottom: -1px; }
+  .controls-right { margin-bottom: 0; }
+}
+
+/* Tag menus: a tag that would leave no posts (given what's ticked) is greyed
+   out and can't be ticked. */
+.tag-option.is-empty { opacity: 0.35; cursor: default; }
+.tag-option.is-empty:hover { background: none; }
+.form-tab.is-empty { opacity: 0.35; cursor: default; }
+.form-tab.is-empty:hover { color: var(--muted); }

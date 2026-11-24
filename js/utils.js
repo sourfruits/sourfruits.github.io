@@ -24,11 +24,53 @@ function escapeHTML(str) {
 
 // Fetch and parse data/posts.json, resolving to the array of posts. Callers
 // attach their own .catch to show a page-appropriate error message.
+// The tag kinds (data/tags.txt) load alongside, so they're ready before any
+// tags are drawn.
 function fetchPosts() {
-  return fetch("data/posts.json").then((res) => {
+  const posts = fetch("data/posts.json").then((res) => {
     if (!res.ok) throw new Error("HTTP " + res.status);
     return res.json();
   });
+  return Promise.all([posts, loadTagKinds()]).then(([p]) => p);
+}
+
+// --- Tag kinds (data/tags.txt) ---
+// Every tag is a "length" (blurb, writeup), a "form" (essay, poem…), a
+// "medium" (film, books, music…) or, if it isn't listed in data/tags.txt, a
+// "theme". The fallback below is used only if that file can't be loaded.
+const LISTED_KINDS = ["length", "form", "medium"];
+let TAG_KINDS = { length: ["blurb", "writeup"], form: [], medium: [] };
+function loadTagKinds() {
+  return fetch("data/tags.txt")
+    .then((res) => (res.ok ? res.text() : ""))
+    .then((text) => {
+      const kinds = { length: [], form: [], medium: [] };
+      text.split("\n").forEach((line) => {
+        const m = line.replace(/#.*/, "").match(/^\s*(length|form|medium)\s*:(.*)$/i);
+        if (!m) return;
+        const k = m[1].toLowerCase();
+        m[2].split(",").map((t) => t.trim().toLowerCase()).filter(Boolean).forEach((t) => kinds[k].push(t));
+      });
+      if (LISTED_KINDS.some((k) => kinds[k].length)) TAG_KINDS = kinds;
+    })
+    .catch(() => { /* keep the fallback */ });
+}
+function tagKind(tag) {
+  const t = String(tag).toLowerCase();
+  return LISTED_KINDS.find((k) => TAG_KINDS[k].includes(t)) || "theme";
+}
+const TAG_KIND_ORDER = ["length", "form", "medium", "theme"];
+
+// Split tags (with counts) into kind groups for a filter: lengths, forms and
+// media in the order data/tags.txt lists them, themes most-used first. Returns
+// [{ kind, tags }] for the non-empty groups, in TAG_KIND_ORDER.
+function groupTagsByKind(counts, kinds = TAG_KIND_ORDER) {
+  const byCount = (a, b) => counts.get(b) - counts.get(a) ||
+    a.localeCompare(b, undefined, { sensitivity: "base" });
+  return kinds.map((kind) => {
+    const tags = [...counts.keys()].filter((t) => tagKind(t) === kind);
+    return { kind, tags: kind === "theme" ? tags.sort(byCount) : TAG_KINDS[kind].filter((t) => tags.includes(t)) };
+  }).filter((g) => g.tags.length);
 }
 
 // Where a post appears: its `show` list ("grid", "writing", or both). Posts
@@ -105,16 +147,12 @@ function sortPosts(posts, place = "grid") {
   });
 }
 
-// Content-type tags that mark what a post *is* (a writeup vs. a quick blurb)
-// always lead the tag list, wherever a post's tags are shown. Everything else
-// keeps its given order.
-const LEAD_TAGS = ["writeup", "blurb"];
+// A post's tags in display order, wherever they're shown: length, form,
+// medium, then theme (data/tags.txt). Within a kind they keep the order they
+// were written in.
 function orderTags(tags) {
   if (!Array.isArray(tags)) return [];
-  const rank = (t) => {
-    const i = LEAD_TAGS.indexOf(t);
-    return i === -1 ? LEAD_TAGS.length : i;
-  };
+  const rank = (t) => TAG_KIND_ORDER.indexOf(tagKind(t));
   // Stable sort: ties (same rank) keep their original order.
   return [...tags].sort((a, b) => rank(a) - rank(b));
 }

@@ -27,7 +27,7 @@ if (!tag) {
       const intro = document.getElementById("tag-intro");
       if (intro) intro.textContent = `${matches.length} ${matches.length === 1 ? "post" : "posts"} tagged ${tag}.`;
       // Compact cards (no excerpt): a quick index of the tag. They show all of
-      // a post's tags, in its usual order (writeup/blurb first).
+      // a post's tags, in their usual order (length, form, medium, theme).
       list.innerHTML = matches.map((p) => cardHTML(p, orderTags(p.tags), { excerpt: false })).join("");
       watchCards(list);
       status.textContent = matches.length ? "" : "No posts with this tag yet.";

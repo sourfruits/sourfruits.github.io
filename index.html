@@ -43,17 +43,8 @@
          above the hero-rule divider, which now closes off the masthead+toolbar. -->
     <div class="controls">
       <div class="controls-left">
-      <div class="tag-filter" id="tag-filter">
-        <button type="button" class="tag-dropdown-toggle" id="tag-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
-          <span class="tag-dropdown-label" id="tag-dropdown-label">All tags</span>
-          <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </button>
-        <div class="tag-dropdown-menu" id="tag-dropdown-menu" role="group" aria-label="Filter posts by tag" hidden>
-          <!-- Clear-all + tag checkboxes are injected here by js/main.js -->
-        </div>
-      </div>
+      <!-- One tab per medium (All · Film · Books · Music, from data/tags.txt) -->
+      <div class="form-tabs medium-tabs" id="medium-tabs" role="group" aria-label="Filter by medium" hidden></div>
         <button type="button" class="drafts-toggle" id="drafts-toggle" aria-pressed="false" hidden>
           <svg class="drafts-icon drafts-icon-open" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"></path>
@@ -65,6 +56,18 @@
           </svg>
           <span class="drafts-label">Drafts</span>
         </button>
+      </div>
+      <div class="controls-right">
+      <div class="tag-filter" id="tag-filter">
+        <button type="button" class="tag-dropdown-toggle" id="tag-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
+          <span class="tag-dropdown-label" id="tag-dropdown-label">All tags</span>
+          <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        <div class="tag-dropdown-menu" id="tag-dropdown-menu" role="group" aria-label="Filter by tag" hidden>
+          <!-- Clear-all + tag checkboxes are injected here by js/main.js -->
+        </div>
       </div>
         <div class="density-toggle" role="group" aria-label="Grid density">
           <button type="button" class="density-btn" data-density="normal" aria-label="Normal grid" aria-pressed="false">

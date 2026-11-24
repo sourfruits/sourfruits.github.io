@@ -76,7 +76,7 @@ function renderPost(post) {
   document.title = `${post.title} — elia website`;
   setPostMeta(post);
 
-  // Content-type tags ("writeup"/"blurb") lead; the rest keep their order.
+  // Length, form, medium, then theme tags (data/tags.txt).
   const orderedTags = orderTags(post.tags);
   const tags = orderedTags.length
     ? orderedTags

@@ -1,8 +1,10 @@
 // Writing page: every post marked "show: writing" (or "show: grid, writing"), as a
 // grid of cards grouped under year headings: each card has the title, a
-// "tag · date" line, the subtitle and a short excerpt from the opening. The same tag filter as the
-// homepage (multi-select, AND logic, synced to ?tags=) and a drafts toggle sit
-// above the list. Each title opens the normal post page.
+// "tag · date" line, the subtitle and a short excerpt from the opening. Above
+// the list: one tab per form (All · Essay · Poem…, shortcuts into the dropdown)
+// and the "All tags" dropdown (multi-select, AND logic, synced to ?tags=, with
+// Show drafts at its bottom).
+// Each title opens the normal post page.
 
 const list = document.getElementById("writing-list");
 const status = document.getElementById("status");
@@ -12,24 +14,23 @@ const tagMenu = document.getElementById("tag-dropdown-menu");
 const tagLabel = document.getElementById("tag-dropdown-label");
 const draftsToggle = document.getElementById("drafts-toggle");
 const draftsLabel = draftsToggle.querySelector(".drafts-label");
+const formTabs = document.getElementById("form-tabs");
 
 // The Writing page's own Drafts setting (separate from the homepage's).
 const DRAFTS_KEY = "sourfruits:drafts:writing";
 
 let allPosts = [];
 let allTags = [];
-let selectedTags = new Set();
+let selectedTags = new Set();     // every tag ticked in the dropdown (the tabs tick forms here too)
 let showDrafts = false;
 try { showDrafts = sessionStorage.getItem(DRAFTS_KEY) === "1"; } catch (err) { /* ignore */ }
 
 const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-// The Writing page shows (and filters by) a piece's tags except "writeup" /
-// "blurb" — those describe length on the homepage grid, and every piece here
-// is long-form. Tags keep the order they're written in.
-const GRID_ONLY_TAGS = ["writeup", "blurb"];
-const writingTags = (post) =>
-  (Array.isArray(post.tags) ? post.tags : []).filter((t) => !GRID_ONLY_TAGS.includes(t));
+// The Writing page shows (and filters by) a piece's tags except the length
+// ones (blurb / writeup, see data/tags.txt) — those describe length on the
+// homepage grid. Form tags come first, then media, then themes.
+const writingTags = (post) => orderTags(post.tags).filter((t) => tagKind(t) !== "length");
 
 function tagsFromURL() {
   const raw = new URLSearchParams(window.location.search).get("tags") || "";
@@ -40,7 +41,9 @@ function selectedParam() {
 }
 function updateURL() {
   const tags = selectedParam();
-  history.replaceState(null, "", tags ? `writing.html?tags=${encodeURIComponent(tags).replace(/%2C/g, ",")}` : "writing.html");
+  const q = [];
+  if (tags) q.push(`tags=${encodeURIComponent(tags).replace(/%2C/g, ",")}`);
+  history.replaceState(null, "", q.length ? `writing.html?${q.join("&")}` : "writing.html");
 }
 
 function baseSet() {
@@ -48,11 +51,46 @@ function baseSet() {
 }
 // AND logic: a piece must carry every selected tag. No selection → all.
 function filteredPosts() {
-  const base = baseSet();
-  if (!selectedTags.size) return base;
+  const posts = baseSet();
+  if (!selectedTags.size) return posts;
   const wanted = [...selectedTags];
-  return base.filter((p) => wanted.every((t) => writingTags(p).includes(t)));
+  return posts.filter((p) => wanted.every((t) => writingTags(p).includes(t)));
 }
+
+// --- form tabs: "All · Essay · Poem" (forms from data/tags.txt, in the
+// order listed there; only forms that some piece has). Hidden when no piece
+// has a form yet. They're shortcuts into the dropdown: clicking Essay ticks
+// "essay" there (and unticks any other form); All unticks them all. A tab is
+// lit when its form is the one ticked, so "Clear all" brings them back to All.
+function currentForm() {
+  const picked = [...selectedTags].filter((t) => tagKind(t) === "form");
+  return picked.length === 1 ? picked[0] : picked.length ? null : "";
+}
+function renderFormTabs() {
+  const base = baseSet();
+  const forms = TAG_KINDS.form
+    .map((f) => ({ f, n: base.filter((p) => writingTags(p).includes(f)).length }))
+    .filter((x) => x.n);
+  const selectedForm = currentForm();   // "" = All, null = several ticked (no tab lit)
+  formTabs.hidden = forms.length === 0;
+  // A tab that would leave nothing (given the other ticked tags) is greyed
+  // out, like the dead ends in the dropdown.
+  const others = [...selectedTags].filter((t) => tagKind(t) !== "form");
+  const tagsOfTab = writingTags;
+  const leaves = (key) => base.filter((p) => [...others, key].filter(Boolean).every((t) => tagsOfTab(p).includes(t))).length;
+  const tab = (key, label, n) =>
+    `<button type="button" class="form-tab${selectedForm === key ? " is-on" : ""}${leaves(key) ? "" : " is-empty"}" data-form="${escapeHTML(key)}" aria-pressed="${selectedForm === key}"${leaves(key) ? "" : " disabled"}>` +
+    `<span class="form-tab-name" data-label="${escapeHTML(label)}">${escapeHTML(label)}</span></button>`;
+  formTabs.innerHTML = tab("", "All", base.length) + forms.map((x) => tab(x.f, capFirst(x.f), x.n)).join("");
+}
+formTabs.addEventListener("click", (e) => {
+  const b = e.target.closest(".form-tab");
+  if (!b) return;
+  [...selectedTags].forEach((t) => { if (tagKind(t) === "form") selectedTags.delete(t); });
+  if (b.dataset.form) selectedTags.add(b.dataset.form);
+  updateURL();
+  applyFilter();
+});
 
 // One Writing card: the shared card (js/cards.js) with this page's tags.
 function itemHTML(post, withYear) {
@@ -112,35 +150,58 @@ list.addEventListener("click", (e) => {
 function buildMenu(posts) {
   const counts = new Map();
   posts.forEach((p) => writingTags(p).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
-  allTags = [...counts.keys()].sort((a, b) =>
-    counts.get(b) - counts.get(a) || a.localeCompare(b, undefined, { sensitivity: "base" }));
+  // Every tag but lengths, grouped with a thin line between: forms (also
+  // reachable from the tabs), media, then themes (data/tags.txt).
+  const groups = groupTagsByKind(counts, ["form", "medium", "theme"]);
+  allTags = groups.flatMap((g) => g.tags);
   const check = `<span class="tag-check" aria-hidden="true"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></span>`;
   tagMenu.innerHTML =
     `<button type="button" class="tag-clear" id="tag-clear">Clear all</button>
      <div class="tag-dropdown-divider"></div>
      <div class="tag-dropdown-scroll">` +
-    allTags.map((tag) => `
+    groups.map((g) => g.tags.map((tag) => `
       <label class="tag-option">
         <input type="checkbox" value="${escapeHTML(tag)}">
         ${check}
         <span class="tag-option-name">${escapeHTML(capFirst(tag))}</span>
         <span class="tag-option-count">${counts.get(tag)}</span>
-      </label>`).join("") +
+      </label>`).join("")).join(`<div class="tag-group-line"></div>`) +
     `</div>`;
+  // The Drafts switch lives at the bottom of this menu (as on the homepage);
+  // it's only shown when there are drafts.
+  if (!draftsToggle.hidden) {
+    draftsToggle.classList.add("drafts-in-menu");
+    tagMenu.appendChild(draftsToggle);
+  }
 }
 
 function syncMenu(matchCount) {
   tagMenu.querySelectorAll('input[type="checkbox"]').forEach((cb) => { cb.checked = selectedTags.has(cb.value); });
+  // Every tick narrows. Each unticked tag's count is how many of the posts
+  // showing now also have it; a tag that would leave nothing is greyed out
+  // and can't be ticked, so you never land on an empty page.
+  const showing = filteredPosts();
+  const tagsOf = writingTags;
+  tagMenu.querySelectorAll(".tag-option").forEach((row) => {
+    const cb = row.querySelector('input[type="checkbox"]');
+    const n = cb.checked ? showing.length : showing.filter((p) => tagsOf(p).includes(cb.value)).length;
+    row.querySelector(".tag-option-count").textContent = n;
+    const dead = !cb.checked && n === 0;
+    row.classList.toggle("is-empty", dead);
+    cb.disabled = dead;
+  });
   const n = selectedTags.size;
   if (n === 0) tagLabel.textContent = `All tags (${matchCount})`;
   else if (n === 1) tagLabel.textContent = `${capFirst(selectedParam())} (${matchCount})`;
   else tagLabel.textContent = `${n} tags (${matchCount})`;
   tagToggle.classList.toggle("is-active", n > 0);
   const clear = document.getElementById("tag-clear");
-  if (clear) clear.disabled = n === 0;
+  // "Clear all" is live whenever there's something to undo: a ticked tag or drafts on.
+  if (clear) clear.disabled = n === 0 && !showDrafts;
 }
 
 function applyFilter() {
+  renderFormTabs();
   syncMenu(filteredPosts().length);
   render();
 }
@@ -149,8 +210,10 @@ tagToggle.addEventListener("click", () => {
   tagMenu.hidden = !tagMenu.hidden;
   tagToggle.setAttribute("aria-expanded", tagMenu.hidden ? "false" : "true");
 });
+// Close on a click outside the menu (ignoring clicks on things the menu just
+// redrew, like "Clear all", which are no longer in the page).
 document.addEventListener("click", (e) => {
-  if (!tagFilter.contains(e.target)) { tagMenu.hidden = true; tagToggle.setAttribute("aria-expanded", "false"); }
+  if (e.target.isConnected && !tagFilter.contains(e.target)) { tagMenu.hidden = true; tagToggle.setAttribute("aria-expanded", "false"); }
 });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") { tagMenu.hidden = true; tagToggle.setAttribute("aria-expanded", "false"); }
@@ -163,14 +226,23 @@ tagMenu.addEventListener("change", (e) => {
   applyFilter();
 });
 tagMenu.addEventListener("click", (e) => {
-  if (e.target.closest("#tag-clear")) { selectedTags.clear(); updateURL(); applyFilter(); }
+  // Clear all: untick every tag (tabs go back to All) and hide drafts again.
+  if (e.target.closest("#tag-clear")) {
+    selectedTags.clear();
+    if (showDrafts) setDrafts(false);
+    updateURL();
+    applyFilter();
+  }
 });
 
-draftsToggle.addEventListener("click", () => {
-  showDrafts = !showDrafts;
+function setDrafts(on) {
+  showDrafts = on;
   try { sessionStorage.setItem(DRAFTS_KEY, showDrafts ? "1" : "0"); } catch (err) { /* ignore */ }
   draftsToggle.setAttribute("aria-pressed", showDrafts ? "true" : "false");
   buildMenu(baseSet());
+}
+draftsToggle.addEventListener("click", () => {
+  setDrafts(!showDrafts);
   applyFilter();
 });
 
@@ -179,7 +251,9 @@ fetchPosts()
     allPosts = posts.filter((p) => showsIn(p, "writing"));
     const draftCount = allPosts.filter(isDraft).length;
     if (draftCount > 0) {
-      draftsLabel.textContent = `Drafts (${draftCount})`;
+      draftsLabel.textContent = "Show drafts";
+      // Count on the right, like the tag rows in the menu.
+      draftsToggle.insertAdjacentHTML("beforeend", `<span class="tag-option-count">${draftCount}</span>`);
       draftsToggle.setAttribute("aria-pressed", showDrafts ? "true" : "false");
       draftsToggle.hidden = false;
     }

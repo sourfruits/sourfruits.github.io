@@ -57,6 +57,7 @@ sourfruits-blog/
 │   └── about.js      About page — renders the ABOUT_CONTENT Markdown string (marked + DOMPurify), plus footer year + back button
 ├── data/
 │   ├── posts/        ← Your posts: one Markdown file per post (the source of truth), in any folders you like (e.g. one per year: 2026/)
+│   ├── tags.txt      ← Which tags are a length, form or medium (film, books, music); everything else is a theme
 │   ├── posts.json    ← GENERATED from data/posts/ by the build — don't edit by hand
 │   └── precursors.json  ← The Precursors graph: nodes + connections.
 ├── snippets/
@@ -168,7 +169,27 @@ Fields (same names/shape as before — they just live in frontmatter now):
 - `date` — `YYYY`, `YYYY-MM`, or `YYYY-MM-DD`; posts sort newest-first. To order
   posts that share the *same* date, append a number: `date: "2026-06-29 1"` (lower
   first). The build splits that into a clean `date` plus a `dateOrder` the sorts use.
-- `tags` — a list, e.g. `["citrus", "kitchen"]`.
+- `tags` — a list, e.g. `["writeup", "essay", "film"]`. Tags come in four kinds,
+  set in **one place, `data/tags.txt`** (posts never change):
+  - **length** — `blurb`, `writeup`
+  - **form** — `essay`, `poem`, `reportage`…
+  - **medium** — `film`, `books`, `music`…
+  - **theme** — anything *not* listed in `tags.txt` (`philosophy`, `memory`…),
+    so a new theme needs no setup. A new form or medium gets added to its line.
+
+  Tags always display in that order (length · form · medium · theme), whatever
+  order you type them. Both pages filter with the same bar: **tabs** on the left
+  and a **dropdown** on the right, with "Clear all" at its top (unticks
+  everything and hides drafts again) and "Show drafts" at its bottom.
+  - Homepage: tabs for the medium (All · Film · Books · Music).
+  - Writing: tabs for the form (All · Essay · Poem…). Length tags are left out.
+
+  The tabs are shortcuts into the "All tags" dropdown, which lists every tag
+  grouped by kind: clicking Film ticks "film" there, and "Clear all" puts the
+  tabs back on All.
+
+  Tabs follow the order in `tags.txt`; themes are listed most-used first. A
+  form or medium you forget to list just shows up as a theme until you add it.
 - `show` — optional; where the post appears. `show: grid` (the homepage photo grid)
   is the default when the line is left out. `show: writing` lists it only on the
   **Writing** page (`writing.html`, a text index grouped by year — no photo needed).
@@ -178,7 +199,7 @@ Fields (same names/shape as before — they just live in frontmatter now):
   links to its tag page, which lists all published posts with that tag as text
   cards — photo posts and writing alike.
   On the Writing page each piece shows — and is filtered by — its tags **except
-  `writeup` / `blurb`**, in the order written, on one line that ends in "+N more"
+  the length ones** (`writeup` / `blurb`), form first, on one line that ends in "+N more"
   if they don't fit: `tags: ["writeup", "essay", "film"]` shows "essay · film".
 - `layout` — optional; `layout: poem` keeps every line break exactly as you type it
   (blank lines start a new stanza), on the post page and in the Writing card's

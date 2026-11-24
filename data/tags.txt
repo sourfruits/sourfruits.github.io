@@ -1,0 +1,18 @@
+# Tag kinds — the one place to say what kind each tag is.
+#
+# Posts don't change: keep writing  tags: writeup, essay, film  as usual.
+# The site looks each tag up here to build the filters and to order tags on
+# posts and cards (length, then form, then medium, then theme).
+#
+#   length:  how long a piece is (homepage dropdown; hidden on Writing)
+#   form:    what kind of writing it is (the tabs on Writing)
+#   medium:  what it's about — film, books, music… (the tabs on the homepage)
+#   Anything NOT listed below is a theme (philosophy, memory, cities…), so a
+#   new theme needs no setup. A new form or medium gets added to its line.
+#
+# One kind per line, tags separated by commas, in the order the tabs should
+# appear. Lines starting with # are notes.
+
+length: blurb, writeup
+form: essay, poem, reportage
+medium: film, books, music
