@@ -2,7 +2,7 @@
 // grid of cards grouped under year headings: each card has the title, a
 // "tag · date" line, the subtitle and a short excerpt from the opening. Above
 // the list: one tab per form (All · Essay · Poem…, shortcuts into the dropdown)
-// and the "All tags" dropdown (multi-select, AND logic, synced to ?tags=, with
+// and the "Tags" dropdown (multi-select, AND logic, synced to ?tags=, with
 // Show drafts at its bottom).
 // Each title opens the normal post page.
 
@@ -16,14 +16,12 @@ const draftsToggle = document.getElementById("drafts-toggle");
 const draftsLabel = draftsToggle.querySelector(".drafts-label");
 const formTabs = document.getElementById("form-tabs");
 
-// The Writing page's own Drafts setting (separate from the homepage's).
-const DRAFTS_KEY = "sourfruits:drafts:writing";
 
 let allPosts = [];
 let allTags = [];
 let selectedTags = new Set();     // every tag ticked in the dropdown (the tabs tick forms here too)
-let showDrafts = false;
-try { showDrafts = sessionStorage.getItem(DRAFTS_KEY) === "1"; } catch (err) { /* ignore */ }
+// Drafts live in the link (?drafts=1), like tags: landing fresh starts off.
+let showDrafts = new URLSearchParams(window.location.search).get("drafts") === "1";
 
 const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
@@ -43,6 +41,7 @@ function updateURL() {
   const tags = selectedParam();
   const q = [];
   if (tags) q.push(`tags=${encodeURIComponent(tags).replace(/%2C/g, ",")}`);
+  if (showDrafts) q.push("drafts=1");
   history.replaceState(null, "", q.length ? `writing.html?${q.join("&")}` : "writing.html");
 }
 
@@ -73,23 +72,22 @@ function renderFormTabs() {
     .filter((x) => x.n);
   const selectedForm = currentForm();   // "" = All, null = several ticked (no tab lit)
   formTabs.hidden = forms.length === 0;
-  // A tab that would leave nothing (given the other ticked tags) is greyed
-  // out, like the dead ends in the dropdown.
-  const others = [...selectedTags].filter((t) => tagKind(t) !== "form");
-  const tagsOfTab = writingTags;
-  const leaves = (key) => base.filter((p) => [...others, key].filter(Boolean).every((t) => tagsOfTab(p).includes(t))).length;
   const tab = (key, label, n) =>
-    `<button type="button" class="form-tab${selectedForm === key ? " is-on" : ""}${leaves(key) ? "" : " is-empty"}" data-form="${escapeHTML(key)}" aria-pressed="${selectedForm === key}"${leaves(key) ? "" : " disabled"}>` +
+    `<button type="button" class="form-tab${selectedForm === key ? " is-on" : ""}" data-form="${escapeHTML(key)}" aria-pressed="${selectedForm === key}">` +
     `<span class="form-tab-name" data-label="${escapeHTML(label)}">${escapeHTML(label)}</span></button>`;
   formTabs.innerHTML = tab("", "All", base.length) + forms.map((x) => tab(x.f, capFirst(x.f), x.n)).join("");
 }
-formTabs.addEventListener("click", (e) => {
-  const b = e.target.closest(".form-tab");
-  if (!b) return;
+// Pick a form ("" = All): unticks any other form. Used by the tabs and the
+// side index.
+function pickForm(form) {
   [...selectedTags].forEach((t) => { if (tagKind(t) === "form") selectedTags.delete(t); });
-  if (b.dataset.form) selectedTags.add(b.dataset.form);
+  if (form) selectedTags.add(form);
   updateURL();
   applyFilter();
+}
+formTabs.addEventListener("click", (e) => {
+  const b = e.target.closest(".form-tab");
+  if (b) pickForm(b.dataset.form);
 });
 
 // One Writing card: the shared card (js/cards.js) with this page's tags.
@@ -101,10 +99,11 @@ function itemHTML(post, withYear) {
 
 const CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
 const collapsedYears = new Set();   // years folded shut by clicking their heading
+let shownYears = [];                // the year groups currently listed (for the side index)
 
 // Cards grouped under year headings (dark serif, with a chevron that folds the
 // year shut and then shows its count). Drafts (when revealed) and Pinned come
-// first under small labels, with the year in their dates.
+// first, under small dark capital labels with an icon (see .writing-label).
 function render() {
   const posts = sortPosts(filteredPosts(), "writing");
   const drafts = posts.filter((p) => isDraft(p));
@@ -113,10 +112,11 @@ function render() {
 
   const grid = (items, withYear) => `<ul class="writing-grid">${items.map((p) => itemHTML(p, withYear)).join("")}</ul>`;
   let html = "";
-  if (drafts.length) html += `<section class="writing-group"><h2 class="writing-label">Drafts</h2>${grid(drafts, true)}</section>`;
-  if (pinned.length) html += `<section class="writing-group"><h2 class="writing-label">Pinned</h2>${grid(pinned, true)}</section>`;
+  if (drafts.length) html += `<section class="writing-group"><h2 class="writing-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>Drafts</span></h2>${grid(drafts, true)}</section>`;
+  if (pinned.length) html += `<section class="writing-group"><h2 class="writing-label"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146z"/></svg><span>Pinned</span></h2>${grid(pinned, true)}</section>`;
 
   const years = [];
+  shownYears = years;
   rest.forEach((p) => {
     const y = String(p.date).slice(0, 4);
     const last = years[years.length - 1];
@@ -178,22 +178,19 @@ function buildMenu(posts) {
 function syncMenu(matchCount) {
   tagMenu.querySelectorAll('input[type="checkbox"]').forEach((cb) => { cb.checked = selectedTags.has(cb.value); });
   // Every tick narrows. Each unticked tag's count is how many of the posts
-  // showing now also have it; a tag that would leave nothing is greyed out
-  // and can't be ticked, so you never land on an empty page.
+  // showing now also have it. A tag at 0 can still be ticked — it just
+  // shows nothing until something else is unticked.
   const showing = filteredPosts();
   const tagsOf = writingTags;
   tagMenu.querySelectorAll(".tag-option").forEach((row) => {
     const cb = row.querySelector('input[type="checkbox"]');
     const n = cb.checked ? showing.length : showing.filter((p) => tagsOf(p).includes(cb.value)).length;
     row.querySelector(".tag-option-count").textContent = n;
-    const dead = !cb.checked && n === 0;
-    row.classList.toggle("is-empty", dead);
-    cb.disabled = dead;
   });
   const n = selectedTags.size;
-  if (n === 0) tagLabel.textContent = `All tags (${matchCount})`;
-  else if (n === 1) tagLabel.textContent = `${capFirst(selectedParam())} (${matchCount})`;
-  else tagLabel.textContent = `${n} tags (${matchCount})`;
+  if (n === 0) tagLabel.textContent = "Tags";
+  else if (n === 1) tagLabel.textContent = capFirst(selectedParam());
+  else tagLabel.textContent = `${n} tags`;
   tagToggle.classList.toggle("is-active", n > 0);
   const clear = document.getElementById("tag-clear");
   // "Clear all" is live whenever there's something to undo: a ticked tag or drafts on.
@@ -204,7 +201,79 @@ function applyFilter() {
   renderFormTabs();
   syncMenu(filteredPosts().length);
   render();
+  renderIndex();
+  // If you'd scrolled down past the top of the list, land at the top of the
+  // new results (instead of wherever the shorter page leaves you).
+  const top = list.getBoundingClientRect().top;
+  if (top < 0) window.scrollTo({ top: window.scrollY + top - 24 });
 }
+
+// --- side index (computers only; phones keep the bar above) ---
+// A narrow column down the left: FORM (All · Essay · Poem…), SUBJECT (media
+// then themes, with live counts — the top SUBJECT_CAP, then "More"), YEAR
+// (jump links) and Show drafts at the bottom. No Clear all here: a ticked
+// subject shows × to untick it, and Form's "All" resets the form. It drives the same
+// selection as the tabs and the Tags dropdown, so they always agree.
+const index = document.getElementById("writing-index");
+const SUBJECT_CAP = 5;
+let showAllSubjects = false;
+function renderIndex() {
+  if (!index) return;
+  const showing = filteredPosts();
+  const base = baseSet();
+  const item = (attrs, label, on, n) =>
+    `<li><button type="button" ${attrs} class="${on ? "is-on" : ""}" aria-pressed="${on}">` +
+    `<span>${escapeHTML(label)}</span>${n === undefined ? "" : `<span class="index-count">${n}</span>`}</button></li>`;
+
+  const current = currentForm();
+  const forms = TAG_KINDS.form.filter((f) => base.some((p) => writingTags(p).includes(f)));
+  const plainHead = (label) => `<h3>${label}</h3>`;
+  let html = "";
+  if (forms.length) {
+    html += plainHead("Form") + `<ul>` + item(`data-form=""`, "All", current === "") +
+      forms.map((f) => item(`data-form="${escapeHTML(f)}"`, capFirst(f), current === f)).join("") + `</ul>`;
+  }
+
+  // Subjects: media (tags.txt order), then themes (most-used first). Past the
+  // cap they fold behind "More", but a ticked one always stays visible.
+  const counts = new Map();
+  base.forEach((p) => writingTags(p).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
+  const subjects = groupTagsByKind(counts, ["medium", "theme"]).flatMap((g) => g.tags);
+  const visible = showAllSubjects ? subjects
+    : subjects.filter((t, i) => i < SUBJECT_CAP || selectedTags.has(t));
+  const hiddenCount = subjects.length - visible.length;
+  if (subjects.length) {
+    html += plainHead("Subject") + `<ul>` + visible.map((t) => {
+      const on = selectedTags.has(t);
+      const n = on ? showing.length : showing.filter((p) => writingTags(p).includes(t)).length;
+      // A ticked subject shows × in place of its count; clicking unticks it.
+      return item(`data-tag="${escapeHTML(t)}"`, capFirst(t), on, on ? "×" : n);
+    }).join("") + `</ul>`;
+    if (hiddenCount > 0) html += `<button type="button" class="index-more" data-more>More (${hiddenCount})</button>`;
+    else if (showAllSubjects && subjects.length > SUBJECT_CAP) html += `<button type="button" class="index-more" data-more>Less</button>`;
+  }
+
+  const years = shownYears.map((y) => y.year);
+  if (years.length) html += plainHead("Year") + `<ul>` + years.map((y) => item(`data-year="${escapeHTML(y)}"`, y, false)).join("") + `</ul>`;
+
+  if (!draftsToggle.hidden) html += `<div class="index-foot"><button type="button" data-drafts class="${showDrafts ? "is-on" : ""}" aria-pressed="${showDrafts}">Show drafts</button></div>`;
+  index.innerHTML = html;
+}
+if (index) index.addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.hasAttribute("data-form")) pickForm(b.dataset.form);
+  else if (b.dataset.tag) {
+    const t = b.dataset.tag;
+    if (selectedTags.has(t)) selectedTags.delete(t); else selectedTags.add(t);
+    updateURL();
+    applyFilter();
+  } else if (b.dataset.year) {
+    const head = list.querySelector(`.list-yeartoggle[data-year="${CSS.escape(b.dataset.year)}"]`);
+    if (head) head.closest("section").scrollIntoView({ behavior: "smooth", block: "start" });
+  } else if (b.hasAttribute("data-more")) { showAllSubjects = !showAllSubjects; renderIndex(); }
+  else if (b.hasAttribute("data-drafts")) draftsToggle.click();
+});
 
 tagToggle.addEventListener("click", () => {
   tagMenu.hidden = !tagMenu.hidden;
@@ -221,7 +290,8 @@ document.addEventListener("keydown", (e) => {
 tagMenu.addEventListener("change", (e) => {
   const cb = e.target.closest('input[type="checkbox"]');
   if (!cb) return;
-  if (cb.checked) selectedTags.add(cb.value); else selectedTags.delete(cb.value);
+  if (cb.checked) selectedTags.add(cb.value);
+  else selectedTags.delete(cb.value);
   updateURL();
   applyFilter();
 });
@@ -237,12 +307,12 @@ tagMenu.addEventListener("click", (e) => {
 
 function setDrafts(on) {
   showDrafts = on;
-  try { sessionStorage.setItem(DRAFTS_KEY, showDrafts ? "1" : "0"); } catch (err) { /* ignore */ }
   draftsToggle.setAttribute("aria-pressed", showDrafts ? "true" : "false");
   buildMenu(baseSet());
 }
 draftsToggle.addEventListener("click", () => {
   setDrafts(!showDrafts);
+  updateURL();
   applyFilter();
 });
 

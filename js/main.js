@@ -31,10 +31,6 @@ function getPerPage(view) {
   return PER_PAGE[view][isMobile ? "mobile" : "desktop"];
 }
 
-// Drafts toggle persists across page navigations within the tab (sessionStorage
-// clears when the tab closes), so paging through the grid keeps drafts on/off.
-// The homepage grid's own Drafts setting (separate from the Writing page's).
-const DRAFTS_KEY = "sourfruits:drafts:grid";
 
 // This page's own filename, so pagination + ?tags= URLs stay on whatever page
 // hosts the grid. Kept dynamic rather than hardcoded so main.js works wherever
@@ -44,9 +40,9 @@ const PAGE = window.location.pathname.split("/").pop() || "index.html";
 let allPosts = [];
 let allTags = [];              // every tag, ordered by post count (ties alphabetical)
 let selectedTags = new Set();  // every tag ticked in the dropdown (the tabs tick media here too)
-// Restored from sessionStorage so it survives page navigation within the tab.
-let showDrafts = false;
-try { showDrafts = sessionStorage.getItem(DRAFTS_KEY) === "1"; } catch (err) { /* ignore */ }
+// Drafts live in the link (?drafts=1), like tags: paging keeps them, but
+// landing on the page fresh starts with drafts off.
+let showDrafts = new URLSearchParams(window.location.search).get("drafts") === "1";
 let currentView = "normal";    // normal | compact
 
 // Capitalize a tag's first letter for display (values stay lowercase).
@@ -69,6 +65,7 @@ function pageHref(page) {
   const params = new URLSearchParams();
   const tags = selectedParam();
   if (tags) params.set("tags", tags);
+  if (showDrafts) params.set("drafts", "1");
   if (page > 1) params.set("page", page);
   const qs = params.toString();
   return qs ? `${PAGE}?${qs}` : PAGE;
@@ -92,7 +89,7 @@ function renderGrid(posts) {
 
   status.textContent = posts.length
     ? ""
-    : (selectedTags.size ? "No posts match these tags." : "No posts here yet.");
+    : (selectedTags.size ? "Nothing matches these tags." : "Nothing here yet.");
 }
 
 // The pool the grid and tag menu work from: all posts, minus drafts unless the
@@ -128,13 +125,8 @@ function renderMediumTabs() {
   const media = groupTagsByKind(counts, ["medium"]).flatMap((g) => g.tags);
   const selectedMedium = currentMedium();   // "" = All, null = several ticked (no tab lit)
   mediumTabs.hidden = media.length === 0;
-  // A tab that would leave nothing (given the other ticked tags) is greyed
-  // out, like the dead ends in the dropdown.
-  const others = [...selectedTags].filter((t) => tagKind(t) !== "medium");
-  const tagsOfTab = (p) => (Array.isArray(p.tags) ? p.tags : []);
-  const leaves = (key) => base.filter((p) => [...others, key].filter(Boolean).every((t) => tagsOfTab(p).includes(t))).length;
   const tab = (key, label, n) =>
-    `<button type="button" class="form-tab${selectedMedium === key ? " is-on" : ""}${leaves(key) ? "" : " is-empty"}" data-medium="${escapeHTML(key)}" aria-pressed="${selectedMedium === key}"${leaves(key) ? "" : " disabled"}>` +
+    `<button type="button" class="form-tab${selectedMedium === key ? " is-on" : ""}" data-medium="${escapeHTML(key)}" aria-pressed="${selectedMedium === key}">` +
     `<span class="form-tab-name" data-label="${escapeHTML(label)}">${escapeHTML(label)}</span></button>`;
   mediumTabs.innerHTML = tab("", "All", base.length) + media.map((t) => tab(t, capFirst(t), counts.get(t))).join("");
 }
@@ -192,22 +184,19 @@ function syncMenu(matchCount) {
     cb.checked = selectedTags.has(cb.value);
   });
   // Every tick narrows. Each unticked tag's count is how many of the posts
-  // showing now also have it; a tag that would leave nothing is greyed out
-  // and can't be ticked, so you never land on an empty page.
+  // showing now also have it. A tag at 0 can still be ticked — it just
+  // shows nothing until something else is unticked.
   const showing = filteredPosts();
   const tagsOf = (p) => (Array.isArray(p.tags) ? p.tags : []);
   tagMenu.querySelectorAll(".tag-option").forEach((row) => {
     const cb = row.querySelector('input[type="checkbox"]');
     const n = cb.checked ? showing.length : showing.filter((p) => tagsOf(p).includes(cb.value)).length;
     row.querySelector(".tag-option-count").textContent = n;
-    const dead = !cb.checked && n === 0;
-    row.classList.toggle("is-empty", dead);
-    cb.disabled = dead;
   });
   const n = selectedTags.size;
-  if (n === 0) tagLabel.textContent = `All tags (${matchCount})`;
-  else if (n === 1) tagLabel.textContent = `${capFirst(selectedParam())} (${matchCount})`;
-  else tagLabel.textContent = `${n} tags (${matchCount})`;
+  if (n === 0) tagLabel.textContent = "Tags";
+  else if (n === 1) tagLabel.textContent = capFirst(selectedParam());
+  else tagLabel.textContent = `${n} tags`;
   // Underline the toggle while a filter is applied.
   tagToggle.classList.toggle("is-active", n > 0);
   const clear = document.getElementById("tag-clear");
@@ -221,6 +210,8 @@ function updateURL() {
   const tags = selectedParam();
   if (tags) params.set("tags", tags);
   else params.delete("tags");
+  if (showDrafts) params.set("drafts", "1");
+  else params.delete("drafts");
   params.delete("page");
   const qs = params.toString();
   history.replaceState(null, "", qs ? `${PAGE}?${qs}` : PAGE);
@@ -280,12 +271,12 @@ tagMenu.addEventListener("click", (e) => {
 // (its counts follow the visible pool) and re-render the grid.
 function setDrafts(on) {
   showDrafts = on;
-  try { sessionStorage.setItem(DRAFTS_KEY, showDrafts ? "1" : "0"); } catch (err) { /* ignore */ }
   draftsToggle.setAttribute("aria-pressed", showDrafts ? "true" : "false");
   buildMenu(baseSet());
 }
 draftsToggle.addEventListener("click", () => {
   setDrafts(!showDrafts);
+  updateURL();
   applyFilter();
 });
 

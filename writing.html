@@ -28,14 +28,14 @@
       <p class="precursors-intro writing-intro">Essays, poems, and reflections beyond the grid.</p>
 
       <!-- One tab per form (essay, poem… from data/tags.txt) on the left, as
-           shortcuts into the "All tags" dropdown on the right. Driven by
+           shortcuts into the "Tags" dropdown on the right. Driven by
            js/writing.js. -->
       <div class="writing-bar">
         <div class="form-tabs" id="form-tabs" role="group" aria-label="Filter by form" hidden></div>
         <div class="writing-bar-right">
         <div class="tag-filter" id="tag-filter">
           <button type="button" class="tag-dropdown-toggle" id="tag-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
-            <span class="tag-dropdown-label" id="tag-dropdown-label">All tags</span>
+            <span class="tag-dropdown-label" id="tag-dropdown-label">Tags</span>
             <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polyline points="6 9 12 15 18 9"></polyline>
             </svg>
@@ -57,6 +57,10 @@
         </button>
         </div>
       </div>
+
+      <!-- Side index (computers): Form / Subject / Year, built by js/writing.js.
+           Hidden on phones, where the bar above does the same job. -->
+      <aside class="writing-index" id="writing-index" aria-label="Index"></aside>
 
       <!-- Year-grouped list of every post with "show: writing", injected by js/writing.js -->
       <div id="writing-list" class="writing-list"></div>

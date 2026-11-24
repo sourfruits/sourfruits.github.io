@@ -183,10 +183,15 @@ Fields (same names/shape as before — they just live in frontmatter now):
   everything and hides drafts again) and "Show drafts" at its bottom.
   - Homepage: tabs for the medium (All · Film · Books · Music).
   - Writing: tabs for the form (All · Essay · Poem…). Length tags are left out.
+    On computers (900px+) the bar becomes a **side index** down the left —
+    Form, Subject (media then themes with live counts; the top 5, then
+    "More"), Year (jump links, always shown); Show drafts at the bottom. A ticked subject shows × to untick it; Form's All resets the form. Phones keep the bar.
 
-  The tabs are shortcuts into the "All tags" dropdown, which lists every tag
+  The tabs are shortcuts into the "Tags" dropdown, which lists every tag
   grouped by kind: clicking Film ticks "film" there, and "Clear all" puts the
-  tabs back on All.
+  tabs back on All. Every tick narrows (a post must have all ticked tags);
+  each tag shows how many of the posts on screen have it. A tag at 0 can still
+  be ticked — the page just says nothing matches.
 
   Tabs follow the order in `tags.txt`; themes are listed most-used first. A
   form or medium you forget to list just shows up as a theme until you add it.

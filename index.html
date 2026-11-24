@@ -35,6 +35,7 @@
          the page (not js/header.js) because it's homepage content, not chrome. -->
     <div class="site-intro">
       <h1 class="site-title">elia website</h1>
+      <p class="site-tagline">A visual archive.</p>
     </div>
 
     <!-- Full photo grid: multi-select tag filter, drafts toggle, and pagination,
@@ -60,7 +61,7 @@
       <div class="controls-right">
       <div class="tag-filter" id="tag-filter">
         <button type="button" class="tag-dropdown-toggle" id="tag-dropdown-toggle" aria-haspopup="true" aria-expanded="false">
-          <span class="tag-dropdown-label" id="tag-dropdown-label">All tags</span>
+          <span class="tag-dropdown-label" id="tag-dropdown-label">Tags</span>
           <svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
@@ -99,8 +100,10 @@
       <section id="grid" class="grid" aria-label="Photo posts">
         <!-- Thumbnails are injected here by js/main.js -->
       </section>
+      <!-- Loading / "Nothing matches" message: inside the grid wrapper so it
+           sits between the toolbar divider and the grid's closing divider. -->
+      <p id="status" class="status">Loading posts…</p>
     </div>
-    <p id="status" class="status">Loading posts…</p>
     <nav id="pagination" class="pagination" aria-label="Pagination">
       <!-- Page links are injected here by js/main.js -->
     </nav>
