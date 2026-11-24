@@ -173,8 +173,10 @@ Fields (same names/shape as before — they just live in frontmatter now):
   is the default when the line is left out. `show: writing` lists it only on the
   **Writing** page (`writing.html`, a text index grouped by year — no photo needed).
   `show: grid, writing` puts the same post in both places (one file, no duplicate).
-  Writing-only posts don't need `thumb`/`image` or `workId`, their tags link to the
-  Writing page's filter, and their previous/next links step through the Writing list.
+  Writing-only posts don't need `thumb`/`image` or `workId`, and their
+  previous/next links step through the Writing list. Every tag (on any post)
+  links to its tag page, which lists all published posts with that tag as text
+  cards — photo posts and writing alike.
   On the Writing page each piece shows — and is filtered by — its tags **except
   `writeup` / `blurb`**, in the order written, on one line that ends in "+N more"
   if they don't fit: `tags: ["writeup", "essay", "film"]` shows "essay · film".

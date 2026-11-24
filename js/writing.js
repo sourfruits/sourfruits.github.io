@@ -13,8 +13,8 @@ const tagLabel = document.getElementById("tag-dropdown-label");
 const draftsToggle = document.getElementById("drafts-toggle");
 const draftsLabel = draftsToggle.querySelector(".drafts-label");
 
-// Shares the homepage's drafts switch, so revealing drafts sticks across both.
-const DRAFTS_KEY = "sourfruits:drafts";
+// The Writing page's own Drafts setting (separate from the homepage's).
+const DRAFTS_KEY = "sourfruits:drafts:writing";
 
 let allPosts = [];
 let allTags = [];
@@ -54,93 +54,12 @@ function filteredPosts() {
   return base.filter((p) => wanted.every((t) => writingTags(p).includes(t)));
 }
 
-// "November 14" — the year is the group heading. Month-only dates show just
-// the month; year-only dates show nothing. In the Pinned and Drafts groups (no
-// year heading) the year is added: "November 14, 2025".
-function shortDate(iso, withYear) {
-  const parts = String(iso).split("-");
-  if (parts.length < 2) return withYear ? parts[0] : "";
-  const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2] || 1));
-  const opts = parts.length === 2 ? { month: "long" } : { month: "long", day: "numeric" };
-  if (withYear) opts.year = "numeric";
-  return d.toLocaleDateString(undefined, opts);
-}
-
-
-// A short plain-text excerpt from the start of a piece: the optional
-// `excerpt:` frontmatter line if there is one, otherwise the opening words of
-// the body with headings, images and Markdown symbols stripped.
-const EXCERPT_WORDS = 42;
-const POEM_EXCERPT_LINES = 4;
-function excerptOf(post) {
-  if (typeof post.excerpt === "string" && post.excerpt.trim()) return post.excerpt.trim();
-  // Poems: the opening lines, kept as lines (joined with \n; shown with <br>).
-  if (post.layout === "poem") {
-    const lines = String(post.content || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-    return lines.slice(0, POEM_EXCERPT_LINES).join("\n") + (lines.length > POEM_EXCERPT_LINES ? "\n…" : "");
-  }
-  const text = String(post.content || "")
-    .split(/\r?\n/)
-    .filter((line) => !/^\s*(#|!\[|---|\*\*\*|___)/.test(line))   // headings, images, rules
-    .join(" ")
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")   // [text](link) → text
-    .replace(/[*_`>]+/g, "")                    // emphasis / quote markers
-    .replace(/\\/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  const words = text.split(" ");
-  return words.length > EXCERPT_WORDS ? words.slice(0, EXCERPT_WORDS).join(" ") + "…" : text;
-}
-
-// One card: a small-caps "DATE · TAGS" line on top (tags that don't fit
-// collapse into a "+N more" label), then the title, the italic subtitle and
-// the excerpt. The whole card links to the piece.
+// One Writing card: the shared card (js/cards.js) with this page's tags.
 function itemHTML(post, withYear) {
-  const tags = writingTags(post)
-    .map((t) => `<span class="writing-card-tag">${escapeHTML(t)}</span>`)
-    .join(`<span class="writing-card-sep" aria-hidden="true">·</span>`);
-  const excerpt = excerptOf(post);
-  return `<li><a class="writing-card${isDraft(post) ? " is-draft" : ""}" href="post.html?id=${encodeURIComponent(post.id)}">
-        <span class="writing-card-info">
-          <span class="writing-card-date">${escapeHTML(shortDate(post.date, true))}</span>
-          ${tags ? `<span class="writing-card-sep" aria-hidden="true">·</span><span class="writing-card-tags">${tags}</span>` : ""}
-        </span>
-        <span class="writing-card-title">${escapeHTML(post.title)}</span>
-        ${post.subtitle ? `<span class="writing-card-sub">${escapeHTML(post.subtitle)}</span>` : ""}
-        ${excerpt ? `<span class="writing-card-excerpt">${escapeHTML(excerpt).replace(/\n/g, "<br>")}</span>` : ""}
-      </a></li>`;
+  return cardHTML(post, writingTags(post));
 }
 
-// Clamp every card's tag row to one line with a trailing "+N more" (the same
-// helper the homepage tiles use).
-function fitCardTags() {
-  list.querySelectorAll(".writing-card-tags").forEach((row) =>
-    fitTagsWithMore(row, ".writing-card-tag", ".writing-card-sep", "writing-card-tag"));
-}
-window.addEventListener("resize", fitCardTags);
 
-// Two-line titles split roughly two-thirds / one-third: when a title is too
-// long for one line but would fit on two, cap its width at ~70% of its one-line
-// length, so the first line carries most of it and the second isn't a lonely
-// word or two.
-// Longer titles (3+ lines) just wrap normally.
-function fitCardTitles() {
-  list.querySelectorAll(".writing-card-title").forEach((t) => {
-    t.style.maxWidth = "";
-    t.style.textWrap = "";
-    const room = t.parentElement.clientWidth;
-    t.style.whiteSpace = "nowrap";
-    const oneLine = t.scrollWidth;
-    t.style.whiteSpace = "";
-    if (oneLine <= room) return;                 // fits on one line
-    const target = Math.ceil(oneLine * 0.7);
-    if (target <= room && oneLine <= room * 1.9) {
-      t.style.maxWidth = target + "px";
-      t.style.textWrap = "wrap";   // plain greedy wrap: fill line 1 up to the cap
-    }
-  });
-}
-window.addEventListener("resize", fitCardTitles);
 
 const CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
 const collapsedYears = new Set();   // years folded shut by clicking their heading
@@ -174,8 +93,7 @@ function render() {
         `</button></h2>${folded ? "" : grid(items, false)}</section>`;
   });
   list.innerHTML = html;
-  fitCardTags();
-  fitCardTitles();
+  watchCards(list);
 
   status.textContent = posts.length
     ? ""

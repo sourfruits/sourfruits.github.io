@@ -106,11 +106,11 @@ function setHeading(count) {
 }
 
 if (!query) {
-  heading.textContent = "Search Sourfruits";
+  heading.textContent = "Search elia website";
   status.textContent = "Type something above to search posts, tags, and text.";
   document.querySelector(".header-search-input")?.focus();
 } else {
-  document.title = `“${query}” — Sourfruits`;
+  document.title = `“${query}” — elia website`;
 
   fetchPosts()
     .then((posts) => {

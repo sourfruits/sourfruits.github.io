@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sourfruits</title>
+  <title>elia website</title>
   <link rel="stylesheet" href="css/styles.css">
 
   <!-- Favicons -->
@@ -23,16 +23,16 @@
   <main>
     <a class="back-link" href="index.html">&larr; All posts</a>
 
-    <h1 id="tag-heading" class="tag-heading"></h1>
-    <hr class="tag-rule">
+    <!-- Title, description and list in one narrow column (post reading width). -->
+    <div class="tag-page">
+      <h1 id="tag-heading" class="tag-heading tag-page-title"></h1>
+      <p id="tag-intro" class="precursors-intro tag-intro"></p>
+      <hr class="tag-rule">
 
-    <section id="grid" class="grid" aria-label="Tagged posts">
-      <!-- Matching thumbnails are injected here by js/tag.js -->
-    </section>
-    <p id="status" class="status">Loading posts…</p>
-    <nav id="pagination" class="pagination" aria-label="Pagination">
-      <!-- Page links are injected here by js/tag.js -->
-    </nav>
+      <!-- Every published post with this tag, as compact text cards (no excerpt), injected by js/tag.js -->
+      <ul id="tag-list" class="writing-grid is-compact" aria-label="Tagged posts"></ul>
+      <p id="status" class="status">Loading posts…</p>
+    </div>
   </main>
 
   <footer class="site-footer">
@@ -42,7 +42,7 @@
   <script src="js/utils.js"></script>
   <script src="js/header.js"></script>
   <script src="js/theme.js"></script>
-  <script src="js/pagination.js"></script>
+    <script src="js/cards.js"></script>
   <script src="js/tag.js"></script>
 </body>
 </html>

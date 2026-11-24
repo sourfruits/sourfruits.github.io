@@ -3481,3 +3481,20 @@ body.is-graph-faux-fs { overflow: hidden; }
 
 /* "Why precursors" card text a step smaller than body text (was 17.6px). */
 .precursors-card p { font-size: 1rem; }
+
+/* Tag page (tag.html): laid out like Writing / Precursors — the tag as a big
+   italic title, a grey "7 posts tagged film." line, the divider, the grid. */
+#tag-heading.tag-page-title { font-size: var(--text-display); font-weight: var(--weight-heavy); text-align: left; margin: 0 0 -5px; }   /* ← Back above provides the top gap, as on posts */
+.tag-page-title + .tag-intro + .tag-rule { margin: 0 auto 24px; }   /* line → grid, as on the homepage */
+.tag-intro { margin: 0 0 var(--space-lg); }
+.tag-intro:empty { display: none; }
+
+/* Tag pages: one narrow column (the post reading width), one compact card per
+   row (no excerpt), read top to bottom in date order. */
+.tag-page { max-width: var(--post-width); margin: 0 auto; }
+.writing-grid.is-compact { grid-template-columns: minmax(0, 1fr); }
+.writing-grid.is-compact > li { padding: 16px 0; }
+.writing-grid.is-compact > li:first-child { padding-top: 0; }
+.writing-grid.is-compact > li:nth-child(2) { padding-top: 16px; }
+.writing-grid.is-compact > li:nth-last-child(2):nth-child(odd) { border-bottom: 1px solid var(--line-light); padding-bottom: 16px; }
+.writing-grid.is-compact > li:last-child { border-bottom: 0; padding-bottom: 0; }

@@ -30,7 +30,8 @@ function getPerPage(view) {
 
 // Drafts toggle persists across page navigations within the tab (sessionStorage
 // clears when the tab closes), so paging through the grid keeps drafts on/off.
-const DRAFTS_KEY = "sourfruits:drafts";
+// The homepage grid's own Drafts setting (separate from the Writing page's).
+const DRAFTS_KEY = "sourfruits:drafts:grid";
 
 // This page's own filename, so pagination + ?tags= URLs stay on whatever page
 // hosts the grid. Kept dynamic rather than hardcoded so main.js works wherever

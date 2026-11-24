@@ -65,7 +65,7 @@ function contentSnippet(text, max = 160) {
 function setPostMeta(post) {
   const image = post.image || post.thumb;
   setOG("og:type", "article");
-  setOG("og:site_name", "Sourfruits");
+  setOG("og:site_name", "elia website");
   setOG("og:title", post.title);
   setOG("og:description", contentSnippet(post.content));
   if (image) setOG("og:image", new URL(image, window.location.href).href);
@@ -73,16 +73,15 @@ function setPostMeta(post) {
 }
 
 function renderPost(post) {
-  document.title = `${post.title} — Sourfruits`;
+  document.title = `${post.title} — elia website`;
   setPostMeta(post);
 
   // Content-type tags ("writeup"/"blurb") lead; the rest keep their order.
   const orderedTags = orderTags(post.tags);
   const tags = orderedTags.length
     ? orderedTags
-        // Writing-only pieces link their tags to the Writing page's filter;
-        // everything else to the tag grid page.
-        .map((t) => `<a class="post-tag" href="${showsIn(post, "grid") ? "tag.html?tag=" : "writing.html?tags="}${encodeURIComponent(t)}">${escapeHTML(t)}</a>`)
+        // Every tag links to its tag page, which lists all posts with that tag.
+        .map((t) => `<a class="post-tag" href="tag.html?tag=${encodeURIComponent(t)}">${escapeHTML(t)}</a>`)
         // A standalone "·" divider sits between tags only — not attached to a tag,
         // and never between the date and the first tag.
         .join(`<span class="post-sep" aria-hidden="true">·</span>`)

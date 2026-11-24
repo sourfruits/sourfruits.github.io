@@ -1,53 +1,35 @@
-// Tag view: read ?tag= from the URL, show every post that carries that tag.
+// Tag view: read ?tag= from the URL and list every published post that carries
+// that tag — photo posts and writing alike — as compact text cards (date · tags,
+// title, subtitle; no excerpt), newest first. The Writing page keeps the full
+// cards with excerpts.
 
-const grid = document.getElementById("grid");
+const list = document.getElementById("tag-list");
 const status = document.getElementById("status");
 const heading = document.getElementById("tag-heading");
-const pagination = document.getElementById("pagination");
 
 initBackButton();
 
 const tag = new URLSearchParams(window.location.search).get("tag");
 
-// Build an href for a given page number, keeping the tag and page 1 clean.
-function pageHref(page) {
-  const base = `tag.html?tag=${encodeURIComponent(tag)}`;
-  return page <= 1 ? base : `${base}&page=${page}`;
-}
-
-function renderGrid(posts) {
-  // Newest first, regardless of order in the JSON file.
-  sortByDateDesc(posts);
-
-  // Fill each page based on the grid's live column count (which follows the
-  // screen-width breakpoints).
-  Pagination.paginate({
-    items: posts,
-    perPage: Pagination.gridPerPage(grid),
-    container: pagination,
-    hrefFor: pageHref,
-    renderItems: (pagePosts) => {
-      // pins:false — tag pages sort by date, not pinned-first, so "pinned" is
-      // a Posts-page-only concept here too (no pin marker, no pinned fade-in).
-      grid.innerHTML = pagePosts.map((post, i) => renderTile(post, i, { pins: false })).join("");
-      fitTileTags();
-    },
-  });
-}
-
 if (!tag) {
   heading.textContent = "No tag specified.";
   status.textContent = "";
 } else {
-  document.title = `#${tag} — Sourfruits`;
-  heading.innerHTML = `Posts tagged &ldquo;<span class="tag-name">${escapeHTML(tag)}</span>&rdquo;`;
+  document.title = `#${tag} — elia website`;
+  // Title is the tag itself, like the other section pages ("Film"); the grey
+  // line underneath says how many posts carry it.
+  heading.textContent = tag.charAt(0).toUpperCase() + tag.slice(1);
 
   fetchPosts()
     .then((posts) => {
-      const matches = posts.filter((p) =>
-        !isDraft(p) && showsIn(p, "grid") && Array.isArray(p.tags) && p.tags.includes(tag));
-      heading.innerHTML += ` <span class="tag-count">(${matches.length})</span>`;
-      renderGrid(matches);
+      const matches = sortByDateDesc(posts.filter((p) =>
+        !isDraft(p) && Array.isArray(p.tags) && p.tags.includes(tag)));
+      const intro = document.getElementById("tag-intro");
+      if (intro) intro.textContent = `${matches.length} ${matches.length === 1 ? "post" : "posts"} tagged ${tag}.`;
+      // Compact cards (no excerpt): a quick index of the tag. They show all of
+      // a post's tags, in its usual order (writeup/blurb first).
+      list.innerHTML = matches.map((p) => cardHTML(p, orderTags(p.tags), { excerpt: false })).join("");
+      watchCards(list);
       status.textContent = matches.length ? "" : "No posts with this tag yet.";
     })
     .catch((err) => {
