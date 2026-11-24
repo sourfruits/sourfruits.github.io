@@ -2377,7 +2377,7 @@ a.post-tag:focus-visible { color: var(--ink); }
 }
 .view-btn + .view-btn { border-left: 1px solid var(--line); }
 .view-btn:hover { color: var(--ink); }
-.view-btn.is-active { background: var(--accent); color: var(--accent-ink); }
+.view-btn.is-active { background: var(--line-light); color: var(--ink); }   /* quiet grey, not the green accent */
 .view-btn:focus-visible { outline: none; color: var(--ink); }
 .timeline-btn.is-list-hidden { display: none; }
 
@@ -3478,3 +3478,6 @@ body.is-graph-faux-fs { overflow: hidden; }
    pages' titles, so it sits evenly between the header and the filter row (the
    empty label slot that used to sit here provided this 10px). */
 .site-intro .site-title { margin-top: 10px; }
+
+/* "Why precursors" card text a step smaller than body text (was 17.6px). */
+.precursors-card p { font-size: 1rem; }
