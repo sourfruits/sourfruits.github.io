@@ -14,7 +14,7 @@ const densityToggle = document.querySelector(".density-toggle");
 const draftsToggle = document.getElementById("drafts-toggle");
 const draftsLabel = draftsToggle.querySelector(".drafts-label");
 
-const DENSITY_KEY = "grid-density-v2";   // v2: older saves recorded the default, not a real choice
+const DENSITY_KEY = "grid-density-v3";   // v3: the default changed to compact, so older saved choices start fresh
 const VIEWS = ["normal", "compact"];
 // Posts per page for each view — different  on desktop and mobile (number
 // of columns depends on page width).
@@ -243,9 +243,9 @@ densityToggle.addEventListener("click", (e) => {
   if (btn && btn.dataset.density !== currentView) setDensity(btn.dataset.density);
 });
 
-// Default to the normal grid (3 across on desktop, 1 on phones); a visitor's
+// Default to the compact grid (more tiles per row on desktop and phones); a visitor's
 // own choice from the toggle is remembered and wins on later visits.
-let initialView = "normal";
+let initialView = "compact";
 try {
   const saved = localStorage.getItem(DENSITY_KEY);
   if (VIEWS.includes(saved)) initialView = saved;

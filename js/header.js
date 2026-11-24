@@ -331,6 +331,32 @@
 
   // Stamp the current year into the footer's year slot (present on every page),
   // so individual page scripts don't each repeat it.
+  // Mark the header link for the page you're on (e.g. "writing" on
+  // writing.html) so it shows as the active section.
+  const here = window.location.pathname.split("/").pop() || "index.html";
+  // Bold text is wider, so give every header link the width of its bold
+  // version up front — then the links don't shift when the current one goes
+  // bold, and they sit in the same place on every page.
+  const reserveBoldWidths = () => {
+    header.querySelectorAll(".site-nav .nav-link").forEach((a) => {
+      a.style.minWidth = "";
+      const was = a.style.fontWeight;
+      a.style.fontWeight = "var(--weight-semibold)";
+      const w = a.getBoundingClientRect().width;
+      a.style.fontWeight = was;
+      a.style.minWidth = Math.ceil(w) + "px";
+    });
+  };
+  reserveBoldWidths();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(reserveBoldWidths);
+  window.addEventListener("resize", reserveBoldWidths);
+  header.querySelectorAll(".site-nav .nav-link, .mobile-nav .nav-link").forEach((a) => {
+    if (a.getAttribute("href") === here) {
+      a.classList.add("is-current");
+      a.setAttribute("aria-current", "page");
+    }
+  });
+
   const yearEl = document.getElementById("year");
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 })();
