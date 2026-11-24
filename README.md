@@ -175,9 +175,16 @@ Fields (same names/shape as before — they just live in frontmatter now):
   `show: grid, writing` puts the same post in both places (one file, no duplicate).
   Writing-only posts don't need `thumb`/`image` or `workId`, their tags link to the
   Writing page's filter, and their previous/next links step through the Writing list.
-  On the Writing page each piece shows — and is filtered by — just its **first tag
-  that isn't `longform` / `notes`**, so put the kind of writing first:
-  `tags: ["longform", "essay", "film"]` shows "essay" there.
+  On the Writing page each piece shows — and is filtered by — its tags **except
+  `writeup` / `blurb`**, in the order written, on one line that ends in "+N more"
+  if they don't fit: `tags: ["writeup", "essay", "film"]` shows "essay · film".
+- `layout` — optional; `layout: poem` keeps every line break exactly as you type it
+  (blank lines start a new stanza), on the post page and in the Writing card's
+  preview (its first four lines). Without it, Markdown joins adjacent lines.
+- `excerpt` — optional; the short passage shown on the piece's Writing page card.
+  Without it, the card uses the first ~40 words of the body (headings and images
+  skipped). Use it to pick a better passage than the opening, e.g.
+  `excerpt: "Two trees greeted me on my morning walk to the dining hall."`
 - `workId` — required for grid posts; ties the post to a Precursors node (the graph's detail card
   lists posts whose `workId` equals its node id). If the post isn't tied to a node,
   just set it to the same value as `id`. It can be a **single id** (`workId: "my-first-lemon"`)
@@ -259,6 +266,22 @@ preview** block (`og:title`, `og:description`, `og:image`, …) — the tags a l
 unfurls into when shared. They're stubbed empty (`content=""`) for now; fill them in to
 control the preview card. Same deal as the favicons: hand-placed, and only on
 `index.html`.
+
+## Fonts: serif for content, sans for interface
+
+Two fonts, one rule:
+
+- **Georgia (serif) = content.** Anything that *is* your writing or names one of
+  your pieces: post text, titles, subtitles, the byline, excerpts, the
+  `DATE · TAGS` line (small grey capitals), "More like this" cards, phone
+  captions, page titles (*Writing*, *Precursors*) and year headings.
+- **Sans-serif = interface.** Anything you use to *operate* the site: the header
+  and nav, ← Back and the next-post link, filters, dropdowns, buttons, the
+  footer, page descriptions ("Writing beyond the media archive."), section
+  labels like MORE LIKE THIS, and empty-state hints.
+
+When adding something new, ask "is this the work, or a tool for getting
+around?" and pick the font from that.
 
 ## Display modes (light / dark / Minimal)
 

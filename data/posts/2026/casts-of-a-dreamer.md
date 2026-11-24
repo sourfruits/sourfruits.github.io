@@ -2,7 +2,7 @@
 title: "454: Casts of a Dreamer"
 subtitle: "floridian greatness"
 date: "2099-07-22"
-tags: ["notes", "music"]
+tags: ["blurb", "music"]
 workId: "454-casts-of-a-dreamer"
 image: "images/casts-of-a-dreamer/image.jpg"
 ---

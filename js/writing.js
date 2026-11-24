@@ -1,6 +1,6 @@
 // Writing page: every post marked "show: writing" (or "show: grid, writing"), as a
-// list grouped under year headings: each entry is title ······ date, then its
-// tag and subtitle, with a thin line between entries. The same tag filter as the
+// grid of cards grouped under year headings: each card has the title, a
+// "tag · date" line, the subtitle and a short excerpt from the opening. The same tag filter as the
 // homepage (multi-select, AND logic, synced to ?tags=) and a drafts toggle sit
 // above the list. Each title opens the normal post page.
 
@@ -24,12 +24,12 @@ try { showDrafts = sessionStorage.getItem(DRAFTS_KEY) === "1"; } catch (err) { /
 
 const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-// On the Writing page each piece shows (and is filtered by) just ONE tag: its
-// first tag that isn't "longform" / "notes" (those describe length on the
-// homepage grid). So tags: ["longform", "essay", "film"] → "essay".
-const GRID_ONLY_TAGS = ["longform", "notes"];
+// The Writing page shows (and filters by) a piece's tags except "writeup" /
+// "blurb" — those describe length on the homepage grid, and every piece here
+// is long-form. Tags keep the order they're written in.
+const GRID_ONLY_TAGS = ["writeup", "blurb"];
 const writingTags = (post) =>
-  (Array.isArray(post.tags) ? post.tags : []).filter((t) => !GRID_ONLY_TAGS.includes(t)).slice(0, 1);
+  (Array.isArray(post.tags) ? post.tags : []).filter((t) => !GRID_ONLY_TAGS.includes(t));
 
 function tagsFromURL() {
   const raw = new URLSearchParams(window.location.search).get("tags") || "";
@@ -54,66 +54,128 @@ function filteredPosts() {
   return base.filter((p) => wanted.every((t) => writingTags(p).includes(t)));
 }
 
-// "Nov 14" — the year is the group heading. Month-only dates show just the
-// month; year-only dates show nothing. In the Pinned and Drafts groups (no year
-// heading) the year is added: "Nov 14, 2025".
+// "November 14" — the year is the group heading. Month-only dates show just
+// the month; year-only dates show nothing. In the Pinned and Drafts groups (no
+// year heading) the year is added: "November 14, 2025".
 function shortDate(iso, withYear) {
   const parts = String(iso).split("-");
   if (parts.length < 2) return withYear ? parts[0] : "";
   const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2] || 1));
-  const opts = parts.length === 2 ? { month: "short" } : { month: "short", day: "numeric" };
+  const opts = parts.length === 2 ? { month: "long" } : { month: "long", day: "numeric" };
   if (withYear) opts.year = "numeric";
   return d.toLocaleDateString(undefined, opts);
 }
 
 
-// One entry: the date in a left column (month and day — the year is the
-// heading above), then the title, the italic subtitle, and the tag underneath.
-// A thin line separates entries.
+// A short plain-text excerpt from the start of a piece: the optional
+// `excerpt:` frontmatter line if there is one, otherwise the opening words of
+// the body with headings, images and Markdown symbols stripped.
+const EXCERPT_WORDS = 42;
+const POEM_EXCERPT_LINES = 4;
+function excerptOf(post) {
+  if (typeof post.excerpt === "string" && post.excerpt.trim()) return post.excerpt.trim();
+  // Poems: the opening lines, kept as lines (joined with \n; shown with <br>).
+  if (post.layout === "poem") {
+    const lines = String(post.content || "").split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+    return lines.slice(0, POEM_EXCERPT_LINES).join("\n") + (lines.length > POEM_EXCERPT_LINES ? "\n…" : "");
+  }
+  const text = String(post.content || "")
+    .split(/\r?\n/)
+    .filter((line) => !/^\s*(#|!\[|---|\*\*\*|___)/.test(line))   // headings, images, rules
+    .join(" ")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")   // [text](link) → text
+    .replace(/[*_`>]+/g, "")                    // emphasis / quote markers
+    .replace(/\\/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  const words = text.split(" ");
+  return words.length > EXCERPT_WORDS ? words.slice(0, EXCERPT_WORDS).join(" ") + "…" : text;
+}
+
+// One card: a small-caps "DATE · TAGS" line on top (tags that don't fit
+// collapse into a "+N more" label), then the title, the italic subtitle and
+// the excerpt. The whole card links to the piece.
 function itemHTML(post, withYear) {
-  const tags = writingTags(post);
-  return `<li><a class="writing-entry${isDraft(post) ? " is-draft" : ""}" href="post.html?id=${encodeURIComponent(post.id)}">
-        <span class="writing-date">${escapeHTML(shortDate(post.date, withYear))}</span>
-        <span class="writing-body">
-          <span class="writing-title">${escapeHTML(post.title)}</span>
-          ${post.subtitle ? `<span class="writing-sub">${escapeHTML(post.subtitle)}</span>` : ""}
-          ${tags.length ? `<span class="writing-tags">${tags.map(escapeHTML).join(" · ")}</span>` : ""}
+  const tags = writingTags(post)
+    .map((t) => `<span class="writing-card-tag">${escapeHTML(t)}</span>`)
+    .join(`<span class="writing-card-sep" aria-hidden="true">·</span>`);
+  const excerpt = excerptOf(post);
+  return `<li><a class="writing-card${isDraft(post) ? " is-draft" : ""}" href="post.html?id=${encodeURIComponent(post.id)}">
+        <span class="writing-card-info">
+          <span class="writing-card-date">${escapeHTML(shortDate(post.date, true))}</span>
+          ${tags ? `<span class="writing-card-sep" aria-hidden="true">·</span><span class="writing-card-tags">${tags}</span>` : ""}
         </span>
+        <span class="writing-card-title">${escapeHTML(post.title)}</span>
+        ${post.subtitle ? `<span class="writing-card-sub">${escapeHTML(post.subtitle)}</span>` : ""}
+        ${excerpt ? `<span class="writing-card-excerpt">${escapeHTML(excerpt).replace(/\n/g, "<br>")}</span>` : ""}
       </a></li>`;
 }
+
+// Clamp every card's tag row to one line with a trailing "+N more" (the same
+// helper the homepage tiles use).
+function fitCardTags() {
+  list.querySelectorAll(".writing-card-tags").forEach((row) =>
+    fitTagsWithMore(row, ".writing-card-tag", ".writing-card-sep", "writing-card-tag"));
+}
+window.addEventListener("resize", fitCardTags);
+
+// Two-line titles split roughly two-thirds / one-third: when a title is too
+// long for one line but would fit on two, cap its width at ~70% of its one-line
+// length, so the first line carries most of it and the second isn't a lonely
+// word or two.
+// Longer titles (3+ lines) just wrap normally.
+function fitCardTitles() {
+  list.querySelectorAll(".writing-card-title").forEach((t) => {
+    t.style.maxWidth = "";
+    t.style.textWrap = "";
+    const room = t.parentElement.clientWidth;
+    t.style.whiteSpace = "nowrap";
+    const oneLine = t.scrollWidth;
+    t.style.whiteSpace = "";
+    if (oneLine <= room) return;                 // fits on one line
+    const target = Math.ceil(oneLine * 0.7);
+    if (target <= room && oneLine <= room * 1.9) {
+      t.style.maxWidth = target + "px";
+      t.style.textWrap = "wrap";   // plain greedy wrap: fill line 1 up to the cap
+    }
+  });
+}
+window.addEventListener("resize", fitCardTitles);
 
 const CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
 const collapsedYears = new Set();   // years folded shut by clicking their heading
 
-// Entries grouped under year headings like the Precursors list (black italic
-// serif, with a chevron that folds the year shut and then shows its count).
-// Drafts (when revealed) and Pinned come first under small labels, with the
-// year in their dates.
+// Cards grouped under year headings (dark serif, with a chevron that folds the
+// year shut and then shows its count). Drafts (when revealed) and Pinned come
+// first under small labels, with the year in their dates.
 function render() {
   const posts = sortPosts(filteredPosts(), "writing");
   const drafts = posts.filter((p) => isDraft(p));
   const pinned = posts.filter((p) => !isDraft(p) && isPinned(p, "writing"));
   const rest = posts.filter((p) => !isDraft(p) && !isPinned(p, "writing"));
-  const yearCounts = {};
-  rest.forEach((p) => { const y = String(p.date).slice(0, 4); yearCounts[y] = (yearCounts[y] || 0) + 1; });
 
+  const grid = (items, withYear) => `<ul class="writing-grid">${items.map((p) => itemHTML(p, withYear)).join("")}</ul>`;
   let html = "";
-  if (drafts.length) html += `<li class="list-month">Drafts</li>` + drafts.map((p) => itemHTML(p, true)).join("");
-  if (pinned.length) html += `<li class="list-month">Pinned</li>` + pinned.map((p) => itemHTML(p, true)).join("");
-  let year = "";
+  if (drafts.length) html += `<section class="writing-group"><h2 class="writing-label">Drafts</h2>${grid(drafts, true)}</section>`;
+  if (pinned.length) html += `<section class="writing-group"><h2 class="writing-label">Pinned</h2>${grid(pinned, true)}</section>`;
+
+  const years = [];
   rest.forEach((p) => {
     const y = String(p.date).slice(0, 4);
-    const folded = collapsedYears.has(y);
-    if (y !== year) {
-      html += `<li class="list-yearhead writing-yearhead"><button type="button" class="list-yeartoggle" data-year="${escapeHTML(y)}" aria-expanded="${folded ? "false" : "true"}">` +
-        `<span>${escapeHTML(y)}</span>${CHEVRON}` +
-        (folded ? `<span class="list-yearcount">${yearCounts[y]}</span>` : "") +
-        `</button></li>`;
-      year = y;
-    }
-    if (!folded) html += itemHTML(p, false);
+    const last = years[years.length - 1];
+    if (last && last.year === y) last.posts.push(p); else years.push({ year: y, posts: [p] });
   });
-  list.innerHTML = html ? `<ol class="writing-index">${html}</ol>` : "";
+  years.forEach(({ year, posts: items }) => {
+    const folded = collapsedYears.has(year);
+    html += `<section class="writing-group">
+        <h2 class="list-yearhead writing-yearhead"><button type="button" class="list-yeartoggle" data-year="${escapeHTML(year)}" aria-expanded="${folded ? "false" : "true"}">` +
+        `<span>${escapeHTML(year)}</span>${CHEVRON}` +
+        (folded ? `<span class="list-yearcount">${items.length}</span>` : "") +
+        `</button></h2>${folded ? "" : grid(items, false)}</section>`;
+  });
+  list.innerHTML = html;
+  fitCardTags();
+  fitCardTitles();
 
   status.textContent = posts.length
     ? ""

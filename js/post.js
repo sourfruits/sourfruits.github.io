@@ -9,8 +9,11 @@ const id = new URLSearchParams(window.location.search).get("id");
 
 // Render the post's Markdown content to HTML with marked, then sanitize the
 // result with DOMPurify before it reaches the DOM.
-function renderContent(text) {
-  const html = marked.parse(String(text || ""));
+// `poem` (from a post's `layout: poem` line) keeps every line break exactly as
+// typed — single newlines become <br>, blank lines start a new stanza — instead
+// of Markdown's usual joining of adjacent lines into one paragraph.
+function renderContent(text, poem) {
+  const html = marked.parse(String(text || ""), poem ? { breaks: true } : undefined);
   const clean = DOMPurify.sanitize(html);
 
   // Give any inline image that carries a Markdown title — ![alt](src "caption") —
@@ -73,7 +76,7 @@ function renderPost(post) {
   document.title = `${post.title} — Sourfruits`;
   setPostMeta(post);
 
-  // Content-type tags ("longform"/"notes") lead; the rest keep their order.
+  // Content-type tags ("writeup"/"blurb") lead; the rest keep their order.
   const orderedTags = orderTags(post.tags);
   const tags = orderedTags.length
     ? orderedTags
@@ -108,7 +111,7 @@ function renderPost(post) {
       <img class="post-image" src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}">
     </div>
     <hr class="post-rule">` : ""}
-    <div class="post-body">${renderContent(post.content)}</div>
+    <div class="post-body${post.layout === "poem" ? " is-poem" : ""}">${renderContent(post.content, post.layout === "poem")}</div>
   `;
   status.textContent = "";
 
@@ -224,6 +227,20 @@ function fitNavTitles() {
 
 window.addEventListener("resize", fitNavTitles);
 
+// The first few dozen words of a post as plain text (headings, images and
+// Markdown symbols stripped) — shown in place of a photo on "More like this"
+// cards for pieces that have none. Poems keep their line breaks.
+function openingWords(post) {
+  const poem = post.layout === "poem";
+  const lines = String(post.content || "").split(/\r?\n/)
+    .filter((l) => !/^\s*(#|!\[|---|\*\*\*|___)/.test(l))
+    .map((l) => l.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[*_`>\\]+/g, "").trim())
+    .filter(Boolean);
+  if (poem) return lines.slice(0, 7).join("\n");
+  const words = lines.join(" ").split(/\s+/);
+  return words.slice(0, 40).join(" ") + (words.length > 40 ? "…" : "");
+}
+
 // "More like this": up to 3 posts sharing at least one tag with the current
 // post, ranked by most matching tags then most recent. Hidden entirely when
 // there are no matches (or the current post has no tags).
@@ -261,7 +278,9 @@ function renderRelated(posts, current) {
       .join("");
     return `
       <a class="related-card" href="post.html?id=${encodeURIComponent(post.id)}">
-        <span class="related-thumb${src ? "" : " is-empty"}">${src ? `<img src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}" loading="lazy">` : ""}</span>
+        ${src
+          ? `<span class="related-thumb"><img src="${escapeHTML(src)}" alt="${escapeHTML(post.title)}" loading="lazy"></span>`
+          : `<span class="related-thumb is-text" aria-hidden="true"><span class="related-thumb-text">${escapeHTML(openingWords(post))}</span></span>`}
         <span class="related-title">${escapeHTML(post.title)}</span>
         ${tags ? `<span class="related-tags">${tags}</span>` : ""}
       </a>`;

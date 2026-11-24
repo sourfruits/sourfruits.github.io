@@ -2,7 +2,7 @@
 title: "The Trial by Franz Kafka"
 subtitle: "The absurd humor of existence"
 date: "2026-07-21"
-tags: ["books", "notes"]
+tags: ["books", "blurb"]
 workId: "kafka-the-trial"
 image: "images/the-trial/image.jpg"
 ---

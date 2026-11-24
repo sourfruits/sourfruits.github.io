@@ -1,7 +1,7 @@
 ---
 title: "Men in the Sun by Ghassan Kanafani"
 date: "2026-11-02"
-tags: ["notes", "books"]
+tags: ["blurb", "books"]
 workId: "kanafani-men-in-the-sun"
 image: "images/men-in-the-sun/image.jpg"
 ---

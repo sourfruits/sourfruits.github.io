@@ -899,7 +899,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   justify-content: flex-end;
   padding: 16px;
   color: #fff;
-  background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0) 55%);
+  background: linear-gradient(to top, rgba(0,0,0,0.72), rgba(0,0,0,0) 65%);   /* darker hover shade (was 0.55 → 55%) */
   /* Two-layer shadow (tight + soft) behind the caption so the white title/date
      stay legible over bright photos, not just dark ones. Softened a touch so it
      reads as a gentle halo rather than a hard outline. Inherited by the
@@ -1393,13 +1393,14 @@ a.page-link:focus-visible {
 
 .related-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));   /* minmax(0, …) so a card can't widen its column */
   gap: 16px;
 }
 
 .related-card {
   display: flex;
   flex-direction: column;
+  min-width: 0;
   text-decoration: none;
   color: var(--ink);
 }
@@ -1893,6 +1894,13 @@ a.post-tag:focus-visible { color: var(--ink); }
 .tag-heading,
 .search-heading {
   text-wrap: balance;
+}
+/* Writing cards sit beside a full-width excerpt, so balancing (which narrows
+   every line) looks cramped there. "pretty" keeps lines full and only avoids
+   a lone last word. */
+.writing-card-title,
+.writing-card-sub {
+  text-wrap: pretty;
 }
 
 .status {
@@ -3209,9 +3217,9 @@ body.is-graph-faux-fs { overflow: hidden; }
    as the Precursors list (it reuses .list-row / .list-title / .list-kind /
    .list-month / .list-yearhead): foldable bold years, small-caps months and
    one-line rows. */
-.writing { max-width: 680px; margin: 0 auto; }
+.writing { max-width: var(--maxw); margin: 0 auto; }
 .writing-heading { margin-bottom: 10px; }   /* matches the Precursors title → intro gap */
-.writing-intro { margin-bottom: 10px; }
+.writing-intro { margin-bottom: 21px; }   /* intro → filter matches the homepage title → filter gap */
 
 .writing-bar {
   display: flex;
@@ -3229,7 +3237,26 @@ body.is-graph-faux-fs { overflow: hidden; }
 .writing-row.is-draft .list-title { color: var(--muted); }
 
 /* "More like this" card for a piece with no photo: an empty square. */
-.related-thumb.is-empty { aspect-ratio: 1 / 1; background: var(--line-light); }
+/* "More like this" card for a piece with no photo: a square "page" showing the
+   piece's opening words in Georgia, instead of an empty box. */
+.related-thumb.is-text {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--line-light);
+  padding: 12px;
+  box-sizing: border-box;
+}
+.related-thumb-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
+  overflow: hidden;
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--muted);
+  white-space: pre-line;
+}
 
 
 
@@ -3260,7 +3287,7 @@ body.is-graph-faux-fs { overflow: hidden; }
   text-align: left;
 }
 /* Post pages keep their original title look: sans-serif, upright, bold. */
-#post .post-title { font-family: var(--font-sans); font-style: normal; }
+#post .post-title { font-family: var(--font-serif); font-style: normal; font-weight: var(--weight-normal); }
 .about-post .post-title,
 .writing-heading,
 .precursors-title { font-weight: var(--weight-heavy); font-size: var(--text-display); }
@@ -3273,39 +3300,164 @@ body.is-graph-faux-fs { overflow: hidden; }
 .tags-heading { margin-top: var(--header-gap-sub); }
 .tags-heading { margin-left: 0; margin-right: 0; }
 
-/* Writing page entries: date in a left column, then title / italic subtitle /
-   tag stacked on the right, with a thin line between entries. */
-.writing-index > li { list-style: none; }
-.writing-entry {
+/* Writing page cards: a grid at the homepage's width — 2 across on desktop
+   and tablets, 1 on phones. Each card: serif title, a small "tag · date"
+   line, the italic subtitle, and a short excerpt in the reading font. */
+.writing-group { margin: 0; }
+.writing-grid {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: 5.2em 1fr;
-  gap: 20px;
-  align-items: baseline;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line-light);
-  color: var(--ink);
-  text-decoration: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 56px;
+  row-gap: 0;
 }
-.writing-entry .writing-date { color: var(--muted); font-size: 0.9rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.writing-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.writing-entry .writing-title { font-family: var(--font-serif); font-size: 1.12rem; line-height: 1.35; }
-.writing-sub { font-family: var(--font-serif); font-style: italic; color: var(--muted); font-size: 1rem; line-height: 1.4; }
-.writing-tags { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
-.writing-entry:hover .writing-title { color: var(--muted); }
-.writing-entry.is-draft .writing-title { color: var(--muted); }
-@media (max-width: 640px) {
-  .writing-entry { grid-template-columns: 4.2em 1fr; gap: 12px; }
-  .writing-entry .writing-date { font-size: 0.82rem; }
+/* A thin line between pieces, halfway through the 44px gap between rows, so the
+   spacing between cards is unchanged. One line per card (not across the row);
+   none above the first row or below the last row of each year. */
+.writing-grid > li { padding: 22px 0; border-bottom: 1px solid var(--line-light); }
+.writing-grid > li:nth-child(-n+2) { padding-top: 0; }
+.writing-grid > li:last-child,
+.writing-grid > li:nth-last-child(2):nth-child(odd) { border-bottom: 0; padding-bottom: 0; }
+@media (max-width: 600px) {
+  .writing-grid { grid-template-columns: minmax(0, 1fr); }
+  .writing-grid > li { padding: 14px 0; }
+  .writing-grid > li:first-child { padding-top: 0; }
+  .writing-grid > li:nth-child(2) { padding-top: 14px; }
+  .writing-grid > li:nth-last-child(2):nth-child(odd) { border-bottom: 1px solid var(--line-light); padding-bottom: 14px; }
+}
+.writing-card { display: flex; flex-direction: column; gap: 6px; min-width: 0; color: var(--ink); text-decoration: none; }
+.writing-card-title { font-family: var(--font-serif); font-size: 1.45rem; line-height: 1.25; }
+/* "OCTOBER 12, 2026 · POEM" above the title: Georgia in spaced capitals,
+   grey (like the subtitle), on one line — the date always whole, tags trimmed to "+N more"
+   (js/writing.js). */
+.writing-card-info {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  margin-bottom: 2px;
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.writing-card-date { flex: none; }
+.writing-card-info > .writing-card-sep { flex: none; }
+.writing-card-tags {
+  flex: 0 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.writing-card-tag { font-weight: var(--weight-normal); }
+.writing-card-sep { margin: 0 0.6em; }
+.writing-card-sub { font-family: var(--font-serif); font-style: italic; color: var(--muted); font-size: 1rem; line-height: 1.4; }
+.writing-card-excerpt {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--ink);
+  margin-top: 4px;
+}
+.writing-card:hover .writing-card-title { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.writing-card.is-draft { opacity: 0.6; }
+.writing-label {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-tiny);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-caps-wide);
+  text-transform: uppercase;
+}
+/* Between years: a full-width line (same as the one under the filter), halfway
+   through the gap so the spacing stays the same. */
+.writing-group + .writing-group { margin-top: 22px; padding-top: 15px; border-top: 1px solid var(--line-light); }   /* 15 + the heading's own ~7px = 22 */
+@media (max-width: 600px) {
+  .writing-card-title { font-size: 1.3rem; }
+  .writing-group + .writing-group { margin-top: 16px; padding-top: 9px; }
 }
 
 /* Year headings on Writing: like Precursors' (dark bold serif, foldable). */
-.writing-index .writing-yearhead {
+.writing-yearhead {
+  font-family: var(--font-serif);
   font-size: 1.25rem;
+  font-weight: var(--weight-bold);
   font-style: normal;
   color: var(--ink);
-  margin: 22px 0 0;
+  margin: 0;
 }
-/* The first year sits the same distance below the filter line as later years
-   sit below the entry above them. */
-.writing-index .writing-yearhead:first-child { margin-top: 0; }
-.writing-index .writing-yearhead .list-yearcount { font-style: normal; }
+/* Line → first year matches filter → line (21px), so both sides are even. */
+#writing-list { margin-top: 21px; }
+.writing-yearhead .list-yearcount { font-style: normal; }
+
+/* Date + tags lines on post pages and the homepage's phone captions use the
+   same look as the Writing cards: Georgia in small spaced capitals, grey,
+   regular weight. */
+.post-meta,
+.tile-meta-info {
+  font-family: var(--font-serif);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.post-meta .post-tag,
+.post-meta .tags-more,
+.tile-meta-tag,
+.tile-meta-info .tags-more {
+  font-weight: var(--weight-normal);
+  letter-spacing: inherit;
+}
+/* A "·" between the date and the tags (only when there are tags), matching the
+   Writing cards' "NOVEMBER 14, 2026 · ESSAY". */
+.post-meta .post-date { margin-right: 0; }
+.post-meta .post-date:not(:last-child)::after {
+  content: "·";
+  margin-left: calc(var(--tag-gap) / 2);
+}
+.tile-meta-date { margin-right: 0; }
+.tile-meta-date:not(:last-child)::after {
+  content: "·";
+  margin: 0 calc(var(--tag-gap) / 2);
+}
+
+/* Subtitles and the "by Elia C" byline in Georgia (post pages and the
+   homepage's phone captions), keeping their size, weight and italics. */
+.post-subtitle,
+.tile-meta-subtitle,
+.post-byline { font-family: var(--font-serif); }
+
+/* Homepage phone captions: title in Georgia, regular weight, like post titles. */
+.tile-meta-title { font-family: var(--font-serif); font-weight: var(--weight-normal); }
+
+/* Anything that names a piece is Georgia: "More like this" cards and the
+   homepage's hover captions. (The previous/next link stays sans — it's a
+   control, like ← Back.)
+   Their date/tag lines use the same small grey Georgia capitals as posts. */
+.related-title,
+.tile-title {
+  font-family: var(--font-serif);
+  font-weight: var(--weight-normal);
+}
+.related-tags,
+.tile-date {
+  font-family: var(--font-serif);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+.related-tag,
+.related-tags .tags-more { font-weight: var(--weight-normal); letter-spacing: inherit; }
+/* "More like this" card titles: Georgia, bold. */
+.related-title { font-weight: var(--weight-bold); }
+/* "More like this" tags a step smaller than the title (was 14.4px). */
+.related-tag,
+.related-tags .tags-more,
+.related-tags > * + *::before { font-size: 0.78rem; }
+
+/* Poems (`layout: poem`): line breaks kept as written (js/post.js), each
+   stanza a paragraph with a little more air between stanzas. */
+.post-body.is-poem p { margin-bottom: 1.6em; line-height: 1.75; }

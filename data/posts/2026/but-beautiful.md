@@ -1,7 +1,7 @@
 ---
 title: "But Beautiful by Geoff Dyer"
 date: "2026-10-19"
-tags: ["notes", "books"]
+tags: ["blurb", "books"]
 workId: "dyer-but-beautiful"
 image: "images/but-beautiful/image.jpg"
 ---

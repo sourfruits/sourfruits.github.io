@@ -105,10 +105,10 @@ function sortPosts(posts, place = "grid") {
   });
 }
 
-// Content-type tags that mark what a post *is* (a longform piece vs. quick notes)
+// Content-type tags that mark what a post *is* (a writeup vs. a quick blurb)
 // always lead the tag list, wherever a post's tags are shown. Everything else
 // keeps its given order.
-const LEAD_TAGS = ["longform", "notes"];
+const LEAD_TAGS = ["writeup", "blurb"];
 function orderTags(tags) {
   if (!Array.isArray(tags)) return [];
   const rank = (t) => {
