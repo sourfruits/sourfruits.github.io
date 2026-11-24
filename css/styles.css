@@ -41,6 +41,12 @@
   --tag-weight: var(--weight-semibold);   /* medium-bold, matching the byline name */
   --tag-letter-spacing: var(--tracking-normal);
   --tag-gap: 10px;
+  /* Page-header spacing, shared by the homepage, Writing and Precursors:
+     --space-sm between things that belong together (a description and its
+     meta line); --space-lg between separate groups (description → controls,
+     controls → divider line, divider → content). */
+  --space-sm: 10px;
+  --space-lg: 21px;
 
   /* Shared page-heading treatment (post/About, tag, search, tags list). The
      homepage hero title and nav logo are intentionally excepted. */
@@ -1996,7 +2002,7 @@ a.post-tag:focus-visible { color: var(--ink); }
 .precursors-intro {
   color: var(--muted);
   font-size: var(--text-base);
-  margin: 0 0 0.4rem;   /* gap above comes from the title's 10px bottom margin */
+  margin: 0 0 var(--space-sm);   /* description → its "Learn more · Updated" line */
 }
 /* Meta line under the intro: "Updated <date> · Learn more". The date span and
    the <details> sit inline (flex row); the learn-more cards are a sibling that
@@ -2006,7 +2012,7 @@ a.post-tag:focus-visible { color: var(--ink); }
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0 8px;
-  margin: 0 0 1.4rem;
+  margin: 0 0 var(--space-lg);   /* meta line → the Graph / List box */
 }
 /* Divider between the intro block and the graph. */
 .precursors-rule {
@@ -3219,7 +3225,7 @@ body.is-graph-faux-fs { overflow: hidden; }
    one-line rows. */
 .writing { max-width: var(--maxw); margin: 0 auto; }
 .writing-heading { margin-bottom: 10px; }   /* matches the Precursors title → intro gap */
-.writing-intro { margin-bottom: 21px; }   /* intro → filter matches the homepage title → filter gap */
+.writing-intro { margin-bottom: var(--space-lg); }   /* intro → filter matches the homepage title → filter gap */
 
 .writing-bar {
   display: flex;
@@ -3229,8 +3235,8 @@ body.is-graph-faux-fs { overflow: hidden; }
   border-bottom: 1px solid var(--line-light);
 }
 /* Filter → line gap matches the homepage's (21px). */
-.writing-bar .tag-filter { margin-bottom: 20px; }
-.writing-bar .drafts-toggle { margin-bottom: 20px; flex-shrink: 0; white-space: nowrap; }
+.writing-bar .tag-filter { margin-bottom: calc(var(--space-lg) - 1px); }
+.writing-bar .drafts-toggle { margin-bottom: calc(var(--space-lg) - 1px); flex-shrink: 0; white-space: nowrap; }
 
 .writing-index { list-style: none; margin: 0; padding: 0; }
 .writing-row { text-decoration: none; }
@@ -3390,7 +3396,7 @@ body.is-graph-faux-fs { overflow: hidden; }
   margin: 0;
 }
 /* Line → first year matches filter → line (21px), so both sides are even. */
-#writing-list { margin-top: 21px; }
+#writing-list { margin-top: var(--space-lg); }
 .writing-yearhead .list-yearcount { font-style: normal; }
 
 /* Date + tags lines on post pages and the homepage's phone captions use the
@@ -3461,3 +3467,14 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* Poems (`layout: poem`): line breaks kept as written (js/post.js), each
    stanza a paragraph with a little more air between stanzas. */
 .post-body.is-poem p { margin-bottom: 1.6em; line-height: 1.75; }
+
+/* Title → description: big titles carry a lot of empty space under their
+   letters, so the description is pulled up to sit ~19px below the letters on
+   every page (Writing's "g" hangs lower, so it needs less pull). */
+.precursors-title { margin-bottom: -5px; }
+.writing-heading { margin-bottom: -1px; }
+
+/* Homepage: the big centred title needs a little more air above it than other
+   pages' titles, so it sits evenly between the header and the filter row (the
+   empty label slot that used to sit here provided this 10px). */
+.site-intro .site-title { margin-top: 10px; }
