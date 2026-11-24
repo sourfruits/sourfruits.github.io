@@ -101,7 +101,7 @@ function renderPost(post) {
   article.innerHTML = `
     <h1 class="post-title">${escapeHTML(post.title)}</h1>
     ${subtitle}
-    <p class="post-byline">by <span class="post-byline-name">Elia C</span></p>
+    <p class="post-byline">by <span class="post-byline-name">E.</span></p>
     <div class="post-meta">
       <p class="post-date">${escapeHTML(formatDate(post.date, DATE_MONTH_STYLE))}</p>
       ${tags}
