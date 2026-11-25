@@ -948,9 +948,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   letter-spacing: var(--tracking-normal);
   line-height: 1.2;
   color: var(--ink);
-  /* Balance the wrap first (even line lengths, no lone trailing token), then
-     cap at two lines and ellipsis the rest. */
-  text-wrap: balance;
+  /* Cap at two lines and ellipsis the rest (line breaks: see "pretty" below). */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -962,8 +960,7 @@ body.wide .header-bar-inner { max-width: var(--maxw-wide); }
   font-size: var(--text-base);
   font-style: italic;
   color: var(--muted);
-  /* Balance the wrap first, then cap at two lines and ellipsis the rest. */
-  text-wrap: balance;
+  /* Cap at two lines and ellipsis the rest (line breaks: see "pretty" below). */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -1889,21 +1886,19 @@ a.post-tag:focus-visible { color: var(--ink); }
 }
 
 /* ---------- Misc ---------- */
-/* Balance the line breaks on titles/headings so a lone trailing token (e.g.
-   "(1984)") doesn't get orphaned onto its own line; multi-line titles split
-   evenly instead. Ignored gracefully by browsers without text-wrap support. */
+/* One line-break rule for every title and subtitle on the site: "pretty"
+   keeps lines full and only avoids leaving a lone word (e.g. "(1984)") on the
+   last line — so a two-line title reads as a long first line and a shorter
+   second. Plain CSS; browsers without support just wrap normally. */
 .tile-title,
+.tile-meta-title,
+.tile-meta-subtitle,
 .post-title,
 .post-subtitle,
 .result-title,
 .related-title,
 .tag-heading,
-.search-heading {
-  text-wrap: balance;
-}
-/* Writing cards sit beside a full-width excerpt, so balancing (which narrows
-   every line) looks cramped there. "pretty" keeps lines full and only avoids
-   a lone last word. */
+.search-heading,
 .writing-card-title,
 .writing-card-sub {
   text-wrap: pretty;

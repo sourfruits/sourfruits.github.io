@@ -69,32 +69,10 @@ function fitCardTags(root) {
 }
 
 
-// Two-line titles split roughly two-thirds / one-third: when a title is too
-// long for one line but would fit on two, cap its width at ~70% of its one-line
-// length, so the first line carries most of it and the second isn't a lonely
-// word or two.
-// Longer titles (3+ lines) just wrap normally.
-function fitCardTitles(root) {
-  root.querySelectorAll(".writing-card-title").forEach((t) => {
-    t.style.maxWidth = "";
-    t.style.textWrap = "";
-    const room = t.parentElement.clientWidth;
-    t.style.whiteSpace = "nowrap";
-    const oneLine = t.scrollWidth;
-    t.style.whiteSpace = "";
-    if (oneLine <= room) return;                 // fits on one line
-    const target = Math.ceil(oneLine * 0.7);
-    if (target <= room && oneLine <= room * 1.9) {
-      t.style.maxWidth = target + "px";
-      t.style.textWrap = "wrap";   // plain greedy wrap: fill line 1 up to the cap
-    }
-  });
-}
-
-// Run both fitters on a container now and again whenever the window resizes.
+// Fit the tag rows on a container now and again whenever the window resizes.
+// (Title line breaks are plain CSS — text-wrap: pretty — no script needed.)
 function fitCards(root) {
   fitCardTags(root);
-  fitCardTitles(root);
 }
 function watchCards(root) {
   fitCards(root);
