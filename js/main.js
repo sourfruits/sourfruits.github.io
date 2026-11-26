@@ -147,9 +147,11 @@ function buildMenu(posts) {
     if (!Array.isArray(post.tags)) return;
     post.tags.forEach((tag) => counts.set(tag, (counts.get(tag) || 0) + 1));
   });
-  // Every tag, grouped by kind with a thin line between: lengths, forms,
-  // media (also reachable from the tabs), then themes (data/tags.txt).
-  const groups = groupTagsByKind(counts);
+  // Tags grouped by kind with a thin line between: lengths, media (also
+  // reachable from the tabs), then themes (data/tags.txt). Forms (essay,
+  // criticism…) are left out here — they're Writing's menu, as lengths are
+  // left out of Writing's.
+  const groups = groupTagsByKind(counts, ["length", "medium", "theme"]);
   allTags = groups.flatMap((g) => g.tags);
 
   // Custom accent checkmark (Letterboxd-style) that replaces the native checkbox.

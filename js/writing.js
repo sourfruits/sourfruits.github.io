@@ -1,4 +1,4 @@
-// Writing page: every post marked "show: writing" (or "show: grid, writing"), as a
+// Writing page: every post that isn't a blurb (see postPlaces), as a
 // grid of cards grouped under year headings: each card has the title, a
 // "tag · date" line, the subtitle and a short excerpt from the opening. Above
 // the list: one tab per form (All · Essay · Poem…, shortcuts into the dropdown)
@@ -230,8 +230,13 @@ function renderIndex() {
   const plainHead = (label) => `<h3>${label}</h3>`;
   let html = "";
   if (forms.length) {
-    html += plainHead("Form") + `<ul>` + item(`data-form=""`, "All", current === "") +
-      forms.map((f) => item(`data-form="${escapeHTML(f)}"`, capFirst(f), current === f)).join("") + `</ul>`;
+    // Counts follow the ticked subjects (but not the form itself, so switching
+    // form shows what you'd get).
+    const subjects = [...selectedTags].filter((t) => tagKind(t) !== "form");
+    const pool = base.filter((p) => subjects.every((t) => writingTags(p).includes(t)));
+    const nForm = (f) => pool.filter((p) => writingTags(p).includes(f)).length;
+    html += plainHead("Form") + `<ul>` + item(`data-form=""`, "All", current === "", pool.length) +
+      forms.map((f) => item(`data-form="${escapeHTML(f)}"`, capFirst(f), current === f, nForm(f))).join("") + `</ul>`;
   }
 
   // Subjects: media (tags.txt order), then themes (most-used first). Past the
@@ -253,8 +258,7 @@ function renderIndex() {
     else if (showAllSubjects && subjects.length > SUBJECT_CAP) html += `<button type="button" class="index-more" data-more>Less</button>`;
   }
 
-  const years = shownYears.map((y) => y.year);
-  if (years.length) html += plainHead("Year") + `<ul>` + years.map((y) => item(`data-year="${escapeHTML(y)}"`, y, false)).join("") + `</ul>`;
+  if (shownYears.length) html += plainHead("Year") + `<ul>` + shownYears.map((y) => item(`data-year="${escapeHTML(y.year)}"`, y.year, false, y.posts.length)).join("") + `</ul>`;
 
   if (!draftsToggle.hidden) html += `<div class="index-foot"><button type="button" data-drafts class="${showDrafts ? "is-on" : ""}" aria-pressed="${showDrafts}">Show drafts</button></div>`;
   index.innerHTML = html;

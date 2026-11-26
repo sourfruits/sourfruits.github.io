@@ -171,8 +171,9 @@ Fields (same names/shape as before — they just live in frontmatter now):
   first). The build splits that into a clean `date` plus a `dateOrder` the sorts use.
 - `tags` — a list, e.g. `["writeup", "essay", "film"]`. Tags come in four kinds,
   set in **one place, `data/tags.txt`** (posts never change):
-  - **length** — `blurb`, `writeup`
-  - **form** — `essay`, `poem`, `reportage`…
+  - **length** — `blurb`, `writeup`. Every published grid post needs exactly
+    one; the build stops and names the file if it's missing.
+  - **form** — `essay`, `criticism`, `poem`, `reportage`…
   - **medium** — `film`, `books`, `music`…
   - **theme** — anything *not* listed in `tags.txt` (`philosophy`, `memory`…),
     so a new theme needs no setup. A new form or medium gets added to its line.
@@ -195,11 +196,15 @@ Fields (same names/shape as before — they just live in frontmatter now):
 
   Tabs follow the order in `tags.txt`; themes are listed most-used first. A
   form or medium you forget to list just shows up as a theme until you add it.
-- `show` — optional; where the post appears. `show: grid` (the homepage photo grid)
-  is the default when the line is left out. `show: writing` lists it only on the
-  **Writing** page (`writing.html`, a text index grouped by year — no photo needed).
-  `show: grid, writing` puts the same post in both places (one file, no duplicate).
-  Writing-only posts don't need `thumb`/`image` or `workId`, and their
+- **Where a post appears** is decided by the post itself — no extra line needed:
+  - it has a `workId` (it's about a work) → the homepage photo grid
+  - it isn't a `blurb` (writeups, poems…) → the **Writing** page
+    (`writing.html`, a text index grouped by year); its form tag (essay,
+    criticism, poem…) picks the tab it's under
+  - both → both places (one file, no duplicate)
+
+  `show` — optional, only for exceptions: `show: grid`, `show: writing` or
+  `show: grid, writing` overrides the rule above. Writing-only posts don't need `thumb`/`image` or `workId`, and their
   previous/next links step through the Writing list. Every tag (on any post)
   links to its tag page, which lists all published posts with that tag as text
   cards — photo posts and writing alike.

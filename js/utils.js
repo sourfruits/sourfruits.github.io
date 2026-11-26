@@ -73,13 +73,19 @@ function groupTagsByKind(counts, kinds = TAG_KIND_ORDER) {
   }).filter((g) => g.tags.length);
 }
 
-// Where a post appears: its `show` list ("grid", "writing", or both). Posts
-// without one are grid-only — the default, so older posts need no changes.
+// Where a post appears. Without a `show` line it's decided by the post itself:
+//   grid    — it's about a work (has a workId): the homepage's taste archive.
+//   writing — it isn't a blurb (writeups, poems… — every full piece).
+// A `show` line ("grid", "writing", or both) overrides that for the odd exception.
 function postPlaces(post) {
   const s = post && post.show;
   if (Array.isArray(s) && s.length) return s;
   if (typeof s === "string" && s.trim()) return s.split(",").map((x) => x.trim()).filter(Boolean);
-  return ["grid"];
+  const tags = Array.isArray(post && post.tags) ? post.tags : [];
+  const places = [];
+  if (post && post.workId) places.push("grid");
+  if (!tags.includes("blurb")) places.push("writing");
+  return places;
 }
 function showsIn(post, place) {
   return postPlaces(post).includes(place);

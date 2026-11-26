@@ -77,9 +77,6 @@
     "tags": [
       "poem"
     ],
-    "show": [
-      "writing"
-    ],
     "draft": true,
     "layout": "poem",
     "content": "yeah yeah okay"
@@ -94,10 +91,6 @@
       "writeup",
       "essay",
       "film"
-    ],
-    "show": [
-      "grid",
-      "writing"
     ],
     "workId": [
       "the-friends-of-eddie-coyle-1973",
@@ -253,7 +246,7 @@
     "date": "2026-03-28",
     "tags": [
       "writeup",
-      "criticism",
+      "essay",
       "film"
     ],
     "show": [

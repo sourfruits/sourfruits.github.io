@@ -4,7 +4,6 @@ title: "Eddie Coyle, and How I Learned to Love the Fall"
 subtitle: "On autumn, time, and memory"
 date: "2026-11-14"
 tags: ["writeup", "essay", "film"]
-show: grid, writing
 workId: ["the-friends-of-eddie-coyle-1973", "gerard-manley-hopkins", "christina-rossetti"]
 image: "images/how-i-learned-to-love-the-fall/image.jpg"
 ---

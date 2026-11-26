@@ -25,10 +25,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const POSTS_DIR = join(ROOT, "data", "posts");
 const OUT_FILE = join(ROOT, "data", "posts.json");
 
-// Where a post appears: `show: grid` (homepage photo grid — the default when the
-// line is left out), `show: writing` (the Writing page), or `show: grid, writing`
-// (both, from the same file). Grid posts need a photo and a workId; writing-only
-// posts need neither.
+// Where a post appears. Left out, it's decided by the post: one with a workId
+// goes on the homepage grid, and anything that isn't a blurb goes on Writing —
+// see postPlaces in js/utils.js. `show: grid`, `show: writing` or
+// `show: grid, writing` overrides that. Grid posts need a photo and a workId.
 const PLACES = ["grid", "writing"];
 
 // Fields every post must carry in frontmatter. `id` is NOT here — it comes from
@@ -109,7 +109,7 @@ function validate(data, body, file) {
   if (missing.length) throw new Error(`${file}: missing required field(s): ${missing.join(", ")}`);
 
   if ("show" in data) data.show = parseShow(data.show, file);
-  const inGrid = !("show" in data) || data.show.includes("grid");
+  const inGrid = "show" in data ? data.show.includes("grid") : "workId" in data;
 
   // Grid posts: a photo (thumb or image — the site falls back one to the other)
   // and a workId are required. Writing-only posts may skip both.
@@ -118,6 +118,18 @@ function validate(data, body, file) {
   }
   if (inGrid && !("workId" in data)) {
     throw new Error(`${file}: grid posts must have a "workId" (or set "show: writing")`);
+  }
+
+  // Every published grid post says how long it is: exactly one of blurb or
+  // writeup (blurb is what keeps a post off Writing, so it can't be forgotten).
+  // (Drafts are skipped: draft: true, or a 2099 placeholder date — as isDraft
+  // in js/utils.js.)
+  const isDraft = data.draft === true || parseInt(String(data.date || "").slice(0, 4), 10) >= 2099;
+  if (inGrid && !isDraft && Array.isArray(data.tags)) {
+    const lengths = data.tags.filter((t) => ["blurb", "writeup"].includes(String(t).toLowerCase()));
+    if (lengths.length !== 1) {
+      throw new Error(`${file}: tag it either "blurb" or "writeup" (exactly one)`);
+    }
   }
 
   const stringFields = ["title", "date"];
