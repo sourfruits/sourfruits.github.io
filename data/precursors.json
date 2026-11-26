@@ -19,22 +19,9 @@
       "kind": "musician",
       "discovered_via": [
         {
-          "source": "judee-sill",
-          "engagedDate": "2026-11-24",
-          "thread": "harmony",
-          "note": "followed counterpoint harmony back to the origin"
-        }
-      ]
-    },
-    {
-      "id": "judee-sill",
-      "label": "Judee Sill",
-      "kind": "musician",
-      "discovered_via": [
-        {
           "source": "joni-mitchell",
           "engagedDate": "2026-11-24",
-          "note": "Laurel Canyon folk singer-songwriter"
+          "note": "followed folk counterpoint harmony back to the origin"
         }
       ]
     },
