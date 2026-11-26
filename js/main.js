@@ -98,13 +98,21 @@ function baseSet() {
   return showDrafts ? allPosts : allPosts.filter((p) => !isDraft(p));
 }
 
+// The homepage sorts by length, not form: here every form except blurb
+// (essay, criticism…) reads as "writeup". Only this page sees it that way —
+// posts keep their real tags everywhere else.
+const LENGTHS = ["blurb", "writeup"];
+function homeTags(p) {
+  const tags = Array.isArray(p.tags) ? p.tags : [];
+  return [...new Set(tags.map((t) => (tagKind(t) === "form" && t !== "blurb" ? "writeup" : t)))];
+}
+
 // AND logic: a post must carry every selected tag. No selection → show all.
 function filteredPosts() {
   const posts = baseSet();
   if (selectedTags.size === 0) return posts;
   const wanted = [...selectedTags];
-  return posts.filter((p) =>
-    Array.isArray(p.tags) && wanted.every((t) => p.tags.includes(t)));
+  return posts.filter((p) => wanted.every((t) => homeTags(p).includes(t)));
 }
 
 // Medium tabs: "All · Film · Books · Music" — the media listed in
@@ -143,14 +151,12 @@ mediumTabs.addEventListener("click", (e) => {
 // tag, ordered by post count (ties alphabetical).
 function buildMenu(posts) {
   const counts = new Map();
-  posts.forEach((post) => {
-    if (!Array.isArray(post.tags)) return;
-    post.tags.forEach((tag) => counts.set(tag, (counts.get(tag) || 0) + 1));
-  });
-  // Every tag, grouped by kind with a thin line between: forms (Blurb, Essay,
-  // Criticism…), media (also reachable from the tabs), then themes
-  // (data/tags.txt).
-  const groups = groupTagsByKind(counts);
+  posts.forEach((post) => homeTags(post).forEach((tag) => counts.set(tag, (counts.get(tag) || 0) + 1)));
+  // Tags grouped with a thin line between: Blurb · Writeup, media (also
+  // reachable from the tabs), then themes (data/tags.txt).
+  const rest = new Map([...counts].filter(([t]) => !LENGTHS.includes(t)));
+  const groups = [{ tags: LENGTHS.filter((t) => counts.has(t)) }, ...groupTagsByKind(rest, ["medium", "theme"])]
+    .filter((g) => g.tags.length);
   allTags = groups.flatMap((g) => g.tags);
 
   // Custom accent checkmark (Letterboxd-style) that replaces the native checkbox.
@@ -188,10 +194,9 @@ function syncMenu(matchCount) {
   // showing now also have it. A tag at 0 can still be ticked — it just
   // shows nothing until something else is unticked.
   const showing = filteredPosts();
-  const tagsOf = (p) => (Array.isArray(p.tags) ? p.tags : []);
   tagMenu.querySelectorAll(".tag-option").forEach((row) => {
     const cb = row.querySelector('input[type="checkbox"]');
-    const n = cb.checked ? showing.length : showing.filter((p) => tagsOf(p).includes(cb.value)).length;
+    const n = cb.checked ? showing.length : showing.filter((p) => homeTags(p).includes(cb.value)).length;
     row.querySelector(".tag-option-count").textContent = n;
   });
   const n = selectedTags.size;

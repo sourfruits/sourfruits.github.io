@@ -181,7 +181,9 @@ Fields (same names/shape as before — they just live in frontmatter now):
   order you type them. Both pages filter with the same bar: **tabs** on the left
   and a **dropdown** on the right, with "Clear all" at its top (unticks
   everything and hides drafts again) and "Show drafts" at its bottom.
-  - Homepage: tabs for the medium (All · Film · Books · Music).
+  - Homepage: tabs for the medium (All · Film · Books · Music). Its dropdown
+    sorts by length instead of form: Blurb, or Writeup (any other form —
+    essay, criticism… — counts as Writeup there).
   - Writing: tabs for the form (All · Essay · Criticism · Poem…).
     On computers (900px+) the bar becomes a **side index** down the left —
     Form, Subject (media then themes with live counts; the top 5, then
