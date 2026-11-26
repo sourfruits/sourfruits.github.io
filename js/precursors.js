@@ -1463,9 +1463,22 @@ function threadSets(thread) {
     const dvs = discoveredVia(n);
     if (!dvs.some((d) => d.thread === thread)) return;
     members.add(n.id);
-    dvs.forEach((d) => { if (d.source && nodeById[d.source]) origins.add(d.source); });
+    // Only the lines in this thread count (a member's other discovery lines
+    // aren't part of it).
+    dvs.forEach((d) => { if (d.thread === thread && d.source && nodeById[d.source]) origins.add(d.source); });
   });
   return { members, origins };
+}
+
+// Where a thread starts: a source that isn't itself part of the thread (e.g.
+// The Parallax View for 70s paranoia). If there are several, the one that led
+// to the most of it.
+function threadStart(thread) {
+  const { members, origins } = threadSets(thread);
+  const led = (id) => (rawData.nodes || []).filter((n) =>
+    discoveredVia(n).some((d) => d.thread === thread && d.source === id)).length;
+  const roots = [...origins].filter((id) => !members.has(id));
+  return (roots.length ? roots : [...origins]).sort((a, b) => led(b) - led(a))[0];
 }
 
 function buildThreadMenu() {
@@ -1545,7 +1558,7 @@ function selectThread(thread) {
   syncThreadMenu();
   applyThreadHighlight();
   if (!activeThread) { closeDetail(); return; }
-  const originId = [...threadSets(activeThread).origins][0];
+  const originId = threadStart(activeThread);
   if (!originId) return;
   const node = (simulation ? simulation.nodes().find((n) => n.id === originId) : null) || nodeById[originId];
   if (node) openDetail(node, null, true);   // true = don't move the camera
