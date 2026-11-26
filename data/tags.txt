@@ -14,5 +14,5 @@
 # appear. Lines starting with # are notes.
 
 length: blurb, writeup
-form: essay, poem, reportage
+form: essay, criticism, poem, reportage
 medium: film, books, music

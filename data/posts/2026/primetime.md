@@ -1,7 +1,8 @@
 ---
 title: "Primetime (2026)"
 date: "2026-10-02"
-tags: ["writeup", "film"]
+tags: ["writeup", "criticism", "film"]
+show: grid, writing
 workId: primetime-2026
 image: "images/primetime/image.jpg"
 ---

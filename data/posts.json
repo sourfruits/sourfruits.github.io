@@ -150,7 +150,12 @@
     "date": "2026-10-02",
     "tags": [
       "writeup",
+      "criticism",
       "film"
+    ],
+    "show": [
+      "grid",
+      "writing"
     ],
     "workId": "primetime-2026",
     "image": "images/primetime/image.jpg",
@@ -162,7 +167,12 @@
     "date": "2026-09-02",
     "tags": [
       "writeup",
+      "criticism",
       "film"
+    ],
+    "show": [
+      "grid",
+      "writing"
     ],
     "workId": "the-maltese-falcon-1941",
     "image": "images/the-maltese-falcon/image.jpg",
@@ -187,7 +197,12 @@
     "date": "2026-08-02",
     "tags": [
       "writeup",
+      "criticism",
       "books"
+    ],
+    "show": [
+      "grid",
+      "writing"
     ],
     "workId": "tolstoy-how-much-land",
     "image": "images/how-much-land/image.jpg",
@@ -238,7 +253,12 @@
     "date": "2026-03-28",
     "tags": [
       "writeup",
+      "criticism",
       "film"
+    ],
+    "show": [
+      "grid",
+      "writing"
     ],
     "workId": "enter-the-dragon-1973",
     "image": "images/enter-the-dragon/image.jpeg",

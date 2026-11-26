@@ -2,7 +2,8 @@
 title: "Enter the Dragon (1973)"
 subtitle: "I am literally Bruce Lee"
 date: "2026-03-28"
-tags: ["writeup", "film"]
+tags: ["writeup", "criticism", "film"]
+show: grid, writing
 workId: "enter-the-dragon-1973"
 image: "images/enter-the-dragon/image.jpeg"
 ---

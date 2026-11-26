@@ -2,7 +2,8 @@
 title: "How Much Land Does a Man Need?"
 subtitle: "and Other Stories by Leo Tolstoy"
 date: "2026-08-02"
-tags: ["writeup", "books"]
+tags: ["writeup", "criticism", "books"]
+show: grid, writing
 workId: "tolstoy-how-much-land"
 image: "images/how-much-land/image.jpg"
 ---

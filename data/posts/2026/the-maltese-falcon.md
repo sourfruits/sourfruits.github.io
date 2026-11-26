@@ -1,7 +1,8 @@
 ---
 title: "Framing and Composition in The Maltese Falcon"
 date: "2026-09-02"
-tags: ["writeup", "film"]
+tags: ["writeup", "criticism", "film"]
+show: grid, writing
 workId: the-maltese-falcon-1941
 image: "images/the-maltese-falcon/image.jpg"
 ---
