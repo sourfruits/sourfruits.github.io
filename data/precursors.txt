@@ -56,8 +56,26 @@
 # • This block must stay above the first "###" node.
 
 ## categories
-People: writer, person, director, philosopher
+People: writer, person, director, philosopher, musician
 School and classes: school, class
+
+### johann-sebastian-bach
+label: J. S. Bach
+kind: musician
+discovered:
+  - source: judee-sill, engaged: 2026-11-24, note: followed counterpoint harmony back to the origin, thread: harmony
+
+### judee-sill
+label: Judee Sill
+kind: musician
+discovered:
+  - source: joni-mitchell, engaged: 2026-11-24, note: Laurel Canyon folk singer-songwriter
+
+### joni-mitchell
+label: Joni Mitchell
+kind: musician
+discovered:
+  - engaged: 2026-02-25, thread: folk
 
 ### rear-window-1954
 label: Rear Window (1954)
