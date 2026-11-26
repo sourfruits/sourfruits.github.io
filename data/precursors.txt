@@ -63,13 +63,7 @@ School and classes: school, class
 label: J. S. Bach
 kind: musician
 discovered:
-  - source: judee-sill, engaged: 2026-11-24, note: followed counterpoint harmony back to the origin, thread: harmony
-
-### judee-sill
-label: Judee Sill
-kind: musician
-discovered:
-  - source: joni-mitchell, engaged: 2026-11-24, note: Laurel Canyon folk singer-songwriter
+  - source: joni-mitchell, engaged: 2026-11-24, note: followed folk counterpoint harmony back to the origin
 
 ### joni-mitchell
 label: Joni Mitchell
