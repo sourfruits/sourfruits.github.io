@@ -75,7 +75,7 @@ function renderResults(posts) {
     hrefFor: pageHref,
     renderItems: (pagePosts) => {
       resultsEl.innerHTML = pagePosts.map((post) => {
-        const tags = orderTags(post.tags);   // length, form, medium, theme (data/tags.txt)
+        const tags = orderTags(post.tags);   // form, medium, theme (data/tags.txt)
         const tagsHTML = tags.length
           ? `<div class="tag-list result-tags">${tags
               .map((t) => `<span class="post-tag">${escapeHTML(t)}</span>`)

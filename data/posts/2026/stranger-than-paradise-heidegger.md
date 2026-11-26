@@ -3,7 +3,7 @@ pinned: true
 title: "Heidegger and Boredom in Stranger Than Paradise (1984)"
 subtitle: "Sitting with boredom and the journey to authentic living"
 date: "2099-07-21"
-tags: ["film", "philosophy", "writeup"]
+tags: ["film", "philosophy"]
 workId: "stranger-than-paradise-1984"
 image: "images/stranger-than-paradise-heidegger/image.jpeg"
 ---

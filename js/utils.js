@@ -35,18 +35,18 @@ function fetchPosts() {
 }
 
 // --- Tag kinds (data/tags.txt) ---
-// Every tag is a "length" (blurb, writeup), a "form" (essay, poem…), a
-// "medium" (film, books, music…) or, if it isn't listed in data/tags.txt, a
-// "theme". The fallback below is used only if that file can't be loaded.
-const LISTED_KINDS = ["length", "form", "medium"];
-let TAG_KINDS = { length: ["blurb", "writeup"], form: [], medium: [] };
+// Every tag is a "form" (blurb, essay, criticism, poem…), a "medium" (film,
+// books, music…) or, if it isn't listed in data/tags.txt, a "theme". The
+// fallback below is used only if that file can't be loaded.
+const LISTED_KINDS = ["form", "medium"];
+let TAG_KINDS = { form: [], medium: [] };
 function loadTagKinds() {
   return fetch("data/tags.txt")
     .then((res) => (res.ok ? res.text() : ""))
     .then((text) => {
-      const kinds = { length: [], form: [], medium: [] };
+      const kinds = { form: [], medium: [] };
       text.split("\n").forEach((line) => {
-        const m = line.replace(/#.*/, "").match(/^\s*(length|form|medium)\s*:(.*)$/i);
+        const m = line.replace(/#.*/, "").match(/^\s*(form|medium)\s*:(.*)$/i);
         if (!m) return;
         const k = m[1].toLowerCase();
         m[2].split(",").map((t) => t.trim().toLowerCase()).filter(Boolean).forEach((t) => kinds[k].push(t));
@@ -59,9 +59,9 @@ function tagKind(tag) {
   const t = String(tag).toLowerCase();
   return LISTED_KINDS.find((k) => TAG_KINDS[k].includes(t)) || "theme";
 }
-const TAG_KIND_ORDER = ["length", "form", "medium", "theme"];
+const TAG_KIND_ORDER = ["form", "medium", "theme"];
 
-// Split tags (with counts) into kind groups for a filter: lengths, forms and
+// Split tags (with counts) into kind groups for a filter: forms and
 // media in the order data/tags.txt lists them, themes most-used first. Returns
 // [{ kind, tags }] for the non-empty groups, in TAG_KIND_ORDER.
 function groupTagsByKind(counts, kinds = TAG_KIND_ORDER) {
@@ -75,7 +75,7 @@ function groupTagsByKind(counts, kinds = TAG_KIND_ORDER) {
 
 // Where a post appears. Without a `show` line it's decided by the post itself:
 //   grid    — it's about a work (has a workId): the homepage's taste archive.
-//   writing — it isn't a blurb (writeups, poems… — every full piece).
+//   writing — it isn't a blurb (essays, criticism, poems… — every full piece).
 // A `show` line ("grid", "writing", or both) overrides that for the odd exception.
 function postPlaces(post) {
   const s = post && post.show;
@@ -153,8 +153,8 @@ function sortPosts(posts, place = "grid") {
   });
 }
 
-// A post's tags in display order, wherever they're shown: length, form,
-// medium, then theme (data/tags.txt). Within a kind they keep the order they
+// A post's tags in display order, wherever they're shown: form, medium, then
+// theme (data/tags.txt). Within a kind they keep the order they
 // were written in.
 function orderTags(tags) {
   if (!Array.isArray(tags)) return [];

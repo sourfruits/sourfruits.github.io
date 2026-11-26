@@ -57,7 +57,7 @@ sourfruits-blog/
 │   └── about.js      About page — renders the ABOUT_CONTENT Markdown string (marked + DOMPurify), plus footer year + back button
 ├── data/
 │   ├── posts/        ← Your posts: one Markdown file per post (the source of truth), in any folders you like (e.g. one per year: 2026/)
-│   ├── tags.txt      ← Which tags are a length, form or medium (film, books, music); everything else is a theme
+│   ├── tags.txt      ← Which tags are a form or medium (film, books, music); everything else is a theme
 │   ├── posts.json    ← GENERATED from data/posts/ by the build — don't edit by hand
 │   └── precursors.json  ← The Precursors graph: nodes + connections.
 ├── snippets/
@@ -169,21 +169,20 @@ Fields (same names/shape as before — they just live in frontmatter now):
 - `date` — `YYYY`, `YYYY-MM`, or `YYYY-MM-DD`; posts sort newest-first. To order
   posts that share the *same* date, append a number: `date: "2026-06-29 1"` (lower
   first). The build splits that into a clean `date` plus a `dateOrder` the sorts use.
-- `tags` — a list, e.g. `["writeup", "essay", "film"]`. Tags come in four kinds,
+- `tags` — a list, e.g. `["essay", "film"]`. Tags come in three kinds,
   set in **one place, `data/tags.txt`** (posts never change):
-  - **length** — `blurb`, `writeup`. Every published grid post needs exactly
-    one; the build stops and names the file if it's missing.
-  - **form** — `essay`, `criticism`, `poem`, `reportage`…
+  - **form** — what kind of post it is: `blurb` (a short take), `essay`,
+    `criticism`, `poem`, `reportage`… Give each post one.
   - **medium** — `film`, `books`, `music`…
   - **theme** — anything *not* listed in `tags.txt` (`philosophy`, `memory`…),
     so a new theme needs no setup. A new form or medium gets added to its line.
 
-  Tags always display in that order (length · form · medium · theme), whatever
+  Tags always display in that order (form · medium · theme), whatever
   order you type them. Both pages filter with the same bar: **tabs** on the left
   and a **dropdown** on the right, with "Clear all" at its top (unticks
   everything and hides drafts again) and "Show drafts" at its bottom.
   - Homepage: tabs for the medium (All · Film · Books · Music).
-  - Writing: tabs for the form (All · Essay · Poem…). Length tags are left out.
+  - Writing: tabs for the form (All · Essay · Criticism · Poem…).
     On computers (900px+) the bar becomes a **side index** down the left —
     Form, Subject (media then themes with live counts; the top 5, then
     "More"), Year (jump links, always shown); Show drafts at the bottom. A ticked subject shows × to untick it; Form's All resets the form. Phones keep the bar.
@@ -198,7 +197,7 @@ Fields (same names/shape as before — they just live in frontmatter now):
   form or medium you forget to list just shows up as a theme until you add it.
 - **Where a post appears** is decided by the post itself — no extra line needed:
   - it has a `workId` (it's about a work) → the homepage photo grid
-  - it isn't a `blurb` (writeups, poems…) → the **Writing** page
+  - it isn't a `blurb` (essays, criticism, poems…) → the **Writing** page
     (`writing.html`, a text index grouped by year); its form tag (essay,
     criticism, poem…) picks the tab it's under
   - both → both places (one file, no duplicate)
@@ -208,9 +207,8 @@ Fields (same names/shape as before — they just live in frontmatter now):
   previous/next links step through the Writing list. Every tag (on any post)
   links to its tag page, which lists all published posts with that tag as text
   cards — photo posts and writing alike.
-  On the Writing page each piece shows — and is filtered by — its tags **except
-  the length ones** (`writeup` / `blurb`), form first, on one line that ends in "+N more"
-  if they don't fit: `tags: ["writeup", "essay", "film"]` shows "essay · film".
+  On the Writing page each piece shows its tags, form first, on one line that
+  ends in "+N more" if they don't fit: `tags: ["essay", "film"]` shows "essay · film".
 - `layout` — optional; `layout: poem` keeps every line break exactly as you type it
   (blank lines start a new stanza), on the post page and in the Writing card's
   preview (its first four lines). Without it, Markdown joins adjacent lines.

@@ -3511,7 +3511,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 #post .post-byline { line-height: 1.4; margin-bottom: 6px; }
 #post .post-meta { line-height: 1.4; }
 
-/* Tag menus: hairline between tag kinds (length / form / subject, see
+/* Tag menus: hairline between tag kinds (form / medium / theme, see
    data/tags.txt). */
 .tag-group-line { height: 1px; margin: 3px 12px; background: var(--line-light); }
 

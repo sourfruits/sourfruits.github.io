@@ -76,7 +76,7 @@ function renderPost(post) {
   document.title = `${post.title} — elia website`;
   setPostMeta(post);
 
-  // Length, form, medium, then theme tags (data/tags.txt).
+  // Form, medium, then theme tags (data/tags.txt).
   const orderedTags = orderTags(post.tags);
   const tags = orderedTags.length
     ? orderedTags

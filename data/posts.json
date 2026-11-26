@@ -19,7 +19,6 @@
     "date": "2099-10-19",
     "tags": [
       "blurb",
-      "writeup",
       "books"
     ],
     "workId": "didion-the-white-album",
@@ -32,8 +31,7 @@
     "subtitle": "sontag, bourdieu, and the existentialist concerns of charli xcx's newest album",
     "date": "2099-08-10",
     "tags": [
-      "music",
-      "writeup"
+      "music"
     ],
     "workId": [
       "charli-xcx-music-fashion-film",
@@ -63,8 +61,7 @@
     "date": "2099-07-21",
     "tags": [
       "film",
-      "philosophy",
-      "writeup"
+      "philosophy"
     ],
     "workId": "stranger-than-paradise-1984",
     "image": "images/stranger-than-paradise-heidegger/image.jpeg",
@@ -88,7 +85,6 @@
     "subtitle": "On autumn, time, and memory",
     "date": "2026-11-14",
     "tags": [
-      "writeup",
       "essay",
       "film"
     ],
@@ -142,7 +138,6 @@
     "title": "Primetime (2026)",
     "date": "2026-10-02",
     "tags": [
-      "writeup",
       "criticism",
       "film"
     ],
@@ -159,7 +154,6 @@
     "title": "Framing and Composition in The Maltese Falcon",
     "date": "2026-09-02",
     "tags": [
-      "writeup",
       "criticism",
       "film"
     ],
@@ -189,7 +183,6 @@
     "subtitle": "and Other Stories by Leo Tolstoy",
     "date": "2026-08-02",
     "tags": [
-      "writeup",
       "criticism",
       "books"
     ],
@@ -245,7 +238,6 @@
     "subtitle": "I am literally Bruce Lee",
     "date": "2026-03-28",
     "tags": [
-      "writeup",
       "essay",
       "film"
     ],

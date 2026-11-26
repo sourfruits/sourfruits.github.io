@@ -1,7 +1,7 @@
 // Photo grid (now on index.html): load every post from data/posts.json and render
 // the thumbnail grid, paginated. Above it: medium tabs (All · Film · Books ·
-// Music, synced to ?medium=), a dropdown for the other tags — length, form and
-// theme (multi-select, AND logic, synced to ?tags=, with the drafts switch at
+// Music, synced to ?medium=), a dropdown for the other tags — form (blurb,
+// essay, criticism…) and theme (multi-select, AND logic, synced to ?tags=, with the drafts switch at
 // its bottom) — and a grid-density toggle. (A
 // carousel preview built by js/home.js is stashed in snippets/carousel.html.)
 
@@ -147,11 +147,10 @@ function buildMenu(posts) {
     if (!Array.isArray(post.tags)) return;
     post.tags.forEach((tag) => counts.set(tag, (counts.get(tag) || 0) + 1));
   });
-  // Tags grouped by kind with a thin line between: lengths, media (also
-  // reachable from the tabs), then themes (data/tags.txt). Forms (essay,
-  // criticism…) are left out here — they're Writing's menu, as lengths are
-  // left out of Writing's.
-  const groups = groupTagsByKind(counts, ["length", "medium", "theme"]);
+  // Every tag, grouped by kind with a thin line between: forms (Blurb, Essay,
+  // Criticism…), media (also reachable from the tabs), then themes
+  // (data/tags.txt).
+  const groups = groupTagsByKind(counts);
   allTags = groups.flatMap((g) => g.tags);
 
   // Custom accent checkmark (Letterboxd-style) that replaces the native checkbox.

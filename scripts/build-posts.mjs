@@ -120,18 +120,6 @@ function validate(data, body, file) {
     throw new Error(`${file}: grid posts must have a "workId" (or set "show: writing")`);
   }
 
-  // Every published grid post says how long it is: exactly one of blurb or
-  // writeup (blurb is what keeps a post off Writing, so it can't be forgotten).
-  // (Drafts are skipped: draft: true, or a 2099 placeholder date — as isDraft
-  // in js/utils.js.)
-  const isDraft = data.draft === true || parseInt(String(data.date || "").slice(0, 4), 10) >= 2099;
-  if (inGrid && !isDraft && Array.isArray(data.tags)) {
-    const lengths = data.tags.filter((t) => ["blurb", "writeup"].includes(String(t).toLowerCase()));
-    if (lengths.length !== 1) {
-      throw new Error(`${file}: tag it either "blurb" or "writeup" (exactly one)`);
-    }
-  }
-
   const stringFields = ["title", "date"];
   if ("thumb" in data) stringFields.push("thumb");
   if ("image" in data) stringFields.push("image");

@@ -25,10 +25,8 @@ let showDrafts = new URLSearchParams(window.location.search).get("drafts") === "
 
 const capFirst = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
-// The Writing page shows (and filters by) a piece's tags except the length
-// ones (blurb / writeup, see data/tags.txt) — those describe length on the
-// homepage grid. Form tags come first, then media, then themes.
-const writingTags = (post) => orderTags(post.tags).filter((t) => tagKind(t) !== "length");
+// A piece's tags in display order: form first, then media, then themes.
+const writingTags = (post) => orderTags(post.tags);
 
 function tagsFromURL() {
   const raw = new URLSearchParams(window.location.search).get("tags") || "";
@@ -150,7 +148,7 @@ list.addEventListener("click", (e) => {
 function buildMenu(posts) {
   const counts = new Map();
   posts.forEach((p) => writingTags(p).forEach((t) => counts.set(t, (counts.get(t) || 0) + 1)));
-  // Every tag but lengths, grouped with a thin line between: forms (also
+  // Every tag, grouped with a thin line between: forms (also
   // reachable from the tabs), media, then themes (data/tags.txt).
   const groups = groupTagsByKind(counts, ["form", "medium", "theme"]);
   allTags = groups.flatMap((g) => g.tags);
