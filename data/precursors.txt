@@ -78,7 +78,7 @@ label: Gillian Welch
 kind: musician
 discovered:
   - source: lucinda-williams, aware: 2026-02-25, thread: folk
-  - engaged: 2026-010-26, note: "Time (The Revelator)" thread: time-and-loss
+  - engaged: 2026-10-26, note: "Time (The Revelator)" thread: time-and-loss
 
 ### joni-mitchell
 label: Joni Mitchell
