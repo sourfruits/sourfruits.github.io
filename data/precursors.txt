@@ -100,7 +100,7 @@ kind: book
 creator: Hunter S. Thompson
 discovered:
   - source: joni-mitchell, aware: 2026-11-27, thread: 60s counterculture
-  - source: joan-didion, aware: 2026-11-27, thread: 60s counterculture
+  - source: the-white-album, aware: 2026-11-27, thread: 60s counterculture
 
 ### johann-sebastian-bach
 label: J. S. Bach
