@@ -14,6 +14,65 @@
   },
   "nodes": [
     {
+      "id": "o-brother-where-art-thou-2000",
+      "label": "O Brother, Where Art Thou? (2000)",
+      "kind": "film",
+      "creator": "The Coen Brothers",
+      "discovered_via": [
+        {
+          "source": "a-serious-man-2009",
+          "awareDate": "2026-05",
+          "note": "following the Coens"
+        },
+        {
+          "source": "gillian-welch",
+          "awareDate": "2026-11-26",
+          "thread": "folk",
+          "note": "Heard Welch and Emmylou Harris sing the soundtrack on mom's radio"
+        }
+      ]
+    },
+    {
+      "id": "lucinda-williams",
+      "label": "Lucinda Williams",
+      "kind": "musician",
+      "discovered_via": [
+        {
+          "engagedDate": "2025-06-29",
+          "note": "\"Kaisa from SLS, introduction to folk,\" thread: folk"
+        }
+      ]
+    },
+    {
+      "id": "gillian-welch",
+      "label": "Gillian Welch",
+      "kind": "musician",
+      "discovered_via": [
+        {
+          "source": "lucinda-williams",
+          "awareDate": "2026-02-25",
+          "thread": "folk"
+        },
+        {
+          "engagedDate": "2026-10-26",
+          "note": "\"Time (The Revelator)\" thread: time-and-loss"
+        }
+      ]
+    },
+    {
+      "id": "joni-mitchell",
+      "label": "Joni Mitchell",
+      "kind": "musician",
+      "discovered_via": [
+        {
+          "source": "lucinda-williams",
+          "engagedDate": "2026-02-26",
+          "thread": "folk",
+          "note": "Miles of Aisles (Live), later in After Hours)"
+        }
+      ]
+    },
+    {
       "id": "fear-and-loathing-in-las-vegas-1998",
       "label": "Fear and Loathing in Las Vegas (1998)",
       "kind": "film",
@@ -58,17 +117,6 @@
           "source": "joni-mitchell",
           "engagedDate": "2026-11-24",
           "note": "followed folk counterpoint harmony back to the origin"
-        }
-      ]
-    },
-    {
-      "id": "joni-mitchell",
-      "label": "Joni Mitchell",
-      "kind": "musician",
-      "discovered_via": [
-        {
-          "engagedDate": "2026-02-25",
-          "thread": "folk"
         }
       ]
     },
@@ -790,15 +838,43 @@
       ]
     },
     {
+      "id": "after-hours-1985",
+      "label": "After Hours (1985)",
+      "kind": "film",
+      "creator": "Martin Scorsese",
+      "discovered_via": [
+        {
+          "source": "letterboxd",
+          "engagedDate": "2026-03-27",
+          "note": "Might have been through Collateral one night thread? (actually pretty sure)"
+        }
+      ]
+    },
+    {
       "id": "brazil-1985",
       "label": "Brazil (1985)",
       "kind": "film",
       "creator": "Terry Gilliam",
       "discovered_via": [
         {
-          "source": "letterboxd",
+          "source": "after-hours-1985",
           "engagedDate": "2026-04-01",
-          "note": "Part of a Denmark movie-binge phase."
+          "thread": "absurd films",
+          "note": "Unsure of exact origin"
+        }
+      ]
+    },
+    {
+      "id": "a-serious-man-2009",
+      "label": "A Serious Man (2009)",
+      "kind": "film",
+      "creator": "The Coen Brothers",
+      "discovered_via": [
+        {
+          "source": "after-hours-1985",
+          "engagedDate": "2026-05-03",
+          "thread": "absurd films",
+          "note": "Unsure of exact origin"
         }
       ]
     },
