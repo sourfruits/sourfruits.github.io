@@ -20,6 +20,11 @@
       "creator": "Terry Gilliam",
       "discovered_via": [
         {
+          "source": "brazil-1985",
+          "awareDate": "2026-04",
+          "note": "Terry Gilliam!"
+        },
+        {
           "source": "thompson-fear-and-loathing",
           "awareDate": "2026-11-27",
           "thread": "60s counterculture"
