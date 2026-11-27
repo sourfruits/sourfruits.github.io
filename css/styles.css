@@ -3367,7 +3367,9 @@ body.is-graph-faux-fs { overflow: hidden; }
 .writing-card.is-draft { opacity: 0.6; }
 /* Between years: a full-width line (same as the one under the filter), halfway
    through the gap so the spacing stays the same. */
-.writing-group + .writing-group { margin-top: 22px; padding-top: 15px; border-top: 1px solid var(--line-light); }   /* 15 + the heading's own ~7px = 22 */
+/* Between sections (Pinned, years): the stronger --line, so sections read
+   apart from the lighter lines between cards. */
+.writing-group + .writing-group { margin-top: 22px; padding-top: 15px; border-top: 1px solid var(--line); }   /* 15 + the heading's own ~7px = 22 */
 @media (max-width: 600px) {
   .writing-card-title { font-size: 1.3rem; }
   .writing-group + .writing-group { margin-top: 16px; padding-top: 9px; }
@@ -3649,6 +3651,9 @@ body.is-graph-faux-fs { overflow: hidden; }
   }
   /* the list starts level with the index's first heading */
   #writing-list > .writing-group:first-child > :first-child { margin-top: 0; }
+  /* No filter bar here, so a smaller gap under the intro: 21 + 9 = 30px from
+     the subtitle to the first heading (and to FORM beside it). */
+  .writing > #writing-list { margin-top: 9px; }
 }
 .writing-index h3 {
   margin: 0 0 8px;
@@ -3688,8 +3693,8 @@ body.is-graph-faux-fs { overflow: hidden; }
 }
 /* Side index: a ticked subject's × (in place of its count). */
 .writing-index button.is-on .index-count { font-size: 1em; }
-/* Side index: FORM lines up with the first year heading beside it. */
-@media (min-width: 900px) { .writing-index { padding-top: 21px; } }
+/* Side index: FORM lines up with the first heading beside it. */
+@media (min-width: 900px) { .writing-index { padding-top: 9px; } }
 /* Writing, phones: the Tags button stays at the right end of its row. */
 @media (max-width: 640px) { .writing-bar-right { justify-content: flex-end; } }
 
@@ -3737,10 +3742,30 @@ body.is-graph-faux-fs { overflow: hidden; }
   gap: 7px;
   margin: 0;
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: var(--weight-semibold);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink);
 }
 .writing-label svg { color: var(--muted); flex-shrink: 0; }
+/* Pinned's label is also a fold toggle (like the years), in the label's small
+   capitals; its pin is in ink so the label doesn't look faded. */
+.writing-label .list-yeartoggle { gap: 8px; letter-spacing: inherit; text-transform: inherit; }
+.writing-label .pin-icon { color: var(--ink); }
+/* Pinned cards are headlines: a bigger title and subtitle, no excerpt (the
+   full card, excerpt and all, is in its year below). */
+.writing-grid.is-featured .writing-card-title { font-size: 1.75rem; line-height: 1.2; }
+.writing-grid.is-featured .writing-card-sub { font-size: 1.1rem; }
+/* One per row, a light line between each, none under the last. (":nth-child(n)"
+   just lifts these above the two-column grid's row rules.) */
+.writing-grid.is-featured { grid-template-columns: minmax(0, 1fr); }
+.writing-grid.is-featured > li:nth-child(n) { padding: 16px 0; border-bottom: 1px solid var(--line-light); }   /* short cards → 16px rows, like the tag pages' compact cards */
+.writing-grid.is-featured > li:first-child:nth-child(n) { padding-top: 0; }
+.writing-grid.is-featured > li:last-child:nth-child(n) { padding-bottom: 0; border-bottom: 0; }
+/* Phones: the same tighter 14px rows as the year cards there. */
+@media (max-width: 600px) {
+  .writing-grid.is-featured > li:nth-child(n) { padding: 14px 0; }
+  .writing-grid.is-featured > li:first-child:nth-child(n) { padding-top: 0; }
+  .writing-grid.is-featured > li:last-child:nth-child(n) { padding-bottom: 0; }
+}

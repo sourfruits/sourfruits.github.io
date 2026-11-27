@@ -89,29 +89,43 @@ formTabs.addEventListener("click", (e) => {
 });
 
 // One Writing card: the shared card (js/cards.js) with this page's tags.
-function itemHTML(post, withYear) {
-  return cardHTML(post, writingTags(post));
+// Pinned cards leave out the excerpt (the full card is in its year).
+function itemHTML(post, withYear, pinnedCard) {
+  return cardHTML(post, writingTags(post), pinnedCard ? { excerpt: false } : undefined);
 }
 
 
 
 const CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
 const collapsedYears = new Set();   // years folded shut by clicking their heading
+const PINNED_KEY = "pinned";         // the Pinned group folds with the same set
 let shownYears = [];                // the year groups currently listed (for the side index)
 
 // Cards grouped under year headings (dark serif, with a chevron that folds the
 // year shut and then shows its count). Drafts (when revealed) and Pinned come
-// first, under small dark capital labels with an icon (see .writing-label).
+// first, under small dark capital labels with an icon (see .writing-label);
+// Pinned is a label (sans small capitals with a pin, like Drafts) that folds
+// like a year; its cards are headlines, one per row — bigger title and
+// subtitle, no excerpt.
+// A pinned piece also stays in its year, so every year lists (and counts)
+// everything written that year.
 function render() {
   const posts = sortPosts(filteredPosts(), "writing");
   const drafts = posts.filter((p) => isDraft(p));
   const pinned = posts.filter((p) => !isDraft(p) && isPinned(p, "writing"));
-  const rest = posts.filter((p) => !isDraft(p) && !isPinned(p, "writing"));
+  const rest = sortByDateDesc(posts.filter((p) => !isDraft(p)));
 
-  const grid = (items, withYear) => `<ul class="writing-grid">${items.map((p) => itemHTML(p, withYear)).join("")}</ul>`;
+  const grid = (items, withYear, pinnedCards) => `<ul class="writing-grid${pinnedCards ? " is-featured" : ""}">${items.map((p) => itemHTML(p, withYear, pinnedCards)).join("")}</ul>`;
   let html = "";
   if (drafts.length) html += `<section class="writing-group"><h2 class="writing-label"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>Drafts</span></h2>${grid(drafts, true)}</section>`;
-  if (pinned.length) html += `<section class="writing-group"><h2 class="writing-label"><svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146z"/></svg><span>Pinned</span></h2>${grid(pinned, true)}</section>`;
+  // Pinned folds shut like a year (click its heading); folded, it shows a count.
+  if (pinned.length) {
+    const folded = collapsedYears.has(PINNED_KEY);
+    html += `<section class="writing-group"><h2 class="writing-label"><button type="button" class="list-yeartoggle" data-year="${PINNED_KEY}" aria-expanded="${folded ? "false" : "true"}">` +
+      `<svg viewBox="0 0 16 16" class="pin-icon" width="13" height="13" fill="currentColor" aria-hidden="true"><path d="M9.828.722a.5.5 0 0 1 .354.146l4.95 4.95a.5.5 0 0 1 0 .707c-.48.48-1.072.588-1.503.588-.177 0-.335-.018-.46-.039l-3.134 3.134a6 6 0 0 1 .16 1.013c.046.702-.032 1.687-.72 2.375a.5.5 0 0 1-.707 0l-2.829-2.828-3.182 3.182c-.195.195-1.219.902-1.414.707s.512-1.22.707-1.414l3.182-3.182-2.828-2.829a.5.5 0 0 1 0-.707c.688-.688 1.673-.767 2.375-.72a6 6 0 0 1 1.013.16l3.134-3.133a3 3 0 0 1-.04-.461c0-.43.108-1.022.589-1.503a.5.5 0 0 1 .353-.146z"/></svg><span>Pinned</span>${CHEVRON}` +
+      (folded ? `<span class="list-yearcount">${pinned.length}</span>` : "") +
+      `</button></h2>${folded ? "" : grid(pinned, true, true)}</section>`;
+  }
 
   const years = [];
   shownYears = years;

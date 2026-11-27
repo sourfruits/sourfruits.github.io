@@ -1,5 +1,5 @@
 ---
-pinned: false
+pinned: writing
 title: "Eddie Coyle, and How I Learned to Love the Fall"
 subtitle: "On autumn, time, and memory"
 date: "2026-11-14"

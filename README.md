@@ -234,8 +234,11 @@ Fields (same names/shape as before — they just live in frontmatter now):
 - `pinned` — optional; `pinned: true` sorts the post to the front of every page
   it appears on (homepage grid and/or Writing). To pin it on just one, list the
   page: `pinned: grid`, `pinned: writing`, or `pinned: grid, writing`. On the grid,
-  a pinned post shows a small pin marker on its thumbnail. Use `pinOrder: <number>`
-  (lower first) to order several pinned posts. Pins only apply on the homepage grid
+  a pinned post shows a small pin marker on its thumbnail; on Writing, pinned
+  pieces also appear in a **Pinned** group at the top that folds shut like a
+  year, as headline cards, one per row (bigger title and subtitle, no excerpt).
+  They stay in their year too, with the full card.
+  Use `pinOrder: <number>` (lower first) to order several pinned posts. Pins only apply on the homepage grid
   — not on the carousel, tag, or search views.
 - The Markdown **body** is the post's `content` — write it normally (real line
   breaks, a blank line between paragraphs). No escaping, no `\n` — that's the whole
