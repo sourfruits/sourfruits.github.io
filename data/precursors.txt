@@ -80,12 +80,6 @@ kind: musician
 discovered:
   - source: joni-mitchell, engaged: 2026-11-24, note: followed folk counterpoint harmony back to the origin
 
-### johann-sebastian-bach
-label: J. S. Bach
-kind: musician
-discovered:
-  - source: joni-mitchell, engaged: 2026-11-24, note: followed folk counterpoint harmony back to the origin
-
 ### joni-mitchell
 label: Joni Mitchell
 kind: musician
