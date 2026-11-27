@@ -14,6 +14,37 @@
   },
   "nodes": [
     {
+      "id": "fear-and-loathing-in-las-vegas-1998",
+      "label": "Fear and Loathing in Las Vegas (1998)",
+      "kind": "film",
+      "creator": "Terry Gilliam",
+      "discovered_via": [
+        {
+          "source": "thompson-fear-and-loathing",
+          "awareDate": "2026-11-27",
+          "thread": "60s counterculture"
+        }
+      ]
+    },
+    {
+      "id": "thompson-fear-and-loathing",
+      "label": "Fear and Loathing in Las Vegas",
+      "kind": "book",
+      "creator": "Hunter S. Thompson",
+      "discovered_via": [
+        {
+          "source": "joni-mitchell",
+          "awareDate": "2026-11-27",
+          "thread": "60s counterculture"
+        },
+        {
+          "source": "joan-didion",
+          "awareDate": "2026-11-27",
+          "thread": "60s counterculture"
+        }
+      ]
+    },
+    {
       "id": "johann-sebastian-bach",
       "label": "J. S. Bach",
       "kind": "musician",
@@ -181,7 +212,8 @@
       "discovered_via": [
         {
           "source": "joan-didion",
-          "engagedDate": "2026-10-20"
+          "engagedDate": "2026-10-20",
+          "note": "exploring narrative (we tell ourselves stories in order to live)"
         }
       ]
     },
