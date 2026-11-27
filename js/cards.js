@@ -2,13 +2,15 @@
 // a small-caps DATE · TAGS line, the title, the italic subtitle and a short
 // excerpt from the opening. Laid out by the .writing-grid / .writing-card CSS.
 
-// "November 14, 2026" (or "November 14" when withYear is false). Month-only
-// dates show just the month; year-only dates show only the year (or nothing).
+// "Nov 14, 2026" (or "Nov 14" when withYear is false; the month follows
+// DATE_MONTH_STYLE in utils.js). Month-only dates show just the month; year-only
+// dates show only the year (or nothing).
 function shortDate(iso, withYear) {
   const parts = String(iso).split("-");
   if (parts.length < 2) return withYear ? parts[0] : "";
   const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2] || 1));
-  const opts = parts.length === 2 ? { month: "long" } : { month: "long", day: "numeric" };
+  const month = DATE_MONTH_STYLE;
+  const opts = parts.length === 2 ? { month } : { month, day: "numeric" };
   if (withYear) opts.year = "numeric";
   return d.toLocaleDateString(undefined, opts);
 }

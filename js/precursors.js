@@ -2333,7 +2333,7 @@ initTuningPanel();
       if (!iso) return;
       const d = new Date(iso);
       const nice = d.toLocaleDateString(undefined, {
-        year: "numeric", month: "long", day: "numeric",
+        year: "numeric", month: DATE_MONTH_STYLE, day: "numeric",
       });
       el.textContent = "Updated " + nice;
       el.hidden = false;

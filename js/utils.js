@@ -1,11 +1,11 @@
 // Shared helpers used across the page scripts. Exposed as globals so the plain
 // <script src> pages (no bundler / modules) can all reach them.
 
-// Single source of truth for how the month reads in post-facing dates: the post
-// page date, the mobile feed caption date, and the tile hover-preview date all
-// use this. Flip it once here ("short" → "long", or back) and all three update
-// together. "short" → "Jun 21, 2026"; "long" → "June 21, 2026".
-const DATE_MONTH_STYLE = "long";
+// Single source of truth for how the month reads in dates across the site: the
+// post page, the homepage tiles and captions, the Writing and tag-page cards,
+// and Precursors' "Updated" line. Flip it once here and they all follow.
+// "short" → "Jun 21, 2026"; "long" → "June 21, 2026".
+const DATE_MONTH_STYLE = "short";
 
 // Turn an ISO date (YYYY-MM-DD) into something friendlier, e.g. "Jun 21, 2026".
 // Pass month: "long" for the fuller "June 21, 2026", or DATE_MONTH_STYLE to
