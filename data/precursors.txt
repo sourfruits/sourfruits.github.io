@@ -59,6 +59,27 @@
 People: writer, person, director, philosopher, musician
 School and classes: school, class
 
+### fear-and-loathing-in-las-vegas-1998
+label: Fear and Loathing in Las Vegas (1998)
+kind: film
+creator: Terry Gilliam
+discovered:
+  - source: thompson-fear-and-loathing, aware: 2026-11-27, thread: 60s counterculture
+
+### thompson-fear-and-loathing
+label: Fear and Loathing in Las Vegas
+kind: book
+creator: Hunter S. Thompson
+discovered:
+  - source: joni-mitchell, aware: 2026-11-27, thread: 60s counterculture
+  - source: joan-didion, aware: 2026-11-27, thread: 60s counterculture
+
+### johann-sebastian-bach
+label: J. S. Bach
+kind: musician
+discovered:
+  - source: joni-mitchell, engaged: 2026-11-24, note: followed folk counterpoint harmony back to the origin
+
 ### johann-sebastian-bach
 label: J. S. Bach
 kind: musician
@@ -144,7 +165,7 @@ label: The White Album
 kind: book
 creator: Joan Didion
 discovered:
-  - source: joan-didion, engaged: 2026-10-20
+  - source: joan-didion, engaged: 2026-10-20, note: exploring narrative (we tell ourselves stories in order to live)
 
 ### the-trial-1962
 label: The Trial (1962)
