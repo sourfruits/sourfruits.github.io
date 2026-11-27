@@ -64,6 +64,7 @@ label: Fear and Loathing in Las Vegas (1998)
 kind: film
 creator: Terry Gilliam
 discovered:
+  - source: brazil-1985, aware: 2026-04, note: Terry Gilliam!
   - source: thompson-fear-and-loathing, aware: 2026-11-27, thread: 60s counterculture
 
 ### thompson-fear-and-loathing
