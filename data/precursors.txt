@@ -84,7 +84,7 @@ discovered:
 label: Joni Mitchell
 kind: musician
 discovered:
-  - source: lucinda-williams, engaged: 2026-02-26, note: "Miles of Aisles (Live), later in After Hours), thread: folk
+  - source: lucinda-williams, engaged: 2026-02-26, note: "Miles of Aisles (Live), later in After Hours)", thread: folk
 
 ### fear-and-loathing-in-las-vegas-1998
 label: Fear and Loathing in Las Vegas (1998)
