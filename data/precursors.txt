@@ -59,6 +59,17 @@
 People: writer, person, director, philosopher, musician
 School and classes: school, class
 
+### lewis-mere-christianity
+label: Mere Christianity
+kind: book
+creator: C. S. Lewis
+discovered:
+  - source: cs-lewis, engaged: 2024-10-28, thread: Faith
+
+### cs-lewis
+label: C. S. Lewis
+kind: writer
+
 ### o-brother-where-art-thou-2000
 label: O Brother, Where Art Thou? (2000)
 kind: film
