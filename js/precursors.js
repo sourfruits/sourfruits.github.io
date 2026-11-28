@@ -37,22 +37,22 @@ const TUNING = {
   hubThreshold: 3,       // growth (outgoing connections) at/above which a node is a "hub":
                          // permanent label + pale fill with a solid ring. Fixed value, not a
                          // percentile — so equally-sized nodes never split across the boundary.
-  growthStep: 3,         // + hub radius per point of downstream influence (uncapped)
+  growthStep: 5,         // + hub radius per point of downstream influence (uncapped)
   hubFont: 13,           // hub label font (screen px — labels hold this size at any zoom)
   hubMaxLabelWidth: 170, // hub label pixel width (world units) before ellipsis
-  hubLabelThreshold: 0,  // on-screen radius (size × zoom, px) to reveal a hub label (0 = always)
+  hubLabelThreshold: 6,  // size a hub must reach (relative to the normal view, see labelVisible) to show its label
   // ── Leaf tier ─────────────────────────────────────────────────────────────
   nodeBase: 11,          // base node radius (world units): every node grows from this base
   leafStep: 3,           // + leaf radius per point of downstream influence (hubs use growthStep)
   leafFont: 11.5,         // leaf hover-label font (screen px — constant at any zoom)
   leafMaxLabelWidth: 130,// leaf label pixel width (world units) before ellipsis
-  leafLabelThreshold: 5, // on-screen radius (size × zoom, px) to reveal a leaf label
+  leafLabelThreshold: 6, // same for leaves
   // ── Shared (whole simulation) ───────────────────────────────────────────────
   charge: -340,        // many-body repulsion (more negative = nodes push apart harder)
   linkDistance: 105,   // preferred edge length
   collidePad: 22,      // extra spacing beyond each node's radius (collision force)
   gravity: 0.012,      // pull toward the centre, so separate clusters sit close to the main one
-  linkWidth: 2.4,       // edge stroke width (world units); directional edges draw a touch thicker
+  linkWidth: 3,         // edge stroke width (world units); directional edges draw a touch thicker
 };
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -419,6 +419,7 @@ function buildDiscovery(data) {
   };
 
   const consciousnessOut = new Map();  // node id -> # direct "consciousness" (engaged) discovery children
+  const engagedTo = new Map();         // node id -> ids it led to with an engaged discovery
 
   data.nodes.forEach((n) => {
     const entries = discoveredVia(n);
@@ -447,7 +448,11 @@ function buildDiscovery(data) {
       ledTo.get(src).push({ to: n.id, thread });
       // Only "consciousness" (engaged) discoveries count toward size — once per
       // entry that carries an engagedDate, even if it also carries an awareDate.
-      if (engaged) consciousnessOut.set(src, (consciousnessOut.get(src) || 0) + 1);
+      if (engaged) {
+        consciousnessOut.set(src, (consciousnessOut.get(src) || 0) + 1);
+        if (!engagedTo.has(src)) engagedTo.set(src, []);
+        engagedTo.get(src).push(n.id);
+      }
     });
   });
 
@@ -467,7 +472,12 @@ function buildDiscovery(data) {
   });
   included.forEach((node, id) => {
     let g = consciousnessOut.get(id) || 0;
-    (authored.get(id) || []).forEach((workId) => { g += consciousnessOut.get(workId) || 0; });
+    // A work's discoveries count toward its author, except the author
+    // themself (Pickpocket led to Bresson; that mustn't count as Bresson
+    // leading somewhere).
+    (authored.get(id) || []).forEach((workId) => {
+      g += (engagedTo.get(workId) || []).filter((t) => t !== id).length;
+    });
     node.growth = g;
   });
 
@@ -602,15 +612,29 @@ function collideRadius(d) {
 // Label tiers each have their own reveal threshold: a label shows on hover, or
 // once its on-screen radius (size × zoom) clears the tier's threshold. Hubs
 // default to 0 (always shown); leaves reveal as you zoom in.
+// A name shows once its dot is big enough on screen — measured relative to
+// the normal (fitted) view, not raw pixels, so a phone (where the whole graph
+// is drawn small) shows the same names as a laptop. At the normal view a dot
+// counts as its radius × LABEL_REF_SCALE; zooming in or out scales that.
+const LABEL_REF_SCALE = 0.25;
 function labelVisible(d) {
   const thr = isHub(d) ? TUNING.hubLabelThreshold : TUNING.leafLabelThreshold;
-  return d.__hover === true || nodeRadius(d) * currentScale >= thr;
+  const size = nodeRadius(d) * (currentScale / (lastFitScale || 1)) * LABEL_REF_SCALE;
+  return d.__hover === true || size >= thr;
 }
 // Re-run label placement (hover/selection/thread changes alter which labels win
 // a contested spot), which also applies each label's opacity.
 function updateLabelVisibility() {
   const sel = labelLayer.selectAll("text.node-label");
   positionLabels(sel.data(), sel);
+}
+
+// Heard of it but not engaged with it yet: it has an aware date somewhere and
+// no engaged date anywhere. Shown grey + italic in the Graph and List (the
+// Timeline does the same for its aware dots).
+function isAwareOnly(n) {
+  const dvs = discoveredVia(n || {});
+  return dvs.some((d) => d.awareDate) && !dvs.some((d) => d.engagedDate);
 }
 
 // A label like "Le Samouraï (1967)": the title in ink, the year smaller and
@@ -1245,7 +1269,8 @@ function render(mode) {
   // front. Position (x/y/anchor) is set per tick by positionLabels.
   const label = labelLayer.selectAll("text.node-label").data(graph.nodes, (d) => d.id);
   label.exit().remove();
-  const labelAll = label.enter().append("text").attr("class", "node-label").merge(label);
+  const labelAll = label.enter().append("text").attr("class", "node-label").merge(label)
+    .classed("is-aware-only", (d) => isAwareOnly(nodeById[d.id] || d));   // heard of, not yet engaged: grey italic
   labelAll
     .each(function (d) { setLabelText(d3.select(this), truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d))); })
     .style("fill", "var(--ink)")
@@ -1424,6 +1449,12 @@ function positionLabels(nodes, labelSel) {
 
   for (const d of order) {
     const el = elById.get(d);
+    // The hovered node and the open card's node show their name in full;
+    // everyone else keeps the shortened "…" version (cached per size).
+    const shortKey = labelPx(d) + "|" + labelMaxPx(d);
+    if (d.__shortKey !== shortKey) { d.__short = truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d)); d.__shortKey = shortKey; }
+    const want = (d.__hover === true || d.id === detailNodeId) ? String(graphLabel(d)) : d.__short;
+    if (el.textContent !== want) setLabelText(d3.select(el), want);
     const h = labelPx(d);
     // Width only changes with the text/font, so measure once and cache it.
     const key = el.textContent + "|" + h;
@@ -2342,7 +2373,7 @@ function renderList() {
       const led = (n.discoveryOut || []).length;
       right = led ? `led to ${led}` : "";
     }
-    return `${heading}<li><button type="button" class="list-row" data-node-id="${escapeHTML(n.id)}">
+    return `${heading}<li><button type="button" class="list-row${isAwareOnly(nodeById[n.id] || n) ? " is-aware-only" : ""}" data-node-id="${escapeHTML(n.id)}">
         ${sort === "influence" ? `<span class="list-rank">${i + 1}</span>` : ""}
         <span class="list-main">
           <span class="list-title">${title}</span>

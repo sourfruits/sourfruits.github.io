@@ -3829,10 +3829,10 @@ body.is-graph-faux-fs { overflow: hidden; }
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  --tl-lane-0: #c96a3b;   /* music */
-  --tl-lane-1: #8a6fc9;   /* people and places */
-  --tl-lane-2: #2f9c78;   /* books and writers */
-  --tl-lane-3: #3b82c4;   /* films */
+  --tl-lane-0: #c4623a;   /* music: rust */
+  --tl-lane-1: #8a63ad;   /* people and places: plum */
+  --tl-lane-2: #3f9471;   /* books and writers: green */
+  --tl-lane-3: #4676b3;   /* films: blue */
   --tl-lane-4: #9a958a;   /* other */
 }
 .timeline-view[hidden] { display: none; }
@@ -4098,10 +4098,15 @@ body.is-graph-faux-fs { overflow: hidden; }
   transition: opacity 0.15s ease;
 }
 .tl-entry:hover { background: rgb(from var(--ink) r g b / 0.06); }
+/* Hovered or selected: show the whole name, spilling over the next column on
+   a solid background instead of being cut off with "…". Nothing moves. */
+.tl-entry:hover, .tl-entry.is-current { max-width: none !important; z-index: 6; }
+.tl-entry:hover:not(.is-current) { background: color-mix(in srgb, var(--ink) 6%, var(--surface)); }
+.tl-entry:hover .tl-label, .tl-entry.is-current .tl-label { overflow: visible; }
 /* The selected entry: an outlined pill with a tint, so it's obvious at a glance.
    With two dots, the one you arrived at is outlined solid, the other dashed. */
 .tl-entry.is-current {
-  background: rgb(from var(--ink) r g b / 0.1);
+  background: color-mix(in srgb, var(--ink) 10%, var(--surface));   /* solid, so a full name spilling over neighbours stays readable */
   outline: 1.5px solid var(--ink);
   outline-offset: 0;
   z-index: 3;
@@ -4115,19 +4120,18 @@ body.is-graph-faux-fs { overflow: hidden; }
 .tl-entry.on-shade { --tl-bg: color-mix(in srgb, var(--ink) 3.5%, var(--surface)); }
 .tl-label { text-shadow: 0 0 2px var(--tl-bg), 0 0 3px var(--tl-bg), 0 0 4px var(--tl-bg), 0 0 6px var(--tl-bg), 2px 0 4px var(--tl-bg), -2px 0 4px var(--tl-bg); }
 .tl-entry.is-current .tl-label { font-weight: 700; }
-.tl-entry.is-current .tl-dot { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
+.tl-entry.is-current .tl-dot { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--lane); }
 .tl-entry.is-flash { background: rgb(from var(--accent) r g b / 0.22); }
 .timeline-view.has-focus .tl-entry:not(.is-lit) { opacity: 0.4; }
 /* Direct connections of the hovered/open entry: a light tint and a slightly
    heavier label, so they stand out without the rest having to disappear. */
 .timeline-view.has-focus .tl-entry.is-lit:not(.is-current) { background: rgb(from var(--ink) r g b / 0.05); }
-.timeline-view.has-focus .tl-entry.is-lit .tl-label { font-weight: 600; }
 .tl-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tl-dot {
   flex: none;
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--tl-lane-4);
 }
@@ -4139,12 +4143,18 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* Placed at an aware date (heard of it here; engaged later or not yet):
    hollow ring in the band's colour instead of a filled dot. */
 .tl-entry.is-aware-pos .tl-dot { background: var(--surface); }
+/* Aware ("heard of it") entries read quieter than engaged ones: grey italic
+   name as well as the hollow dot. Lit or selected, the name goes back to ink. */
+.tl-entry.is-aware-pos .tl-label { color: var(--muted); font-style: italic; }
+.timeline-view.has-focus .tl-entry.is-aware-pos.is-lit .tl-label,
+.tl-entry.is-aware-pos.is-current .tl-label { color: var(--ink); }
+.tl-key-btn[data-kind="aware"] { font-style: italic; }
 .lane-0.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-0); }
 .lane-1.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-1); }
 .lane-2.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-2); }
 .lane-3.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-3); }
 .lane-4.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-4); }
-.tl-entry.is-current.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--ink), 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
+.tl-entry.is-current.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--lane), 0 0 0 2px var(--surface), 0 0 0 3px var(--lane); }
 /* Bands 5–9 (more categories in precursors.txt): colours set by js. */
 .lane-5 .tl-dot, .tl-dot.lane-5 { background: var(--tl-lane-5); }
 .lane-5.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-5); background: var(--surface); }
@@ -4283,3 +4293,107 @@ body.is-graph-faux-fs { overflow: hidden; }
 
 /* The earlier "heard of it" dot of an entry that also has a later engaged
    dot: labelled like any other, with the hollow ring saying "heard of". */
+
+
+/* ── Timeline: typography + quieter chrome, to match the rest of the site ── */
+/* Each entry knows its band colour (used for the selection tint + underline). */
+.tl-entry { --lane: var(--tl-lane-4); font-family: var(--font-serif); }
+.tl-entry.lane-0 { --lane: var(--tl-lane-0); } .tl-entry.lane-1 { --lane: var(--tl-lane-1); }
+.tl-entry.lane-2 { --lane: var(--tl-lane-2); } .tl-entry.lane-3 { --lane: var(--tl-lane-3); }
+.tl-entry.lane-4 { --lane: var(--tl-lane-4); } .tl-entry.lane-5 { --lane: var(--tl-lane-5); }
+.tl-entry.lane-6 { --lane: var(--tl-lane-6); } .tl-entry.lane-7 { --lane: var(--tl-lane-7); }
+.tl-entry.lane-8 { --lane: var(--tl-lane-8); } .tl-entry.lane-9 { --lane: var(--tl-lane-9); }
+/* Selected: a soft tint of its own colour and a coloured underline, not a black box. */
+.tl-entry.is-current {
+  background: color-mix(in srgb, var(--lane) 16%, var(--surface));
+  outline: none;
+  box-shadow: inset 0 -1.5px 0 var(--lane);
+}
+.tl-entry.is-current.is-here { outline: none; }
+/* Band names, months, year count: small caps like the Writing sidebar. */
+.tl-band { font-variant: small-caps; letter-spacing: var(--tracking-caps); font-weight: var(--weight-semibold); color: var(--muted); }
+.tl-month { font-variant: small-caps; letter-spacing: var(--tracking-caps); }
+.timeline-view:not(.is-vertical) .tl-year { font-family: var(--font-serif); }
+.tl-year-count {
+  padding: 0;
+  background: none;
+  font-family: var(--font-sans);
+  font-variant: small-caps;
+  letter-spacing: var(--tracking-caps);
+  font-weight: var(--weight-normal);
+  color: var(--muted);
+}
+/* Off-screen markers: an italic note, not a pill. */
+.tl-edge {
+  border: none;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--muted);
+}
+.tl-edge:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.tl-edge.is-self { font-weight: var(--weight-normal); color: var(--ink); }
+
+/* ── Precursors controls: plain text tabs + borderless icons ─────────────── */
+.view-toggle {
+  border: none;
+  background: none;
+  grid-auto-columns: auto;
+  gap: 18px;
+  overflow: visible;
+  margin-left: 8px;   /* breathing room from the frame's edge (the old boxed buttons had it built in) */
+}
+.view-toggle .view-btn,
+.view-toggle .view-btn + .view-btn { padding: 4px 0; border: none; background: none; color: var(--muted); }
+.view-toggle .view-btn:hover { color: var(--ink); }
+.view-toggle .view-btn.is-active {
+  background: none;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 6px;
+}
+.graph-icon-btn, .graph-fs-icon { border-color: transparent; background: transparent; }
+.graph-icon-btn:hover, .graph-fs-icon:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.graph-legend-card:not([open]) { border-color: transparent; background: transparent; }
+
+/* Aware only (heard of, not yet engaged): grey italic name in the Graph + List. */
+.node-label.is-aware-only { font-style: italic; fill: var(--muted) !important; }
+.list-row.is-aware-only .list-title { color: var(--muted); font-style: italic; }
+
+/* ── Timeline heading: one row of months; the year lives in the corner ─── */
+.timeline-view:not(.is-vertical) .tl-month { top: 8px; }
+.tl-month-year { font-family: var(--font-serif); font-weight: var(--weight-bold); font-variant: normal; letter-spacing: 0; color: var(--ink); margin-right: 3px; }
+.tl-corner-year {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 10px;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  line-height: 1.1;
+}
+.tl-corner-main { font-family: var(--font-serif); font-weight: var(--weight-bold); font-size: var(--text-small); color: var(--ink); }
+.tl-corner-main .tl-year-caret { display: inline-block; width: 12px; }
+.tl-corner-count { padding-left: 12px; font-family: var(--font-sans); font-variant: small-caps; letter-spacing: var(--tracking-caps); font-size: 10px; color: var(--muted); }
+.tl-corner-year:hover .tl-corner-main { color: var(--accent-ink); }
+/* A folded year: a small "▸ 2024" tag in the heading row; click to unfold. */
+.tl-fold-tag {
+  position: absolute;
+  top: 6px;
+  z-index: 3;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  font-family: var(--font-serif);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-tiny);
+  color: var(--ink);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tl-fold-tag:hover { color: var(--accent-ink); }

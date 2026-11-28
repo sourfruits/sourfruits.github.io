@@ -32,7 +32,7 @@ const TL_BOTTOM_GAP = 30;     // px kept clear under the last band (scrollbar + 
 const TL_LANE_PAD = 10;       // px above/below each band's entries
 const TL_GUTTER = 110;        // px for the band names on the left (sticky)
 const TL_TREE_STEP = 14;    // px each tree level is indented inside a month
-const TL_HEAD_H = 46;         // px for the year + month headings on top
+const TL_HEAD_H = 30;         // px for the month headings on top (the year sits in the corner)
 
 const tlState = { hover: null, showAll: true, fade: { engaged: false, aware: false }, folded: new Set(), scrolledOnce: false, lastDetail: null };
 
@@ -228,6 +228,13 @@ function renderTimeline() {
   const view = document.getElementById("timeline-view");
   if (!view || view.hidden || !rawData) return;
   const canvas = document.getElementById("tl-canvas");
+  // The corner year: click to fold the year you're looking at.
+  document.getElementById("tl-gutter").addEventListener("click", (e) => {
+    const b = e.target.closest(".tl-corner-year");
+    if (!b || !b.dataset.year) return;
+    tlState.folded.add(b.dataset.year);
+    renderTimeline();
+  });
   const gutter = document.getElementById("tl-gutter");
   const scroller = document.getElementById("tl-scroll");
   tlSetLanes(view);
@@ -333,13 +340,24 @@ function renderTimeline() {
   const html = [];
   let x = 0;    // first month starts right at the band names' line
   let yearStart = 0;
+  const yearSpans = [];   // where each year runs, for the corner label
   cols.forEach((c, ci) => {
     const firstOfYear = ci === 0 || cols[ci - 1].year !== c.year;
     if (firstOfYear) yearStart = x;
     const yearLine = ci > 0 && firstOfYear;
     const cls = `tl-col${c.folded ? " is-folded" : ""}${yearLine ? " is-year-start" : ""}${ci === 0 ? " is-first" : ""}`;
     html.push(`<div class="${cls}" style="left:${x}px;width:${c.w}px;top:${yearLine ? 0 : TL_HEAD_H}px;height:${totalH - (yearLine ? 0 : TL_HEAD_H)}px"></div>`);
-    if (!c.folded) html.push(`<span class="tl-month" style="left:${x + 10}px">${escapeHTML(/^\d{4}-\d{2}$/.test(c.period) ? MONTH_NAMES[parseInt(c.period.slice(5, 7), 10) - 1].slice(0, 3) : tlPeriodLabel(c.period))}</span>`);   // year is pinned above
+    // Month headings, one row. The first month of each year also carries the
+    // year in bold ("2027 Jan"), so a year change shows on the timeline itself
+    // as well as in the corner.
+    if (!c.folded) {
+      const isMonth = /^\d{4}-\d{2}$/.test(c.period);
+      const mon = isMonth ? MONTH_NAMES[parseInt(c.period.slice(5, 7), 10) - 1].slice(0, 3) : c.year === "Undated" ? "Undated" : "Month unknown";
+      const yr = firstOfYear && c.year !== "Undated" ? `<b class="tl-month-year">${escapeHTML(c.year)}</b> ` : "";
+      html.push(`<span class="tl-month" style="left:${x + 10}px">${yr}${escapeHTML(mon)}</span>`);
+    } else {
+      html.push(`<button type="button" class="tl-fold-tag" data-year="${escapeHTML(c.year)}" style="left:${x}px;width:${c.w}px" title="Expand ${escapeHTML(c.year)}">▸ ${escapeHTML(c.year)}</button>`);
+    }
     if (c.folded) {
       // Folded year: entries collapse to their band's middle; show a count.
       TL_LANES.forEach((_, li) => {
@@ -368,10 +386,7 @@ function renderTimeline() {
     const lastOfYear = ci === cols.length - 1 || cols[ci + 1].year !== c.year;
     if (lastOfYear) {
       const count = byYear.get(c.year) ? new Set([...byYear.get(c.year).values()].flat().map((a) => a.id)).size : 0;
-      const folded = tlState.folded.has(c.year);
-      html.push(`<button type="button" class="tl-year" data-year="${escapeHTML(c.year)}" style="left:${yearStart}px;width:${x - yearStart}px"
-        aria-expanded="${!folded}" title="${folded ? "Expand" : "Fold"} ${escapeHTML(c.year)}">
-        <span class="tl-year-pin"><span class="tl-year-caret" aria-hidden="true">${folded ? "▸" : "▾"}</span>${escapeHTML(c.year)}${folded ? "" : ` <span class="tl-year-count">${count}</span>`}</span></button>`);
+      yearSpans.push({ year: c.year, x0: yearStart, x1: x, count, folded: tlState.folded.has(c.year) });
     }
   });
   const totalW = x + 24;
@@ -392,7 +407,7 @@ function renderTimeline() {
   // row. Each band also gets its own soft fade on the right edge of this
   // column, in that band's own shade, so it blends into the strip cleanly.
   let gShade = 0;
-  gutter.innerHTML = `<div class="tl-gutter-band tl-gutter-head" style="top:0;height:${TL_HEAD_H}px"></div>` + TL_LANES.map((l, li) => {
+  gutter.innerHTML = `<div class="tl-gutter-band tl-gutter-head" style="top:0;height:${TL_HEAD_H}px"><button type="button" class="tl-corner-year" id="tl-corner-year"></button></div>` + TL_LANES.map((l, li) => {
     if (!laneUsed[li]) return "";
     const shaded = gShade++ % 2 === 1;
     return `<div class="tl-gutter-band${shaded ? " is-shaded" : ""}" style="top:${laneTop[li]}px;height:${laneH[li]}px"></div>` +
@@ -477,8 +492,14 @@ function renderTimeline() {
     } else if (ex - sx <= 6) {
       // Neighbours across a column edge: the two "→"s already (nearly) touch.
       // A short straight join if there's any room, else no line at all.
-      if (ex - sx < 2) return "";
-      d = `M${sx},${sy} L${ex},${b.y}`;
+      // Only skip the line when both arrows sit on the same row and touch;
+      // on different rows a short S joins them (e.g. Mahjong → Cold Water).
+      if (Math.abs(b.y - sy) < 2) {
+        if (ex - sx < 2) return "";
+        d = `M${sx},${sy} L${ex},${b.y}`;
+      } else {
+        d = `M${sx},${sy} C${sx + 10},${sy} ${ex - 10},${b.y} ${ex},${b.y}`;
+      }
     } else {
       // Target is ahead (to the right): a plain S-curve.
       const run = Math.min(70, (ex - sx) * 0.4);
@@ -497,7 +518,9 @@ function renderTimeline() {
     data,
     entryEls: [...canvas.querySelectorAll(".tl-entry")],
     linkEls: [...canvas.querySelectorAll(".tl-link")],
+    yearSpans,
   };
+  tlUpdateCornerYear();
   // First time it opens, start at the newest (right-hand) end.
   if (!tlState.scrolledOnce) { scroller.scrollLeft = scroller.scrollWidth; tlState.scrolledOnce = true; }
   timelinePaint();
@@ -592,6 +615,23 @@ function renderTimelineVertical(data, canvas, gutter, scroller) {
   tlCache = { data, entryEls: [...canvas.querySelectorAll(".tl-entry")], linkEls: [...canvas.querySelectorAll(".tl-link")] };
   if (!tlState.scrolledOnce) { scroller.scrollTop = 0; scroller.scrollLeft = 0; tlState.scrolledOnce = true; }
   timelinePaint();
+}
+
+// The corner above the band names shows the year you're looking at (the one
+// at the left edge of the strip), with its entry count; click it to fold that
+// year to a single narrow column.
+function tlUpdateCornerYear() {
+  const el = document.getElementById("tl-corner-year");
+  const scroller = document.getElementById("tl-scroll");
+  if (!el || !scroller || !tlCache || !tlCache.yearSpans) return;
+  const at = scroller.scrollLeft + 20;
+  const span = tlCache.yearSpans.find((y) => at >= y.x0 && at < y.x1) || tlCache.yearSpans[tlCache.yearSpans.length - 1];
+  if (!span) { el.innerHTML = ""; return; }
+  if (el.dataset.year === span.year) return;
+  el.dataset.year = span.year;
+  el.title = `Fold ${span.year}`;
+  el.innerHTML = `<span class="tl-corner-main"><span class="tl-year-caret" aria-hidden="true">▾</span>${escapeHTML(span.year)}</span>` +
+    `<span class="tl-corner-count">${span.count} ${span.count === 1 ? "entry" : "entries"}</span>`;
 }
 
 // Apply the highlight for the hovered entry, else the one whose card is open.
@@ -839,6 +879,7 @@ function timelineReveal(id, force, key) {
     // scrolled under them (at the start it would wash out the first entries).
     view.classList.toggle("is-scrolled-x", e.currentTarget.scrollLeft > 4);
     timelineEdges();
+    tlUpdateCornerYear();
   }, { passive: true });
 
   // Names in the trail bar open that entry (same as clicking it below).
@@ -859,7 +900,7 @@ function timelineReveal(id, force, key) {
   canvas.addEventListener("mouseleave", () => { tlState.hover = null; timelinePaint(); });
 
   canvas.addEventListener("click", (e) => {
-    const yearBtn = e.target.closest(".tl-year");
+    const yearBtn = e.target.closest(".tl-fold-tag");
     if (yearBtn) {
       const yr = yearBtn.dataset.year;
       if (tlState.folded.has(yr)) tlState.folded.delete(yr); else tlState.folded.add(yr);

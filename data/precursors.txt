@@ -82,10 +82,10 @@
 # • This block must stay above the first "###" node.
 
 ## categories
-Music: musician, album | #c96a3b
-People and places: person, director, school, class, platform | #8a6fc9
-Books and writers: book, writer, philosopher | #2f9c78
-Films: film | #3b82c4
+Music: musician, album | #c4623a
+People and places: person, director, school, class, platform | #8a63ad
+Books and writers: book, writer, philosopher | #3f9471
+Films: film | #4676b3
 
 ### lewis-mere-christianity
 label: Mere Christianity
@@ -400,13 +400,6 @@ kind: film
 discovered:
   - source: le-samourai-1967, aware: 2026-04, engaged: 2026-05-18, thread: lone operator, note: Bresson/Melville ascetic dialogue
 
-### purple-noon-1960
-label: Purple Noon (1960)
-kind: film
-creator: René Clément
-discovered:
-  - source: le-samourai-1967, engaged: 2026-05-17, thread: Alain Delon
-
 ### dostoevsky-white-nights
 label: White Nights
 kind: book
@@ -430,13 +423,6 @@ connections:
 discovered:
   - source: jim-jarmusch
   - source: philosophy-abroad, engaged: 2026-05-12, note: Assigned/chosen for an essay on boredom; loved it.
-
-### the-taste-of-tea-2004
-label: The Taste of Tea (2004)
-kind: film
-creator: Katsuhito Ishii
-discovered:
-  - source: letterboxd, engaged: 2026-05-09
 
 ### thief-1981
 label: Thief (1981)

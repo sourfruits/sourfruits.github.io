@@ -21,10 +21,10 @@
     ]
   },
   "categoryColors": {
-    "Music": "#c96a3b",
-    "People and places": "#8a6fc9",
-    "Books and writers": "#2f9c78",
-    "Films": "#3b82c4"
+    "Music": "#c4623a",
+    "People and places": "#8a63ad",
+    "Books and writers": "#3f9471",
+    "Films": "#4676b3"
   },
   "nodes": [
     {
@@ -653,19 +653,6 @@
       ]
     },
     {
-      "id": "purple-noon-1960",
-      "label": "Purple Noon (1960)",
-      "kind": "film",
-      "creator": "René Clément",
-      "discovered_via": [
-        {
-          "source": "le-samourai-1967",
-          "engagedDate": "2026-05-17",
-          "thread": "Alain Delon"
-        }
-      ]
-    },
-    {
       "id": "dostoevsky-white-nights",
       "label": "White Nights",
       "kind": "book",
@@ -717,18 +704,6 @@
           "to": "chan-is-missing-1982",
           "relationship": "thematic",
           "note": "Influential black and white 1980s indie film about aimless wandering"
-        }
-      ]
-    },
-    {
-      "id": "the-taste-of-tea-2004",
-      "label": "The Taste of Tea (2004)",
-      "kind": "film",
-      "creator": "Katsuhito Ishii",
-      "discovered_via": [
-        {
-          "source": "letterboxd",
-          "engagedDate": "2026-05-09"
         }
       ]
     },
