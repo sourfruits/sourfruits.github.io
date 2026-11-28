@@ -3988,6 +3988,10 @@ body.is-graph-faux-fs { overflow: hidden; }
 .timeline-view .tl-link.is-lit,
 .timeline-view .tl-link.is-lineage { marker-end: url(#tl-arrow); }
 .tl-arrowhead { fill: var(--ink); }
+/* Track: joins one entry's own dots along its row (heard of it → read it). */
+.tl-track { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 1 3; stroke-linecap: round; opacity: 0.55; }
+.timeline-view.has-focus .tl-track { opacity: 0.2; }
+.timeline-view .tl-track.is-lit { opacity: 0.9; stroke: var(--ink); }
 .tl-arrowhead.is-out { fill: var(--muted); }
 .tl-key-lines {
   flex: none;

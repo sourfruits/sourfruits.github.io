@@ -10,7 +10,7 @@
 // until the card closes. Clicking a year folds it to one narrow column.
 //
 // Loaded after js/precursors.js and uses its globals: rawData, nodeById,
-// discoveredVia, nodeFirstDate, MONTH_NAMES, detailNodeId, openDetail,
+// discoveredVia, dayKey, MONTH_NAMES, detailNodeId, openDetail,
 // closeDetail, simulation, escapeHTML.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -55,45 +55,64 @@ function tlPeriodLabel(p) {
   return m[2] ? `${MONTH_NAMES[parseInt(m[2], 10) - 1].slice(0, 3)} ${m[1]}` : `${m[1]}, month unknown`;
 }
 
-// An entry sits at the EARLIEST date it has — when it first entered your
-// world (an aware date if you'd heard of it before engaging). That way a
-// thing always sits at or before whatever it led to, so arrows run forward.
-// (The List view and the card still use/show the engaged date.)
-function tlEarliestDate(n) {
-  const all = discoveredVia(n).flatMap((d) => [d.awareDate, d.engagedDate]).filter(Boolean);
-  if (!all.length) return "";
-  return all.reduce((best, s) => (dayKey(s) < dayKey(best) ? s : best));
-}
-
-// True when the entry's spot on the timeline is an AWARE date — you'd heard
-// of it before (or without) engaging with it. Drawn as a hollow dot.
-function tlPlacedAware(n) {
-  const dvs = discoveredVia(n);
-  const engaged = dvs.map((d) => d.engagedDate).filter(Boolean);
-  if (!engaged.length) return dvs.some((d) => d.awareDate);
-  const firstEngaged = Math.min(...engaged.map(dayKey));
-  return dvs.some((d) => d.awareDate && dayKey(d.awareDate) < firstEngaged);
-}
-
-// Entries, links and the up/down maps used for chains.
+// One dot per discovery EVENT. Each "discovered via" line in precursors.txt
+// is an event with an aware date (heard of it), an engaged date (read /
+// watched it), or both. An entry gets a dot in every month where one of its
+// events happened: hollow if you'd only heard of it then, filled once you'd
+// engaged. So Orientalism shows a hollow dot in Aug (heard of it via Sontag)
+// and a filled one in Oct (read it via Edward Said), joined along its row,
+// and each line lands on the dot for the event it describes.
 function tlData() {
-  const nodes = rawData.nodes.map((n) => ({
-    id: n.id, label: n.label, kind: n.kind, lane: tlLaneOf(n.kind),
-    date: tlEarliestDate(n),
-    placedAware: tlPlacedAware(n),
-  }));
-  const ids = new Set(nodes.map((n) => n.id));
+  const ids = new Set(rawData.nodes.map((n) => n.id));
+  const items = [];          // appearances: { key, id, label, kind, lane, date, period, aware }
+  const byId = {};           // id -> its appearances, oldest first
+  rawData.nodes.forEach((n) => {
+    const per = new Map();   // period -> { date, aware }
+    const add = (date, aware) => {
+      const p = tlPeriod(date);
+      const cur = per.get(p);
+      if (!cur) per.set(p, { date, aware });
+      else {
+        if (dayKey(date) < dayKey(cur.date)) cur.date = date;
+        if (!aware) cur.aware = false;   // engaged in that month wins: filled dot
+      }
+    };
+    discoveredVia(n).forEach((d) => {
+      if (d.awareDate) add(d.awareDate, true);
+      if (d.engagedDate) add(d.engagedDate, false);
+    });
+    if (!per.size) per.set("undated", { date: "", aware: false });
+    const list = [...per.entries()]
+      .map(([period, v]) => ({ key: `${n.id}@${period}`, id: n.id, label: n.label, kind: n.kind,
+        lane: tlLaneOf(n.kind), date: v.date, period, aware: v.aware }))
+      .sort((a, b) => (dayKey(a.date) || 0) - (dayKey(b.date) || 0));
+    byId[n.id] = list;
+    items.push(...list);
+  });
+
+  // Links: each event with a source. It lands on the target's dot for that
+  // event's first date, and leaves from the source's latest dot at or before
+  // that date (else its earliest).
   const links = [];
   rawData.nodes.forEach((n) => {
     discoveredVia(n).forEach((d) => {
+      if (!d.source || !ids.has(d.source) || d.source === n.id) return;
+      const when = d.awareDate || d.engagedDate || "";
+      const t = byId[n.id].find((a) => a.period === tlPeriod(when)) || byId[n.id][0];
+      const srcs = byId[d.source];
+      const before = srcs.filter((a) => !when || (dayKey(a.date) || 0) <= dayKey(when));
+      const sItem = before.length ? before[before.length - 1] : srcs[0];
       // Same rule as the graph: an engagedDate makes it "engaged" (solid line);
       // an awareDate alone makes it "aware" (dashed).
-      if (d.source && ids.has(d.source) && d.source !== n.id) links.push({ s: d.source, t: n.id, aware: !d.engagedDate });
+      links.push({ s: d.source, t: n.id, sk: sItem.key, tk: t.key, aware: !d.engagedDate });
     });
   });
   const up = {}, down = {};
-  links.forEach((l) => { (up[l.t] = up[l.t] || []).push(l.s); (down[l.s] = down[l.s] || []).push(l.t); });
-  return { nodes, links, up, down };
+  links.forEach((l) => {
+    if (!(up[l.t] || []).includes(l.s)) (up[l.t] = up[l.t] || []).push(l.s);
+    if (!(down[l.s] || []).includes(l.t)) (down[l.s] = down[l.s] || []).push(l.t);
+  });
+  return { items, byId, links, up, down };
 }
 
 let tlCache = null;   // { data, entryEls, linkEls } of the current render
@@ -108,8 +127,8 @@ function renderTimeline() {
 
   // Group by year, then by period inside the year, oldest first.
   const byYear = new Map();
-  data.nodes.forEach((n) => {
-    const p = tlPeriod(n.date);
+  data.items.forEach((n) => {
+    const p = n.period;
     const y = p === "undated" ? "Undated" : p.slice(0, 4);
     if (!byYear.has(y)) byYear.set(y, new Map());
     const periods = byYear.get(y);
@@ -118,7 +137,7 @@ function renderTimeline() {
   });
   const years = [...byYear.keys()].sort((a, b) => (a === "Undated" ? 1 : b === "Undated" ? -1 : a.localeCompare(b)));
 
-  const laneUsed = TL_LANES.map((_, li) => data.nodes.some((n) => n.lane === li));
+  const laneUsed = TL_LANES.map((_, li) => data.items.some((n) => n.lane === li));
   const usedCount = laneUsed.filter(Boolean).length;
 
   // Columns (left to right) for a given row cap: a month whose busiest band
@@ -188,7 +207,7 @@ function renderTimeline() {
       });
       c.items.forEach((n) => {
         const cy = laneTop[n.lane] + laneH[n.lane] / 2;
-        pos[n.id] = { x: x + c.w / 2, y: cy, folded: true, col: ci };
+        pos[n.key] = { x: x + c.w / 2, y: cy, folded: true, col: ci };
       });
     } else {
       TL_LANES.forEach((_, li) => {
@@ -199,8 +218,8 @@ function renderTimeline() {
             const perCol = Math.ceil(arr.length / c.subs);
             const sub = Math.floor(i / perCol), row = i % perCol;
             const dx = x + 12 + sub * TL_COL_W, cy = laneTop[li] + TL_LANE_PAD + row * TL_ROW_H + TL_ROW_H / 2;
-            pos[n.id] = { x: dx, y: cy, col: ci };
-            html.push(`<button type="button" class="tl-entry lane-${li}${n.placedAware ? " is-aware-pos" : ""}" data-node-id="${escapeHTML(n.id)}"
+            pos[n.key] = { x: dx, y: cy, col: ci };
+            html.push(`<button type="button" class="tl-entry lane-${li}${n.aware ? " is-aware-pos" : ""}" data-node-id="${escapeHTML(n.id)}" data-period="${escapeHTML(n.period)}"
               style="left:${dx - 6}px;top:${cy - TL_ROW_H / 2}px;max-width:${TL_COL_W - 10}px" title="${escapeHTML(n.label)}">
               <span class="tl-dot" aria-hidden="true"></span><span class="tl-label">${escapeHTML(n.label)}</span></button>`);
           });
@@ -209,7 +228,7 @@ function renderTimeline() {
     x += c.w;
     const lastOfYear = ci === cols.length - 1 || cols[ci + 1].year !== c.year;
     if (lastOfYear) {
-      const count = byYear.get(c.year) ? [...byYear.get(c.year).values()].reduce((s, a) => s + a.length, 0) : 0;
+      const count = byYear.get(c.year) ? new Set([...byYear.get(c.year).values()].flat().map((a) => a.id)).size : 0;
       const folded = tlState.folded.has(c.year);
       html.push(`<button type="button" class="tl-year" data-year="${escapeHTML(c.year)}" style="left:${yearStart}px;width:${x - yearStart}px"
         aria-expanded="${!folded}" title="${folded ? "Expand" : "Fold"} ${escapeHTML(c.year)}">
@@ -244,19 +263,31 @@ function renderTimeline() {
   // into one thick line where they start.
   const fan = {};
   const bySource = {};
-  data.links.forEach((l) => { if (pos[l.s] && pos[l.t]) (bySource[l.s] = bySource[l.s] || []).push(l); });
+  data.links.forEach((l) => { if (pos[l.sk] && pos[l.tk]) (bySource[l.sk] = bySource[l.sk] || []).push(l); });
   Object.values(bySource).forEach((arr) => {
-    arr.sort((p, q) => pos[p.t].y - pos[q.t].y || pos[p.t].x - pos[q.t].x);
+    arr.sort((p, q) => pos[p.tk].y - pos[q.tk].y || pos[p.tk].x - pos[q.tk].x);
     const n = arr.length, step = n > 1 ? Math.min(2.6, 7 / (n - 1)) : 0;
-    arr.forEach((l, i) => { fan[l.s + ">" + l.t] = (i - (n - 1) / 2) * step; });
+    arr.forEach((l, i) => { fan[l.sk + ">" + l.tk] = (i - (n - 1) / 2) * step; });
   });
 
-  const paths = data.links.map((l) => {
-    const a = pos[l.s], b = pos[l.t];
+  // Tracks: a faint line along an entry's own row from one of its dots to the
+  // next (heard of it here → read it there).
+  const tracks = [];
+  Object.values(data.byId).forEach((list) => {
+    for (let i = 1; i < list.length; i++) {
+      const a = pos[list[i - 1].key], b = pos[list[i].key];
+      if (!a || !b || (a.folded && b.folded && a.x === b.x)) continue;
+      const sx = a.x + 5, ex = b.x - 6, run = Math.max(10, (ex - sx) * 0.35);
+      tracks.push(`<path class="tl-track" data-node="${escapeHTML(list[i].id)}" d="M${sx},${a.y} C${sx + run},${a.y} ${ex - run},${b.y} ${ex},${b.y}"/>`);
+    }
+  });
+
+  const paths = tracks.join("") + data.links.map((l) => {
+    const a = pos[l.sk], b = pos[l.tk];
     if (!a || !b || (a.folded && b.folded && a.x === b.x)) return "";
     const sx = a.folded ? a.x : a.x + 5;   // leave from the right edge of the source's dot
     const ex = b.x - 7;
-    const sy = a.y + (fan[l.s + ">" + l.t] || 0);
+    const sy = a.y + (fan[l.sk + ">" + l.tk] || 0);
     let d;
     if (ex - sx > 40) {
       // Hold each lane level for a stretch before turning, so the fan reads.
@@ -329,6 +360,7 @@ function timelinePaint() {
     p.classList.toggle("is-out", isDirect && s === id);   // led to → leaves the entry
     p.classList.toggle("is-lineage", isLineage);
   });
+  document.querySelectorAll("#tl-canvas .tl-track").forEach((t) => t.classList.toggle("is-lit", !!direct && t.dataset.node === id));
 
   timelineEdges();
 
@@ -371,20 +403,24 @@ function timelineEdges() {
   if (!view.classList.contains("has-focus") || !lit.length) { box.innerHTML = ""; return; }
   const left = scroller.scrollLeft, right = left + scroller.clientWidth - TL_GUTTER;
   const top = -scroller.scrollTop;   // markers sit in a layer at the strip's top edge
-  const dateOf = {};
-  tlCache.data.nodes.forEach((n) => { dateOf[n.id] = n.date; });
   const used = { l: [], r: [] };
   const out = [];
+  const onScreen = (el) => el.offsetLeft + el.offsetWidth >= left + 12 && el.offsetLeft <= right - 12;
+  const shown = new Set(lit.filter(onScreen).map((el) => el.dataset.nodeId));   // any dot of it in view
+  const done = new Set();
   lit.forEach((el) => {
     if (el.classList.contains("is-current")) return;
+    const id0 = el.dataset.nodeId;
+    if (shown.has(id0) || done.has(id0)) return;   // one marker per connection, none if it's visible
     const x0 = el.offsetLeft, x1 = x0 + el.offsetWidth;
     const side = x1 < left + 12 ? "l" : x0 > right - 12 ? "r" : null;
     if (!side) return;
+    done.add(id0);
     let y = top + el.offsetTop + 2;
     while (used[side].some((u) => Math.abs(u - y) < 20)) y += 20;   // don't stack on top of each other
     used[side].push(y);
     const id = el.dataset.nodeId;
-    const p = tlPeriod(dateOf[id]);
+    const p = el.dataset.period || "undated";
     // "Mar ’26", or just the year for a year-only date.
     const when = p === "undated" ? "" : ` · ${p.length === 4 ? p : `${MONTH_NAMES[parseInt(p.slice(5, 7), 10) - 1].slice(0, 3)} ’${p.slice(2, 4)}`}`;
     const name = escapeHTML((nodeById[id] || {}).label || id);
@@ -398,17 +434,19 @@ function timelineEdges() {
 // isn't already fully visible (clear of the pinned band names), smoothly
 // scroll so it sits in the middle.
 function timelineReveal(id, force) {
-  const n = rawData && rawData.nodes.find((x) => x.id === id);
-  if (!n) return;
-  const p = tlPeriod(nodeFirstDate(n) || "");
-  const yr = p === "undated" ? "Undated" : p.slice(0, 4);
-  if (tlState.folded.has(yr)) {
-    tlState.folded.delete(yr);
+  const apps = tlCache && tlCache.data.byId[id];
+  if (!apps) return;
+  // Unfold any folded year holding one of its dots.
+  const years = apps.map((a) => (a.period === "undated" ? "Undated" : a.period.slice(0, 4)));
+  if (years.some((y) => tlState.folded.has(y))) {
+    years.forEach((y) => tlState.folded.delete(y));
     tlCache = null;
-    renderTimeline();          // repaints, which reveals again with the year open
+    renderTimeline();          // repaints, which reveals again with the years open
     return;
   }
-  const el = tlCache && tlCache.entryEls.find((e) => e.dataset.nodeId === id);
+  // Its latest dot (where you engaged with it, if you have).
+  const els = tlCache.entryEls.filter((e) => e.dataset.nodeId === id);
+  const el = els[els.length - 1];
   const scroller = document.getElementById("tl-scroll");
   if (!el || !scroller) return;
   const sr = scroller.getBoundingClientRect(), er = el.getBoundingClientRect();
