@@ -3942,6 +3942,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 .tl-band.lane-3 { border-color: var(--tl-lane-3); }
 .tl-canvas { position: relative; flex: none; }
 .tl-lines { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
+.tl-lines-top { z-index: 7; }   /* tree elbows: above entries, even a selected one */
 .tl-col { position: absolute; top: 0; pointer-events: none; }
 .tl-col { border-left: 1px solid rgb(from var(--ink) r g b / 0.06); }   /* month dividers: hairline */
 /* A new year: a firmer line, running up through the heading too. */
@@ -4040,13 +4041,17 @@ body.is-graph-faux-fs { overflow: hidden; }
   /* Pinned just outside the label (not in the flow), so the dot never moves;
      the line starts right after the source's arrow and ends right at the
      led-to arrow. */
-  content: "→";
+  /* A small solid arrowhead (same shape as the graph's), not a text "→":
+     glyphs inherit the serif and come out hairline-thin. */
+  content: "";
   position: absolute;
   top: 50%;
-  transform: translateY(-52%);
-  font-weight: 700;
+  width: 6px;
+  height: 7px;
+  transform: translateY(-50%);
+  background: currentColor;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
   color: var(--tl-lit, var(--ink));
-  text-shadow: 0 0 2px var(--surface), 0 0 3px var(--surface);
 }
 .tl-entry.is-source::after, .tl-entry.has-out::after { right: -11px; }
 /* Each "→" is in its own entry's band colour, matching the line's gradient
@@ -4056,7 +4061,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 .tl-entry.lane-2::before, .tl-entry.lane-2::after { color: var(--tl-lane-2); }
 .tl-entry.lane-3::before, .tl-entry.lane-3::after { color: var(--tl-lane-3); }
 .tl-entry.lane-4::before, .tl-entry.lane-4::after { color: var(--tl-lane-4); }
-.tl-entry.is-ledto::before, .tl-entry.has-in::before { left: -13px; }   /* tip touches the box's edge, not the dot */
+.tl-entry.is-ledto::before, .tl-entry.has-in::before { left: -11px; }   /* tip touches the box's edge, not the dot */
 /* Arrowheads on lit lines show which way a discovery went (source → found). */
 
 .tl-arrowhead { fill: var(--tl-lit, var(--ink)); }
@@ -4325,11 +4330,12 @@ body.is-graph-faux-fs { overflow: hidden; }
 }
 /* Off-screen markers: an italic note, not a pill. */
 .tl-edge {
-  border: none;
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--line);
+  background: var(--surface);   /* solid: names underneath mustn't show through */
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.08);
   font-family: var(--font-serif);
   font-style: italic;
-  color: var(--muted);
+  color: var(--ink);
 }
 .tl-edge:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 .tl-edge.is-self { font-weight: var(--weight-normal); color: var(--ink); }
@@ -4363,7 +4369,21 @@ body.is-graph-faux-fs { overflow: hidden; }
 
 /* ── Timeline heading: one row of months; the year lives in the corner ─── */
 .timeline-view:not(.is-vertical) .tl-month { top: 8px; }
-.tl-month-year { font-family: var(--font-serif); font-weight: var(--weight-bold); font-variant: normal; letter-spacing: 0; color: var(--ink); margin-right: 3px; }
+.tl-month-year {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--font-serif);
+  font-size: inherit;
+  font-weight: var(--weight-bold);
+  font-variant: normal;
+  letter-spacing: 0;
+  color: var(--ink);
+  margin-right: 3px;
+  pointer-events: auto;   /* the month label itself ignores clicks; its year folds the year */
+  cursor: pointer;
+}
+.tl-month-year:hover { color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; }
 .tl-corner-year {
   position: absolute;
   inset: 0;
@@ -4385,6 +4405,8 @@ body.is-graph-faux-fs { overflow: hidden; }
 .tl-fold-tag {
   position: absolute;
   top: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
   z-index: 3;
   padding: 2px 0;
   border: none;
@@ -4397,3 +4419,9 @@ body.is-graph-faux-fs { overflow: hidden; }
   white-space: nowrap;
 }
 .tl-fold-tag:hover { color: var(--accent-ink); }
+
+/* Layering: the band-name column and the off-screen markers stay above
+   everything in the strip (entries, raised hover/selection, tree elbows). */
+.timeline-view:not(.is-vertical) .tl-gutter { z-index: 8; }
+.tl-edges { z-index: 9; }
+.tl-lines-top { z-index: 6; }

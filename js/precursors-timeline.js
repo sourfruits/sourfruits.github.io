@@ -26,7 +26,7 @@ let TL_LANES = [   // default; replaced by the categories in precursors.txt (tlS
   { name: "Other", kinds: [] },   // anything not listed above (new kinds land here)
 ];
 const TL_COL_W = 156;         // px per month (or year-only) column
-const TL_FOLD_W = 64;         // px for a folded year
+const TL_FOLD_W = 84;         // px for a folded year
 const TL_ROW_H = 22;          // px per entry line
 const TL_BOTTOM_GAP = 30;     // px kept clear under the last band (scrollbar + full-screen button)
 const TL_LANE_PAD = 10;       // px above/below each band's entries
@@ -228,13 +228,6 @@ function renderTimeline() {
   const view = document.getElementById("timeline-view");
   if (!view || view.hidden || !rawData) return;
   const canvas = document.getElementById("tl-canvas");
-  // The corner year: click to fold the year you're looking at.
-  document.getElementById("tl-gutter").addEventListener("click", (e) => {
-    const b = e.target.closest(".tl-corner-year");
-    if (!b || !b.dataset.year) return;
-    tlState.folded.add(b.dataset.year);
-    renderTimeline();
-  });
   const gutter = document.getElementById("tl-gutter");
   const scroller = document.getElementById("tl-scroll");
   tlSetLanes(view);
@@ -353,7 +346,8 @@ function renderTimeline() {
     if (!c.folded) {
       const isMonth = /^\d{4}-\d{2}$/.test(c.period);
       const mon = isMonth ? MONTH_NAMES[parseInt(c.period.slice(5, 7), 10) - 1].slice(0, 3) : c.year === "Undated" ? "Undated" : "Month unknown";
-      const yr = firstOfYear && c.year !== "Undated" ? `<b class="tl-month-year">${escapeHTML(c.year)}</b> ` : "";
+      const yr = firstOfYear && c.year !== "Undated"
+        ? `<button type="button" class="tl-month-year" data-year="${escapeHTML(c.year)}" title="Fold ${escapeHTML(c.year)}">${escapeHTML(c.year)}</button> ` : "";
       html.push(`<span class="tl-month" style="left:${x + 10}px">${yr}${escapeHTML(mon)}</span>`);
     } else {
       html.push(`<button type="button" class="tl-fold-tag" data-year="${escapeHTML(c.year)}" style="left:${x}px;width:${c.w}px" title="Expand ${escapeHTML(c.year)}">▸ ${escapeHTML(c.year)}</button>`);
@@ -418,9 +412,12 @@ function renderTimeline() {
   canvas.style.height = totalH + "px";
   const defs = `<defs><marker id="tl-arrow" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="7" markerHeight="7"
       markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0.5 L7,4 L0,7.5 Z" class="tl-arrowhead"/></marker>
-      <marker id="tl-arrow-tree" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6"
+      <marker id="tl-arrow-tree" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5"
       markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0.5 L7,4 L0,7.5 Z" class="tl-arrowhead"/></marker></defs>`;
-  canvas.innerHTML = `<svg class="tl-lines" width="${totalW}" height="${totalH}" aria-hidden="true">${defs}</svg>` + html.join("");
+  // Tree elbows go in a second layer ABOVE the entries, so a selected entry's
+  // tinted box never covers the little arrowhead pointing into it.
+  canvas.innerHTML = `<svg class="tl-lines" width="${totalW}" height="${totalH}" aria-hidden="true">${defs}</svg>` + html.join("") +
+    `<svg class="tl-lines tl-lines-top" width="${totalW}" height="${totalH}" aria-hidden="true"></svg>`;
 
   // Lines: dot to dot — leave the source's dot, arrive at the target's dot
   // from the left and stop just short of it, leaving room for the arrowhead
@@ -452,8 +449,8 @@ function renderTimeline() {
     if (!a || !b || (a.folded && b.folded && a.x === b.x)) return "";
     // Out: just after the source's label (past its "→"). In: just before the
     // target's dot (at its "→").
-    const sx = a.folded ? a.x : (labelEnd[l.sk] || a.x) + 13;
-    const ex = b.folded ? b.x : b.x - 21;   // the incoming "→" sits just left of the box
+    const sx = a.folded ? a.x : (labelEnd[l.sk] || a.x) + 12;
+    const ex = b.folded ? b.x : b.x - 17;   // the incoming arrowhead sits just left of the box
     const sy = a.y;
     let d, tree = false;
     if (b.parent === l.sk && a.sub === b.sub && !a.folded && !b.folded) {
@@ -513,6 +510,8 @@ function renderTimeline() {
   }).join("");
   canvas.querySelector(".tl-lines defs").insertAdjacentHTML("beforeend", grads.join(""));
   canvas.querySelector(".tl-lines").insertAdjacentHTML("beforeend", paths);
+  const top = canvas.querySelector(".tl-lines-top");
+  canvas.querySelectorAll(".tl-lines .tl-link[data-tree]").forEach((el) => top.appendChild(el));
 
   tlCache = {
     data,
@@ -629,8 +628,8 @@ function tlUpdateCornerYear() {
   if (!span) { el.innerHTML = ""; return; }
   if (el.dataset.year === span.year) return;
   el.dataset.year = span.year;
-  el.title = `Fold ${span.year}`;
-  el.innerHTML = `<span class="tl-corner-main"><span class="tl-year-caret" aria-hidden="true">▾</span>${escapeHTML(span.year)}</span>` +
+  el.title = `${span.folded ? "Unfold" : "Fold"} ${span.year}`;
+  el.innerHTML = `<span class="tl-corner-main"><span class="tl-year-caret" aria-hidden="true">${span.folded ? "▸" : "▾"}</span>${escapeHTML(span.year)}</span>` +
     `<span class="tl-corner-count">${span.count} ${span.count === 1 ? "entry" : "entries"}</span>`;
 }
 
@@ -890,6 +889,14 @@ function timelineReveal(id, force, key) {
     const node = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
     if (node) openDetail(node, null, true);
   });
+  // The corner year: click to fold (or unfold) the year you're looking at.
+  document.getElementById("tl-gutter").addEventListener("click", (e) => {
+    const b = e.target.closest(".tl-corner-year");
+    if (!b || !b.dataset.year) return;
+    const yr = b.dataset.year;
+    if (tlState.folded.has(yr)) tlState.folded.delete(yr); else tlState.folded.add(yr);
+    renderTimeline();
+  });
   const canvas = document.getElementById("tl-canvas");
 
   canvas.addEventListener("mouseover", (e) => {
@@ -900,7 +907,9 @@ function timelineReveal(id, force, key) {
   canvas.addEventListener("mouseleave", () => { tlState.hover = null; timelinePaint(); });
 
   canvas.addEventListener("click", (e) => {
-    const yearBtn = e.target.closest(".tl-fold-tag");
+    // A folded year's "▸ 2024" tag unfolds it; a year label in the heading
+    // row ("2024 Jan") folds that year.
+    const yearBtn = e.target.closest(".tl-fold-tag, .tl-month-year");
     if (yearBtn) {
       const yr = yearBtn.dataset.year;
       if (tlState.folded.has(yr)) tlState.folded.delete(yr); else tlState.folded.add(yr);
