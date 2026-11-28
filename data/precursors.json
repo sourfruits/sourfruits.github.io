@@ -14,6 +14,24 @@
   },
   "nodes": [
     {
+      "id": "lewis-mere-christianity",
+      "label": "Mere Christianity",
+      "kind": "book",
+      "creator": "C. S. Lewis",
+      "discovered_via": [
+        {
+          "source": "cs-lewis",
+          "engagedDate": "2024-10-28",
+          "thread": "Faith"
+        }
+      ]
+    },
+    {
+      "id": "cs-lewis",
+      "label": "C. S. Lewis",
+      "kind": "writer"
+    },
+    {
       "id": "o-brother-where-art-thou-2000",
       "label": "O Brother, Where Art Thou? (2000)",
       "kind": "film",
