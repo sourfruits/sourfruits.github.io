@@ -18,7 +18,7 @@
 // listed lands in the last band ("Other"). Edit freely.
 // Smaller bands go on top, so a tall band (Films) can never push them out of
 // view at the bottom of the box.
-const TL_LANES = [
+let TL_LANES = [   // default; replaced by the categories in precursors.txt (tlSetLanes)
   { name: "Music", kinds: ["musician", "album"] },
   { name: "People and places", kinds: ["person", "director", "school", "class", "platform"] },
   { name: "Books and writers", kinds: ["book", "writer", "philosopher"] },
@@ -35,6 +35,19 @@ const TL_TREE_STEP = 14;    // px each tree level is indented inside a month
 const TL_HEAD_H = 46;         // px for the year + month headings on top
 
 const tlState = { hover: null, showAll: true, fade: { engaged: false, aware: false }, folded: new Set(), scrolledOnce: false, lastDetail: null };
+
+// Bands come from the categories block in precursors.txt (same as the graph's
+// colours and the List): one band per category in file order, then "Other".
+function tlSetLanes(view) {
+  const cats = (rawData && rawData.categories) || {};
+  const names = Object.keys(cats);
+  if (names.length) {
+    TL_LANES = names.map((name) => ({ name, kinds: (cats[name] || []).map((k) => String(k).trim().toLowerCase()),
+      color: categoryColor.get(name) }));
+    TL_LANES.push({ name: "Other", kinds: [], color: OTHER_COLOR });
+  }
+  TL_LANES.forEach((l, i) => { if (l.color) view.style.setProperty(`--tl-lane-${i}`, l.color); });
+}
 
 function tlLaneOf(kind) {
   const k = String(kind || "").toLowerCase();
@@ -217,6 +230,7 @@ function renderTimeline() {
   const canvas = document.getElementById("tl-canvas");
   const gutter = document.getElementById("tl-gutter");
   const scroller = document.getElementById("tl-scroll");
+  tlSetLanes(view);
   const data = tlData();
   const vertical = tlIsVertical();
   view.classList.toggle("is-vertical", vertical);
@@ -493,7 +507,6 @@ function renderTimeline() {
 // Bands become columns (names pinned along the top), time runs top to bottom
 // one row per month (labels pinned down the left), newest at the top. Wider than a phone, so it also scrolls sideways.
 const TL_V_BREAK = "(max-width: 560px)";
-const TL_V_ORDER = [1, 2, 3, 0, 4];   // People and places, Books and writers, Films, Music, Other
 const TL_V_ROW = 22;       // px per entry
 const TL_V_PAD = 8;        // px above/below a month's entries
 const TL_V_HEAD = 30;      // px for the pinned band names
@@ -502,7 +515,7 @@ const TL_V_COL_MIN = 140;  // px per band column, at least
 function tlIsVertical() { return window.matchMedia(TL_V_BREAK).matches; }
 
 function renderTimelineVertical(data, canvas, gutter, scroller) {
-  const lanes = TL_V_ORDER.filter((li) => data.items.some((n) => n.lane === li));
+  const lanes = TL_LANES.map((_, li) => li).filter((li) => data.items.some((n) => n.lane === li));
   const colW = Math.max(TL_V_COL_MIN, Math.floor((scroller.clientWidth - TL_V_GUTTER - 8) / lanes.length));
   const colX = {};
   lanes.forEach((li, i) => { colX[li] = i * colW; });

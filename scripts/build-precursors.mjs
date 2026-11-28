@@ -11,8 +11,9 @@
 // Text format (see the commented template at the top of precursors.txt):
 //
 //   ## categories               optional block BEFORE the first node: one
-//   People: writer, person      "Category name: kind, kind" line per category
-//                               (groups kinds in the Precursors list dropdown)
+//   Films: film | #3b82c4       "Category name: kind, kind | #colour" line per
+//                               category (the colour is optional). Used for the
+//                               Timeline bands, Graph dot colours and List dropdown.
 //
 //   ### node-id                 a "### id" line starts a node; it runs until the
 //                               next "###"
@@ -107,6 +108,7 @@ function parse(text) {
   const lines = text.replace(/^﻿/, "").split(/\r?\n/);
   const nodes = [];
   const categories = {};   // "People" -> ["writer", "person", …]
+  const categoryColors = {};   // "People" -> "#8a6fc9" (only when given)
   let inCategories = false; // inside the "## categories" block
   let cur = null;    // node being assembled
   let list = null;   // which block indented "- " items attach to
@@ -149,7 +151,15 @@ function parse(text) {
       const ci = trimmed.indexOf(":");
       if (ci < 1) throw new Error(`${ctx}: expected "Category name: kind, kind" (got "${trimmed}")`);
       const name = trimmed.slice(0, ci).trim();
-      const kinds = trimmed.slice(ci + 1).split(",").map((k) => k.trim().toLowerCase()).filter(Boolean);
+      let rest = trimmed.slice(ci + 1);
+      const bar = rest.lastIndexOf("|");
+      if (bar !== -1) {
+        const color = rest.slice(bar + 1).trim();
+        if (!/^#[0-9a-f]{3}([0-9a-f]{3})?$/i.test(color)) throw new Error(`${ctx}: category "${name}" colour must be a hex like #3b82c4 (got "${color}")`);
+        categoryColors[name] = color;
+        rest = rest.slice(0, bar);
+      }
+      const kinds = rest.split(",").map((k) => k.trim().toLowerCase()).filter(Boolean);
       if (!kinds.length) throw new Error(`${ctx}: category "${name}" lists no kinds`);
       if (name in categories) throw new Error(`${ctx}: duplicate category "${name}"`);
       categories[name] = kinds;
@@ -193,7 +203,7 @@ function parse(text) {
 
   finish();
   if (!seen) throw new Error(`no nodes found (expected at least one "### node-id")`);
-  return { nodes, categories };
+  return { nodes, categories, categoryColors };
 }
 
 // Validate each parsed record and assemble the output node in the exact JSON
@@ -275,7 +285,7 @@ function main() {
   }
   const parsed = parse(raw);
   const nodes = build(parsed.nodes);
-  writeFileSync(OUT_FILE, JSON.stringify({ categories: parsed.categories, nodes }, null, 2) + "\n", "utf8");
+  writeFileSync(OUT_FILE, JSON.stringify({ categories: parsed.categories, categoryColors: parsed.categoryColors, nodes }, null, 2) + "\n", "utf8");
   console.log(`✓ built data/precursors.json from ${nodes.length} node${nodes.length === 1 ? "" : "s"}`);
 }
 

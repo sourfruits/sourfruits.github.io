@@ -1,16 +1,30 @@
 {
   "categories": {
-    "People": [
-      "writer",
+    "Music": [
+      "musician",
+      "album"
+    ],
+    "People and places": [
       "person",
       "director",
-      "philosopher",
-      "musician"
-    ],
-    "School and classes": [
       "school",
-      "class"
+      "class",
+      "platform"
+    ],
+    "Books and writers": [
+      "book",
+      "writer",
+      "philosopher"
+    ],
+    "Films": [
+      "film"
     ]
+  },
+  "categoryColors": {
+    "Music": "#c96a3b",
+    "People and places": "#8a6fc9",
+    "Books and writers": "#2f9c78",
+    "Films": "#3b82c4"
   },
   "nodes": [
     {

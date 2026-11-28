@@ -35,7 +35,7 @@ This tracker visualizes my personal journey through film, art, and literature, w
 const TUNING = {
   // ── Hub tier ──────────────────────────────────────────────────────────────
   hubThreshold: 3,       // growth (outgoing connections) at/above which a node is a "hub":
-                         // permanent label + hollow/dashed outline. Fixed value, not a
+                         // permanent label + pale fill with a solid ring. Fixed value, not a
                          // percentile — so equally-sized nodes never split across the boundary.
   growthStep: 3,         // + hub radius per point of downstream influence (uncapped)
   hubFont: 13,           // hub label font (screen px — labels hold this size at any zoom)
@@ -595,7 +595,7 @@ function labelMaxPx(d) { return isHub(d) ? TUNING.hubMaxLabelWidth : TUNING.leaf
 function collideRadius(d) {
   const r = nodeRadius(d) + TUNING.collidePad;
   if (!isHub(d)) return r;
-  const w = measureTextWidth(truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d)), labelPx(d)) * 1.1; // ×1.1 ≈ bold
+  const w = measureTextWidth(truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d)), labelPx(d)) * 1.03;   // small margin (labels are regular weight)
   return Math.max(r, w / 2 + 10);
 }
 
@@ -619,7 +619,7 @@ function refreshLabels() {
   const sel = labelLayer.selectAll("text.node-label");
   sel.text((d) => truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d)))
      .style("font-size", (d) => labelPx(d) + "px")
-     .style("font-weight", (d) => (isHub(d) ? "700" : "400"));
+     .style("font-weight", "400");   // hubs stand out by size, not bold
   positionLabels(sel.data(), sel);
 }
 
@@ -627,16 +627,14 @@ function refreshLabels() {
 // restarting the force simulation — so tuning visual knobs never shifts the
 // layout. Only the true force knobs (see LAYOUT_KEYS) trigger a re-layout.
 function refreshVisuals() {
-  const contentFill = currentMode === "connections" ? "var(--accent2)" : "var(--accent)";
-  const contentStroke = currentMode === "connections" ? "var(--accent2-ink)" : "var(--accent-ink)";
   nodeLayer.selectAll("g.node")
     .attr("class", (d) => `node${isHub(d) ? " is-hub" : ""}`)
     .select("circle")
       .attr("r", nodeRadius)
-      .style("fill", (d) => (isHub(d) ? "var(--bg)" : contentFill))
-      .style("stroke", (d) => (isHub(d) ? "var(--muted)" : contentStroke))
-      .style("stroke-width", (d) => (isHub(d) ? 1.5 : 1))
-      .style("stroke-dasharray", (d) => (isHub(d) ? "3 2" : null));
+      .style("fill", (d) => (isHub(d) ? `color-mix(in srgb, ${nodeColor(d)} 22%, var(--bg))` : nodeColor(d)))
+      .style("stroke", (d) => (isHub(d) ? nodeColor(d) : `color-mix(in srgb, ${nodeColor(d)} 75%, black)`))
+      .style("stroke-width", (d) => (isHub(d) ? 2.5 : 1))
+      .style("stroke-dasharray", null);   // hubs: pale fill + solid ring in their colour
   linkLayer.selectAll("line.link")
     .style("stroke-width", (d) => (d.directional ? TUNING.linkWidth + 0.6 : TUNING.linkWidth));
   refreshLabels();
@@ -1173,6 +1171,35 @@ function render(mode) {
     .style("stroke-width", (d) => (d.directional ? TUNING.linkWidth + 0.6 : TUNING.linkWidth))
     .style("stroke-dasharray", (d) => (edgeDashed(d) ? "5 4" : null));
 
+  // Discovery lines fade from the source's category colour to the target's
+  // (same as the Timeline), with the arrowhead in the target's colour. Each
+  // line gets its own gradient, kept in line with it on every tick.
+  defs.selectAll("linearGradient.link-grad, marker.cat-arrow").remove();
+  const catArrow = new Map();   // colour -> marker id
+  const arrowFor = (color) => {
+    if (!catArrow.has(color)) {
+      const id = `arrow-cat-${catArrow.size}`;
+      defs.append("marker").attr("class", "cat-arrow").attr("id", id)
+        .attr("viewBox", "0 0 10 10").attr("refX", 10).attr("refY", 5)
+        .attr("markerWidth", 4).attr("markerHeight", 4)
+        .attr("markerUnits", "strokeWidth").attr("orient", "auto")
+        .append("path").attr("d", "M0,0 L10,5 L0,10 Z").style("fill", color);
+      catArrow.set(color, id);
+    }
+    return catArrow.get(color);
+  };
+  linkAll.each(function (d, i) {
+    d._grad = null;
+    if (d.type !== "discovery") return;
+    const sc = nodeColor(nodeById[idOf(d.source)] || {}), tc = nodeColor(nodeById[idOf(d.target)] || {});
+    const g = defs.append("linearGradient").attr("class", "link-grad").attr("id", `link-grad-${i}`)
+      .attr("gradientUnits", "userSpaceOnUse");
+    g.append("stop").attr("offset", 0).style("stop-color", sc);
+    g.append("stop").attr("offset", 1).style("stop-color", tc);
+    d._grad = g;
+    d3.select(this).style("stroke", `url(#link-grad-${i})`).attr("marker-end", `url(#${arrowFor(tc)})`);
+  });
+
   // Transparent, thick hit lines so thin edges are still easy to hover.
   const hit = linkLayer.selectAll("line.link-hit")
     .data(graph.links, linkKey);
@@ -1194,17 +1221,15 @@ function render(mode) {
   const nodeAll = nodeEnter.merge(node)
     .attr("class", (d) => `node${isHub(d) ? " is-hub" : ""}`);
 
-  // Leaves are solid — yellow in Connections view, green in Discovery view (this
-  // now includes discovery source nodes). Hubs read as hollow with a dashed
-  // outline, in both modes. (The stroke follows the fill for leaves.)
-  const contentFill = mode === "connections" ? "var(--accent2)" : "var(--accent)";
-  const contentStroke = mode === "connections" ? "var(--accent2-ink)" : "var(--accent-ink)";
+  // Leaves are solid; hubs get a pale fill inside a solid ring.
+  // Leaves take their category's colour (see the categories block in
+  // precursors.txt), so the graph and the timeline match.
   nodeAll.select("circle.node-dot")
     .attr("r", nodeRadius)
-    .style("fill", (d) => (isHub(d) ? "var(--bg)" : contentFill))
-    .style("stroke", (d) => (isHub(d) ? "var(--muted)" : contentStroke))
-    .style("stroke-width", (d) => (isHub(d) ? 1.5 : 1))
-    .style("stroke-dasharray", (d) => (isHub(d) ? "3 2" : null));
+    .style("fill", (d) => (isHub(d) ? `color-mix(in srgb, ${nodeColor(d)} 22%, var(--bg))` : nodeColor(d)))
+    .style("stroke", (d) => (isHub(d) ? nodeColor(d) : `color-mix(in srgb, ${nodeColor(d)} 75%, black)`))
+    .style("stroke-width", (d) => (isHub(d) ? 2.5 : 1))
+    .style("stroke-dasharray", null);   // hubs: pale fill + solid ring in their colour
 
   // Labels live in the top layer (not in the node groups) so they always paint in
   // front. Position (x/y/anchor) is set per tick by positionLabels.
@@ -1216,7 +1241,7 @@ function render(mode) {
     .style("fill", "var(--ink)")
     .style("font-family", "var(--font-sans)")
     .style("font-size", (d) => labelPx(d) + "px")
-    .style("font-weight", (d) => (isHub(d) ? "700" : "400"));
+    .style("font-weight", "400");   // hubs stand out by size, not bold
 
   nodeAll
     // Hovering reveals the node's own label; clicking opens the detail panel.
@@ -1252,7 +1277,8 @@ function render(mode) {
         // Directional lines stop at the node's edge to make room for the arrow;
         // plain lines run to the centre (the node circle covers the join).
         .attr("x2", (d) => (d.directional ? edgeEnd(d).x : d.target.x))
-        .attr("y2", (d) => (d.directional ? edgeEnd(d).y : d.target.y));
+        .attr("y2", (d) => (d.directional ? edgeEnd(d).y : d.target.y))
+        .each((d) => { if (d._grad) d._grad.attr("x1", d.source.x).attr("y1", d.source.y).attr("x2", d.target.x).attr("y2", d.target.y); });
       hitAll
         .attr("x1", (d) => d.source.x).attr("y1", (d) => d.source.y)
         .attr("x2", (d) => d.target.x).attr("y2", (d) => d.target.y);
@@ -1539,7 +1565,13 @@ function linkKey(d) {
 function renderLegend(mode) {
   legend.setAttribute("aria-hidden", "false");
   // Hollow/dashed swatch = a hub (high out-degree); shown in both modes.
-  const hubItem = `<span class="legend-item"><span class="legend-swatch swatch-hub"></span>Hub</span>`;
+  // One coloured dot per category (only those with something on the graph).
+  const used = new Set((rawData && rawData.nodes ? rawData.nodes : []).map((n) => nodeColor(n)));
+  const cats = [...categoryColor.entries()].filter(([, c]) => used.has(c));
+  if (used.has(OTHER_COLOR)) cats.push(["Other", OTHER_COLOR]);
+  const catItems = cats.map(([name, c]) =>
+    `<span class="legend-item"><span class="legend-swatch swatch-dot" style="background:${c}"></span>${escapeHTML(name)}</span>`).join("");
+  const hubItem = catItems + `<span class="legend-item"><span class="legend-swatch swatch-hub"></span>Hub</span>`;
   if (mode === "connections") {
     // Hub first, then one entry per relationship type (discovery excluded — it's
     // not used here), coloured to match its line; directional types get an arrow.
@@ -1548,7 +1580,7 @@ function renderLegend(mode) {
     ).join("");
     return;
   }
-  const dc = RELATIONSHIP_TYPES.discovery.color;
+  const dc = "var(--muted)";   // lines take their categories' colours, so the key is neutral
   legend.innerHTML =
     hubItem +
     `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>Engagement →</span>` +
@@ -2060,7 +2092,7 @@ if (fsBtn) {
 // the Threads menu) and a sort. Threads and the clock are graph-only. Tapping a row
 // opens that item's card in the side panel; the card's "View in graph" flips over.
 // `var` so the hoisted guard in renderList() is safe if it's called early.
-var listState = { view: "timeline", category: "all", sort: "recent", collapsedYears: new Set() };   // "recent" = By date (the default)
+var listState = { view: "graph", category: "all", sort: "recent", collapsedYears: new Set() };   // "recent" = By date (the default)
 
 // The category dropdown is built straight from the `kind` values in
 // precursors.txt — no hand-made grouping to maintain. A new kind (say
@@ -2071,6 +2103,23 @@ var listState = { view: "timeline", category: "all", sort: "recent", collapsedYe
 // { "People": ["writer", …] }. Any kind not listed there is its own category,
 // so a brand-new kind still shows up on its own.
 let kindToCategory = new Map();   // "writer" -> "People"
+// Category colours (from the "| #colour" part of each categories line), in
+// the file's order. A category without a colour gets one from this palette;
+// a kind in no category is "Other" (grey). Shared with the Timeline.
+const CATEGORY_PALETTE = ["#c96a3b", "#8a6fc9", "#2f9c78", "#3b82c4", "#b8892f", "#c2547a", "#4f9fa8"];
+const OTHER_COLOR = "#9a958a";
+let categoryColor = new Map();    // "Films" -> "#3b82c4"
+function parseCategoryColors(categories, colors) {
+  const map = new Map();
+  Object.keys(categories || {}).forEach((name, i) =>
+    map.set(name, (colors || {})[name] || CATEGORY_PALETTE[i % CATEGORY_PALETTE.length]));
+  return map;
+}
+// A node's dot colour on the graph: its category's colour, else grey.
+function nodeColor(d) {
+  const name = kindToCategory.get(String(d.kind || "").trim().toLowerCase());
+  return (name && categoryColor.get(name)) || OTHER_COLOR;
+}
 function parseCategories(categories) {
   const map = new Map();
   Object.entries(categories || {}).forEach(([name, kinds]) => {
@@ -2417,7 +2466,7 @@ const TUNING_GROUPS = [
     ["linkWidth", "Line thickness", 0.5, 6, 0.1, "Stroke width of the connection lines (arrowheads scale with it)."],
   ] },
   { side: "right", title: "Hub", controls: [
-    ["hubThreshold", "Hub threshold", 0, 20, 1, "Outgoing connections a node needs to count as a hub (bigger, always labelled, hollow/dashed)."],
+    ["hubThreshold", "Hub threshold", 0, 20, 1, "Outgoing connections a node needs to count as a hub (bigger, always labelled, pale fill with a ring)."],
     ["growthStep", "Hub growth step", 0, 10, 0.5, "How much a hub's radius grows per outgoing connection."],
     ["hubFont", "Hub font", 8, 40, 1, "Font size of hub labels."],
     ["hubMaxLabelWidth", "Hub max label width", 40, 400, 5, "Pixel width before a hub label is trimmed with an ellipsis."],
@@ -2555,6 +2604,7 @@ Promise.all([
     // Optional category grouping (from precursors.txt); if absent, every kind
     // is simply its own category.
     kindToCategory = parseCategories(graph.categories);
+    categoryColor = parseCategoryColors(graph.categories, graph.categoryColors);
     rawData = graph;
     allPosts = posts;
     // A node may omit `label`; derive it from the id so the label stays coupled
@@ -2564,7 +2614,7 @@ Promise.all([
     status.textContent = "";
     buildThreadMenu();
     setMode(currentMode);
-    setView("timeline");   // the page opens on the Timeline view (Graph / List one click away)
+    setView("graph");   // the page opens on the Graph view (Timeline / List one click away)
   })
   .catch((err) => {
     status.textContent = "Couldn't load the graph. If you opened this file directly, run a local server (see the README).";

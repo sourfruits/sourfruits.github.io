@@ -69,17 +69,23 @@
 #   • label + kind are required; a discovery entry needs at least one field.
 # ─────────────────────────────────────────────────────────────────────────────
 
-# ── Categories — group kinds in the Precursors list's dropdown ────────────────
+# ── Categories — one place for the whole page ────────────────────────────────
 #
-#   Category name: kind, kind, kind
+#   Category name: kind, kind, kind | #colour
 #
-# • Any kind NOT listed here still shows up as its own category (e.g. "Film").
-# • Adding a new kind? Add it to a line here to fold it into that category.
+# • Used everywhere: the Timeline's bands (top to bottom in this order), the
+#   colour of each dot on the Graph (+ its legend), and the List's dropdown.
+# • The "| #colour" part is optional (a hex colour); leave it off for a default.
+# • Any kind NOT listed here goes in "Other" (grey) on the Timeline and Graph,
+#   and shows up as its own category in the List. Adding a new kind? Add it to
+#   a line here.
 # • This block must stay above the first "###" node.
 
 ## categories
-People: writer, person, director, philosopher, musician
-School and classes: school, class
+Music: musician, album | #c96a3b
+People and places: person, director, school, class, platform | #8a6fc9
+Books and writers: book, writer, philosopher | #2f9c78
+Films: film | #3b82c4
 
 ### lewis-mere-christianity
 label: Mere Christianity
