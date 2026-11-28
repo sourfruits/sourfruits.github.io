@@ -73,7 +73,8 @@
         },
         {
           "engagedDate": "2026-10-26",
-          "note": "\"Time (The Revelator)\" thread: time-and-loss"
+          "note": "Time (The Revelator)",
+          "thread": "Time and loss"
         }
       ]
     },
@@ -114,6 +115,11 @@
       "kind": "book",
       "creator": "Hunter S. Thompson",
       "discovered_via": [
+        {
+          "source": "fear-and-loathing-in-las-vegas-1998",
+          "awareDate": "2026-04",
+          "note": "Knew of the book through the movie"
+        },
         {
           "source": "joni-mitchell",
           "awareDate": "2026-11-27",
@@ -202,8 +208,8 @@
         {
           "source": "rvh",
           "engagedDate": "2026-11-03",
-          "thread": "Poetry",
-          "note": "First aware through Gaffney FWS, inspired to explore poetry"
+          "thread": "Time and loss",
+          "note": "First aware through Gaffney FWS, rediscovered Spring and Fall"
         }
       ]
     },
@@ -398,7 +404,6 @@
       "discovered_via": [
         {
           "source": "fyodor-dostoevsky",
-          "awareDate": "2026-05",
           "engagedDate": "2026-09-07"
         }
       ],

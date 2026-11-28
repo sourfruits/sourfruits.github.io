@@ -3877,39 +3877,71 @@ body.is-graph-faux-fs { overflow: hidden; }
   left: 0;
   z-index: 4;
   flex: none;
-  width: 118px;
+  width: 110px;
   background: var(--surface);
   border-right: 1px solid var(--line-light);
 }
 /* Soft fade just right of the band names, so labels scrolling under them
    fade out instead of showing clipped fragments. */
-.tl-gutter::after {
+/* One block per band: its fill (plain or shaded, matching the strip) and,
+   just past the right edge, a soft fade in the same colour so labels
+   scrolling under the band names fade out instead of showing fragments. */
+.tl-gutter-band { position: absolute; left: 0; right: 0; background: var(--surface); }
+/* Heading strip: same grey as the canvas heading, line underneath. */
+.tl-head-shade, .tl-gutter-head { background: color-mix(in srgb, var(--ink) 5%, var(--surface)); border-bottom: 1px solid var(--line-light); box-sizing: border-box; }
+.tl-head-shade { position: absolute; top: 0; left: 0; pointer-events: none; }
+.tl-month { z-index: 1; }
+.tl-col.is-first { border-left: none; }   /* the band names' line is its edge */
+.timeline-view:not(.is-scrolled-x) .tl-gutter-band::after { opacity: 0; }
+.tl-gutter-band.tl-gutter-head::after { background: linear-gradient(to right, color-mix(in srgb, var(--ink) 5%, var(--surface)), transparent); }
+/* One clean structure: no rule beside the band names, no dashed lines
+   between bands (the alternating fill separates them), and only the
+   heading strip's single line under the years and months. */
+.timeline-view:not(.is-vertical) .tl-gutter { border-right: 1px solid rgb(from var(--ink) r g b / 0.12); }   /* one line, full height */
+.timeline-view:not(.is-vertical) .tl-year { border-bottom: none; }
+.timeline-view:not(.is-vertical) .tl-year { background: color-mix(in srgb, var(--ink) 5%, var(--surface)); }
+.tl-gutter-band.is-shaded { background: color-mix(in srgb, var(--ink) 3.5%, var(--surface)); }
+.tl-gutter-band::after {
   content: "";
   position: absolute;
   top: 0;
   bottom: 0;
-  right: -28px;
+  right: -29px;   /* starts just past the dividing line, never over it */
   width: 28px;
   background: linear-gradient(to right, var(--surface), rgb(from var(--surface) r g b / 0));
   pointer-events: none;
+}
+.tl-gutter-band.is-shaded::after {
+  background: linear-gradient(to right, color-mix(in srgb, var(--ink) 3.5%, var(--surface)), transparent);
 }
 .tl-band {
   position: absolute;
   left: 10px;
   right: 6px;
-  display: flex;
-  align-items: flex-start;
+  padding-left: 8px;
+  border-left: 3px solid var(--tl-lane-4);
   line-height: 1.25;
-  gap: 6px;
   font-family: var(--font-sans);
   font-size: var(--text-tiny);
-  color: var(--muted);
+  color: var(--ink);
 }
+.tl-band.lane-0 { border-color: var(--tl-lane-0); }
+.tl-band.lane-1 { border-color: var(--tl-lane-1); }
+.tl-band.lane-2 { border-color: var(--tl-lane-2); }
+.tl-band.lane-3 { border-color: var(--tl-lane-3); }
 .tl-canvas { position: relative; flex: none; }
 .tl-lines { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
 .tl-col { position: absolute; top: 0; pointer-events: none; }
-.tl-col { border-left: 1px solid var(--line-light); }
+.tl-col { border-left: 1px solid rgb(from var(--ink) r g b / 0.06); }   /* month dividers: hairline */
+/* A new year: a firmer line, running up through the heading too. */
+.tl-col.is-year-start { border-left: 1px solid rgb(from var(--ink) r g b / 0.22); z-index: 2; }
+/* Names cut off by the right edge of the frame fade out instead of being chopped. */
+.timeline-view:not(.is-vertical) .tl-scroll {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
 .tl-col.is-folded { background: rgb(from var(--ink) r g b / 0.05); }
+.tl-band-shade { position: absolute; left: 0; background: rgb(from var(--ink) r g b / 0.035); pointer-events: none; }
 .tl-band-rule { position: absolute; left: 0; border-top: 1px dashed var(--line-light); pointer-events: none; }
 .tl-year {
   position: absolute;
@@ -3936,13 +3968,22 @@ body.is-graph-faux-fs { overflow: hidden; }
   /* Stays at the left edge (just right of the band names) while you scroll
      through that year, so the strip always says which year you're in. */
   position: sticky;
-  left: 150px;   /* clear of the band names and their fade */
+  left: 122px;   /* just right of the band names */
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 .tl-year-caret { width: 10px; color: var(--muted); font-weight: 400; }
-.tl-year-count { color: var(--muted); font-weight: 400; font-size: var(--text-tiny); }
+.tl-year-count {
+  margin-left: 2px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: rgb(from var(--ink) r g b / 0.08);
+  color: rgb(from var(--ink) r g b / 0.7);
+  font-weight: 500;
+  font-size: var(--text-tiny);
+  line-height: 1.5;
+}
 .tl-month {
   position: absolute;
   top: 27px;
@@ -3969,11 +4010,11 @@ body.is-graph-faux-fs { overflow: hidden; }
   opacity: 0;
   transition: opacity 0.15s ease;
 }
-.timeline-view .tl-link.is-lit { opacity: 0.7; stroke-width: 1.2; }
+.timeline-view .tl-link.is-lit { opacity: 0.85; stroke-width: 1.4; stroke: var(--tl-grad, var(--tl-lit, var(--ink))); }
 /* Two kinds of lit line, so you can tell which way each one goes:
    came from (into the entry) = dark ink; led to (out of it) = lighter grey. */
-.timeline-view .tl-link.is-in { stroke: var(--ink); opacity: 0.7; stroke-width: 1.2; }
-.timeline-view .tl-link.is-out { stroke: var(--ink); opacity: 0.7; stroke-width: 1.2; }
+.timeline-view .tl-link.is-in { stroke: var(--tl-grad, var(--tl-lit, var(--ink))); opacity: 0.85; stroke-width: 1.4; }
+.timeline-view .tl-link.is-out { stroke: var(--tl-grad, var(--tl-lit, var(--ink))); opacity: 0.85; stroke-width: 1.4; }
 /* Connections inside one month are too close for a line to read; the
    source / led to tags on the entries carry them instead. */
 
@@ -3992,15 +4033,29 @@ body.is-graph-faux-fs { overflow: hidden; }
   top: 50%;
   transform: translateY(-52%);
   font-weight: 700;
-  color: var(--ink);
+  color: var(--tl-lit, var(--ink));
   text-shadow: 0 0 2px var(--surface), 0 0 3px var(--surface);
 }
 .tl-entry.is-source::after, .tl-entry.has-out::after { right: -11px; }
+/* Each "→" is in its own entry's band colour, matching the line's gradient
+   at that end (source colour where it leaves, target colour where it lands). */
+.tl-entry.lane-0::before, .tl-entry.lane-0::after { color: var(--tl-lane-0); }
+.tl-entry.lane-1::before, .tl-entry.lane-1::after { color: var(--tl-lane-1); }
+.tl-entry.lane-2::before, .tl-entry.lane-2::after { color: var(--tl-lane-2); }
+.tl-entry.lane-3::before, .tl-entry.lane-3::after { color: var(--tl-lane-3); }
+.tl-entry.lane-4::before, .tl-entry.lane-4::after { color: var(--tl-lane-4); }
 .tl-entry.is-ledto::before, .tl-entry.has-in::before { left: -13px; }   /* tip touches the box's edge, not the dot */
 .timeline-view .tl-link.is-lineage { opacity: 0.4; stroke-width: 1.3; }
 /* Arrowheads on lit lines show which way a discovery went (source → found). */
 
-.tl-arrowhead { fill: var(--ink); }
+.tl-arrowhead { fill: var(--tl-lit, var(--ink)); }
+/* Same-month bracket: an arrowhead where it leaves the source's dot (pointing
+   out, to the left), matching the "→" where it arrives at the target. */
+.timeline-view .tl-link.is-lit[data-bracket] { marker-start: url(#tl-arrow-start); }
+/* Tree elbows inside a month: always faintly there (they're the structure of
+   the month), dark with an arrowhead when lit. */
+.timeline-view .tl-link[data-tree] { opacity: 0.4; }
+.timeline-view .tl-link.is-lit[data-tree] { opacity: 0.85; stroke: var(--tl-lit, var(--ink)); marker-end: url(#tl-arrow-tree); }
 /* Track: joins one entry's own dots along its row (heard of it → read it). */
 .tl-track { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 1 3; stroke-linecap: round; opacity: 0; }
 .timeline-view .tl-track.is-lit { opacity: 0.9; stroke: var(--ink); }
@@ -4048,7 +4103,11 @@ body.is-graph-faux-fs { overflow: hidden; }
 .tl-entry.is-current.is-here { outline-style: solid; }
 /* A soft halo in the page colour around the letters only: lines still show
    right up to the text, but never cut through it. */
-.tl-label { text-shadow: 0 0 2px var(--surface), 0 0 2px var(--surface), 0 0 4px var(--surface); }
+/* A halo in the band's own background colour around the letters: any line
+   passing behind a name gets a small clean gap instead of cutting through. */
+.tl-entry { --tl-bg: var(--surface); }
+.tl-entry.on-shade { --tl-bg: color-mix(in srgb, var(--ink) 3.5%, var(--surface)); }
+.tl-label { text-shadow: 0 0 2px var(--tl-bg), 0 0 3px var(--tl-bg), 0 0 4px var(--tl-bg), 0 0 6px var(--tl-bg), 2px 0 4px var(--tl-bg), -2px 0 4px var(--tl-bg); }
 .tl-entry.is-current .tl-label { font-weight: 700; }
 .tl-entry.is-current .tl-dot { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
 .tl-entry.is-flash { background: rgb(from var(--accent) r g b / 0.22); }
@@ -4095,8 +4154,8 @@ body.is-graph-faux-fs { overflow: hidden; }
   white-space: nowrap;
 }
 /* "Show all lines": every link shows faintly behind everything. */
-.timeline-view.show-all .tl-link { opacity: 0.16; }
-.timeline-view.show-all.has-focus .tl-link { opacity: 0.07; }
+.timeline-view.show-all .tl-link:not(.is-lit) { opacity: 0.09; }
+.timeline-view.show-all.has-focus .tl-link:not(.is-lit) { opacity: 0.05; }
 .tl-key-lines svg { margin-right: -2px; }
 .tl-key-dot { margin-right: 2px; }
 .tl-key-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
@@ -4107,11 +4166,59 @@ body.is-graph-faux-fs { overflow: hidden; }
   .tl-key-lines, .tl-showall { display: none; }
 }
 
+/* Phones: the timeline turned upright (renderTimelineVertical) — band
+   columns across, months down. */
+.timeline-view.is-vertical .tl-gutter { width: 70px; z-index: 6; }
+/* Covers the month labels as they scroll up under the pinned band names. */
+.tl-v-corner { position: sticky; top: 0; z-index: 1; height: 30px; background: var(--surface); border-bottom: 1px solid var(--line-light); }
+.timeline-view.is-vertical .tl-gutter::after { right: -14px; width: 14px; }
+.tl-v-when {
+  position: absolute;
+  left: 8px;
+  right: 2px;
+  line-height: 22px;
+  white-space: nowrap;
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  font-weight: 600;
+  color: var(--ink);
+}
+.tl-v-head {
+  /* In the flow (everything else is absolutely placed) so it can stick to
+     the top while the months scroll under it. */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  height: 30px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line-light);
+}
+.tl-v-head > span {
+  position: absolute;
+  top: 7px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.tl-v-row { position: absolute; left: 0; pointer-events: none; }
+.tl-v-row.is-alt { background: rgb(from var(--ink) r g b / 0.035); }
+/* The lines carry their own arrowhead; no "→" tags beside the labels. */
+.timeline-view.is-vertical .tl-entry::before,
+.timeline-view.is-vertical .tl-entry::after { display: none; }
+.timeline-view.is-vertical .tl-link.is-lit { marker-end: url(#tl-arrow-v); }
+
 /* Off-screen connection markers, pinned to the left/right edge of the strip. */
 .tl-edges { position: relative; height: 0; z-index: 6; }
 .tl-edge {
   position: absolute;
-  max-width: min(220px, 40%);
+  display: inline-flex;
+  max-width: min(170px, 40%);
   padding: 1px 8px;
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
@@ -4125,9 +4232,12 @@ body.is-graph-faux-fs { overflow: hidden; }
   cursor: pointer;
 }
 .tl-edge:hover { border-color: var(--ink); }
+/* Capped length: the name shortens with "…", the date and arrow always show. */
+.tl-edge-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.tl-edge-when { flex: none; white-space: pre; }
 .tl-edge.is-faint { color: var(--muted); }
 .tl-edge.is-self { border-color: var(--ink); font-weight: 600; }   /* the selected entry's own other dot */
-.tl-edge-l { left: 126px; }
+.tl-edge-l { left: 118px; }
 .tl-edge-r { right: 10px; }
 
 /* The earlier "heard of it" dot of an entry that also has a later engaged

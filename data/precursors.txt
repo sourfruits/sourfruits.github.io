@@ -41,6 +41,28 @@
 #                                 # dates are YYYY, YYYY-MM, or YYYY-MM-DD
 #                                 # engaged = watched (film) / STARTED reading (book)
 #
+# ── Aware vs engaged — how to log a discovery ─────────────────────────────────
+#
+#   aware   = the first time you HEARD OF it (a mention, a trailer, a cover).
+#   engaged = the first time you WATCHED it / STARTED READING it / listened.
+#
+#   • Each thing gets at most ONE aware moment and ONE engaged moment on the
+#     timeline: its earliest aware date and its earliest engaged date.
+#   • First heard of it → a line with  aware:  from whatever told you.
+#   • Heard of it AGAIN later from something else → still add the line with
+#     aware: (the date you made that connection). It shows in the card as
+#     "Also via …", but draws no line, since you already knew of it.
+#   • Actually got into it → put  engaged:  on the line that made you do it.
+#     That's the one that draws the line on the timeline. It can be an old
+#     "Also via" line: just add engaged: to it.
+#   • Heard of it and got into it in the same month → engaged: alone is fine.
+#   • Something you mean to get to "via" X but haven't yet → a line with just
+#     source: and a note (no date). It's listed as pending; add a date later.
+#   • discovered: is HOW YOU CAME TO IT. Facts like "the film is based on the
+#     book" or "she wrote it" go under connections:, not discovered:.
+#   • Inside a month the timeline orders things by what led to what, so you
+#     never need to arrange entries by hand.
+#
 # Notes:
 #   • Blank lines and lines starting with "#" are ignored.
 #   • A value containing a comma must be quoted:  note: "Girl, so confusing".
@@ -89,7 +111,7 @@ label: Gillian Welch
 kind: musician
 discovered:
   - source: lucinda-williams, aware: 2026-02-25, thread: folk
-  - engaged: 2026-10-26, note: "Time (The Revelator)" thread: time-and-loss
+  - engaged: 2026-10-26, note: "Time (The Revelator)", thread: Time and loss
 
 ### joni-mitchell
 label: Joni Mitchell
@@ -110,6 +132,7 @@ label: Fear and Loathing in Las Vegas
 kind: book
 creator: Hunter S. Thompson
 discovered:
+  - source: fear-and-loathing-in-las-vegas-1998, aware: 2026-04, note: Knew of the book through the movie
   - source: joni-mitchell, aware: 2026-11-27, thread: 60s counterculture
   - source: didion-the-white-album, aware: 2026-11-27, thread: 60s counterculture
 
@@ -150,7 +173,7 @@ discovered:
 label: Gerard Manley Hopkins
 kind: writer
 discovered:
-  - source: rvh, engaged: 2026-11-03, thread: Poetry, note: "First aware through Gaffney FWS, inspired to explore poetry"
+  - source: rvh, engaged: 2026-11-03, thread: Time and loss, note: "First aware through Gaffney FWS, rediscovered Spring and Fall"
 
 ### hopkins-poems-and-prose
 label: Poems and Prose
@@ -254,7 +277,7 @@ kind: book
 connections:
   - to: pickpocket-1959, relationship: influence
 discovered:
-  - source: fyodor-dostoevsky, aware: 2026-05, engaged: 2026-09-07
+  - source: fyodor-dostoevsky, engaged: 2026-09-07
 
 ### intro-to-film-noir
 label: Intro to Film Noir
