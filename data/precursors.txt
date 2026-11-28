@@ -126,7 +126,7 @@ label: Christina Rossetti
 kind: writer
 discovered:
   - source: gerard-manley-hopkins, engaged: 2026-11-12, thread: Poetry, note: "Victorian inspiration, 'A Better Resurrection'"
-  - source: voice-lessons, aware: 2026-11, engaged: 2026-11-11, note: "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor"
+  - source: voice-lessons, aware: 2026-11-11, note: "Assigned art song: When I am dead, my dearest by Samuel Coleridge-Taylor"
 
 ### the-friends-of-eddie-coyle-1973
 label: The Friends of Eddie Coyle (1973)

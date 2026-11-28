@@ -67,25 +67,26 @@ function tlData() {
   const items = [];          // appearances: { key, id, label, kind, lane, date, period, aware }
   const byId = {};           // id -> its appearances, oldest first
   rawData.nodes.forEach((n) => {
-    const per = new Map();   // period -> { date, aware }
-    const add = (date, aware) => {
-      const p = tlPeriod(date);
-      const cur = per.get(p);
-      if (!cur) per.set(p, { date, aware });
-      else {
-        if (dayKey(date) < dayKey(cur.date)) cur.date = date;
-        if (!aware) cur.aware = false;   // engaged in that month wins: filled dot
-      }
-    };
-    discoveredVia(n).forEach((d) => {
-      if (d.awareDate) add(d.awareDate, true);
-      if (d.engagedDate) add(d.engagedDate, false);
-    });
-    if (!per.size) per.set("undated", { date: "", aware: false });
-    const list = [...per.entries()]
-      .map(([period, v]) => ({ key: `${n.id}@${period}`, id: n.id, label: n.label, kind: n.kind,
-        lane: tlLaneOf(n.kind), date: v.date, period, aware: v.aware }))
-      .sort((a, b) => (dayKey(a.date) || 0) - (dayKey(b.date) || 0));
+    // At most two moments per entry, in time order: when you first heard of
+    // it (aware) and when you first got into it (engaged). If both fall in
+    // the same month they're one (engaged) dot.
+    const dvs = discoveredVia(n);
+    const earliest = (dates) => dates.filter(Boolean).reduce((b, x) => (!b || dayKey(x) < dayKey(b) ? x : b), "");
+    const aw = earliest(dvs.map((d) => d.awareDate));
+    const en = earliest(dvs.map((d) => d.engagedDate));
+    const mk = (date, aware) => ({ key: `${n.id}@${tlPeriod(date)}`, id: n.id, label: n.label, kind: n.kind,
+      lane: tlLaneOf(n.kind), date, period: tlPeriod(date), aware, moment: aware ? "aware" : "engaged" });
+    let list;
+    if (en && aw && dayKey(aw) < dayKey(en) && tlPeriod(aw) !== tlPeriod(en)) list = [mk(aw, true), mk(en, false)];
+    else if (en) list = [mk(en, false)];
+    else if (aw) list = [mk(aw, true)];
+    else list = [mk("", false)];
+    // One labelled dot per entry, at when you first engaged with it (or its
+    // earliest date if you haven't yet). Its other events become small
+    // unlabelled "ghost" dots, so every line can land on the event it's about
+    // and point forward in time, without the name appearing twice.
+    const mainIdx = Math.max(0, list.findIndex((a) => !a.aware));
+    list.forEach((a, i) => { a.ghost = i !== mainIdx; });
     byId[n.id] = list;
     items.push(...list);
   });
@@ -97,10 +98,16 @@ function tlData() {
   rawData.nodes.forEach((n) => {
     discoveredVia(n).forEach((d) => {
       if (!d.source || !ids.has(d.source) || d.source === n.id) return;
-      const when = d.awareDate || d.engagedDate || "";
-      const t = byId[n.id].find((a) => a.period === tlPeriod(when)) || byId[n.id][0];
+      // The event lands on the dot for its moment: an event that made you
+      // aware → the aware dot; one where you engaged → the engaged dot.
+      const kind = d.awareDate && !(d.engagedDate && tlPeriod(d.engagedDate) === tlPeriod(d.awareDate)) ? "aware" : "engaged";
+      const t = byId[n.id].find((a) => a.moment === kind) || byId[n.id][0];
+      const when = (kind === "aware" ? d.awareDate : d.engagedDate) || d.awareDate || d.engagedDate || "";
       const srcs = byId[d.source];
-      const before = srcs.filter((a) => !when || (dayKey(a.date) || 0) <= dayKey(when));
+      // Compare by month: a source dot from the same month as the event
+      // counts as "before" it (e.g. Pickpocket watched May 18 → Bresson,
+      // dated just "May", leaves from Pickpocket's May dot, not its April one).
+      const before = srcs.filter((a) => !when || a.period <= tlPeriod(when));
       const sItem = before.length ? before[before.length - 1] : srcs[0];
       // Same rule as the graph: an engagedDate makes it "engaged" (solid line);
       // an awareDate alone makes it "aware" (dashed).
@@ -219,7 +226,7 @@ function renderTimeline() {
             const sub = Math.floor(i / perCol), row = i % perCol;
             const dx = x + 12 + sub * TL_COL_W, cy = laneTop[li] + TL_LANE_PAD + row * TL_ROW_H + TL_ROW_H / 2;
             pos[n.key] = { x: dx, y: cy, col: ci };
-            html.push(`<button type="button" class="tl-entry lane-${li}${n.aware ? " is-aware-pos" : ""}" data-node-id="${escapeHTML(n.id)}" data-period="${escapeHTML(n.period)}"
+            html.push(`<button type="button" class="tl-entry lane-${li}${n.aware ? " is-aware-pos" : ""}${n.ghost ? " is-ghost" : ""}" data-node-id="${escapeHTML(n.id)}" data-period="${escapeHTML(n.period)}"
               style="left:${dx - 6}px;top:${cy - TL_ROW_H / 2}px;max-width:${TL_COL_W - 10}px" title="${escapeHTML(n.label)}">
               <span class="tl-dot" aria-hidden="true"></span><span class="tl-label">${escapeHTML(n.label)}</span></button>`);
           });
@@ -258,17 +265,10 @@ function renderTimeline() {
   // from the left and stop just short of it, leaving room for the arrowhead
   // (shown on lit lines) that marks which way the discovery went. Labels have
   // a soft halo (CSS), so a line passing under text never cuts through it.
-  // Fan-out: when one entry leads to several things, each line leaves at a
-  // slightly different height (top target = top lane), so they don't merge
-  // into one thick line where they start.
-  const fan = {};
-  const bySource = {};
-  data.links.forEach((l) => { if (pos[l.sk] && pos[l.tk]) (bySource[l.sk] = bySource[l.sk] || []).push(l); });
-  Object.values(bySource).forEach((arr) => {
-    arr.sort((p, q) => pos[p.tk].y - pos[q.tk].y || pos[p.tk].x - pos[q.tk].x);
-    const n = arr.length, step = n > 1 ? Math.min(2.6, 7 / (n - 1)) : 0;
-    arr.forEach((l, i) => { fan[l.sk + ">" + l.tk] = (i - (n - 1) / 2) * step; });
-  });
+  // Where each entry's label ends (measured now that it's on the page): lines
+  // leave a source from just after its label, where the "→" sits when lit.
+  const labelEnd = {};
+  canvas.querySelectorAll(".tl-entry").forEach((el) => { labelEnd[`${el.dataset.nodeId}@${el.dataset.period}`] = el.offsetLeft + el.offsetWidth; });
 
   // Tracks: a faint line along an entry's own row from one of its dots to the
   // next (heard of it here → read it there).
@@ -285,17 +285,31 @@ function renderTimeline() {
   const paths = tracks.join("") + data.links.map((l) => {
     const a = pos[l.sk], b = pos[l.tk];
     if (!a || !b || (a.folded && b.folded && a.x === b.x)) return "";
-    const sx = a.folded ? a.x : a.x + 5;   // leave from the right edge of the source's dot
-    const ex = b.x - 7;
-    const sy = a.y + (fan[l.sk + ">" + l.tk] || 0);
+    // Out: just after the source's label (past its "→"). In: just before the
+    // target's dot (at its "→").
+    const sx = a.folded ? a.x : (labelEnd[l.sk] || a.x) + 13;
+    const ex = b.folded ? b.x : b.x - 17;
+    const sy = a.y;
     let d;
-    if (ex - sx > 40) {
-      // Hold each lane level for a stretch before turning, so the fan reads.
+    const behind = ex - sx <= 6 && a.col === b.col && !a.folded && !b.folded;
+    if (!behind && ex - sx <= 6) {
+      // Neighbours across a column edge: the two "→"s already (nearly) touch.
+      // A short straight join if there's any room, else no line at all.
+      if (ex - sx < 2) return "";
+      d = `M${sx},${sy} L${ex},${b.y}`;
+    } else if (!behind) {
+      // Target is ahead (to the right): a plain S-curve; for close neighbours
+      // on the same row that's just a short straight line.
       const run = Math.min(70, (ex - sx) * 0.4);
       d = `M${sx},${sy} C${sx + run},${sy} ${ex - run},${b.y} ${ex},${b.y}`;
     } else {
-      // Same month (or an earlier date): bow out to the left, then come in.
-      d = `M${sx},${sy} C${sx - 34},${sy} ${ex - 34},${b.y} ${ex},${b.y}`;
+      // Target sits left of where the source's label ends (same month, or an
+      // earlier date). Still out from the END and in at the BEGINNING: step
+      // out right, run back along the thin gap between rows (just above or
+      // below the target's row, on the side facing the source), then come
+      // into the target from its left.
+      const gy = b.y + (a.y > b.y ? 11 : -11);
+      d = `M${sx},${sy} C${sx + 16},${sy} ${sx + 16},${gy} ${sx + 2},${gy} L${ex - 10},${gy} C${ex - 18},${gy} ${ex - 18},${b.y} ${ex},${b.y}`;
     }
     const sameMonth = a.col === b.col;   // lit lines skip these; the source / led to tags say it
     return `<path class="tl-link${l.aware ? " is-aware" : ""}${sameMonth ? " is-same-month" : ""}" data-s="${escapeHTML(l.s)}" data-t="${escapeHTML(l.t)}" d="${d}"/>`;
@@ -320,8 +334,9 @@ function timelinePaint() {
   // A newly opened card (e.g. from a link inside the card) scrolls its entry
   // into view, unfolding its year if needed.
   if (detailNodeId !== tlState.lastDetail) {
+    const prev = tlState.lastDetail;
     tlState.lastDetail = detailNodeId;
-    if (detailNodeId) timelineReveal(detailNodeId);
+    if (detailNodeId) timelineReveal(detailNodeId, false, tlPickDot(detailNodeId, prev));
     if (!tlCache) return;   // timelineReveal re-rendered (and repainted) already
   }
   const id = tlState.hover || detailNodeId;
@@ -331,14 +346,7 @@ function timelinePaint() {
   // started is lit a step softer ("lineage"); everything else dims. Things it
   // led to further downstream are NOT lit (that tree gets big fast).
   const direct = id ? new Set([id, ...(up[id] || []), ...(down[id] || [])]) : null;
-  const lineage = new Set();
-  if (id) {
-    const stack = [...(up[id] || [])];
-    while (stack.length) {
-      const n = stack.pop();
-      (up[n] || []).forEach((p) => { if (!lineage.has(p) && p !== id) { lineage.add(p); stack.push(p); } });
-    }
-  }
+  const lineage = new Set();   // (lineage level removed: the trail bar spells out the path back)
   view.classList.toggle("has-focus", !!direct);
   view.classList.toggle("show-all", tlState.showAll);
   tlCache.entryEls.forEach((el) => {
@@ -349,6 +357,10 @@ function timelinePaint() {
     // Say how each direct connection relates to the selected entry.
     el.classList.toggle("is-source", !!direct && nid !== id && (up[id] || []).includes(nid));
     el.classList.toggle("is-ledto", !!direct && nid !== id && (down[id] || []).includes(nid));
+    // The selected entry gets arrows too, so every lit line has one at each
+    // end: "→" before it if something led to it, "→" after if it led on.
+    el.classList.toggle("has-in", nid === id && !!(up[id] || []).length);
+    el.classList.toggle("has-out", nid === id && !!(down[id] || []).length);
   });
   tlCache.linkEls.forEach((p) => {
     const s = p.dataset.s, t = p.dataset.t;
@@ -427,13 +439,46 @@ function timelineEdges() {
     out.push(`<button type="button" class="tl-edge tl-edge-${side}${el.classList.contains("is-lit") ? "" : " is-faint"}" data-node-id="${escapeHTML(id)}"
       style="top:${y}px" title="Scroll to ${name}">${side === "l" ? "← " : ""}${name}${escapeHTML(when)}${side === "r" ? " →" : ""}</button>`);
   });
-  box.innerHTML = out.join("");
+  // Keep it light: at most two markers per side; any more collapse into a
+  // "+N more" pill (clicking it scrolls to the nearest one).
+  const keep = { l: 0, r: 0 }, extra = { l: [], r: [] };
+  const trimmed = out.filter((html) => {
+    const side = html.includes("tl-edge-l") ? "l" : "r";
+    if (keep[side] < 2) { keep[side]++; return true; }
+    extra[side].push(html.match(/data-node-id="([^"]+)"/)[1]);
+    return false;
+  });
+  ["l", "r"].forEach((side) => {
+    const n = extra[side].length;
+    if (!n) return;
+    const y = Math.max(...used[side].slice(0, 2)) + 20;
+    trimmed.push(`<button type="button" class="tl-edge tl-edge-${side} is-faint" data-node-id="${escapeHTML(extra[side][0])}"
+      style="top:${y}px">${side === "l" ? "← " : ""}+${n} more${side === "r" ? " →" : ""}</button>`);
+  });
+  box.innerHTML = trimmed.join("");
 }
 
 // Bring an entry into view: unfold its year if it's folded, then, only if it
 // isn't already fully visible (clear of the pinned band names), smoothly
 // scroll so it sits in the middle.
-function timelineReveal(id, force) {
+// Which of an entry's dots to go to when it's opened. A dot clicked directly
+// wins; otherwise, if it was reached from a connected entry (a link in the
+// card or the trail), the dot that connection is about: arriving from its
+// source → the dot that source led to; arriving from something it led to →
+// the dot that link left from. Else its latest dot.
+function tlPickDot(id, prev) {
+  if (tlState.clickedKey && tlState.clickedKey.startsWith(id + "@")) {
+    const k = tlState.clickedKey; tlState.clickedKey = null; return k;
+  }
+  tlState.clickedKey = null;
+  if (!prev || !tlCache) return null;
+  const l = tlCache.data.links.find((x) => x.s === prev && x.t === id)
+         || tlCache.data.links.find((x) => x.s === id && x.t === prev);
+  if (!l) return null;
+  return l.t === id ? l.tk : l.sk;
+}
+
+function timelineReveal(id, force, key) {
   const apps = tlCache && tlCache.data.byId[id];
   if (!apps) return;
   // Unfold any folded year holding one of its dots.
@@ -446,7 +491,10 @@ function timelineReveal(id, force) {
   }
   // Its latest dot (where you engaged with it, if you have).
   const els = tlCache.entryEls.filter((e) => e.dataset.nodeId === id);
-  const el = els[els.length - 1];
+  const want = key && els.find((e) => `${id}@${e.dataset.period}` === key);
+  const el = want || els.find((e) => !e.classList.contains("is-ghost")) || els[els.length - 1];
+  // The dot you arrived at gets a stronger mark than its other dot(s).
+  tlCache.entryEls.forEach((e) => e.classList.toggle("is-here", e === el));
   const scroller = document.getElementById("tl-scroll");
   if (!el || !scroller) return;
   const sr = scroller.getBoundingClientRect(), er = el.getBoundingClientRect();
@@ -502,6 +550,7 @@ function timelineReveal(id, force) {
     if (!el) { if (detailNodeId !== null) closeDetail(); return; }   // empty space clears
     const id = el.dataset.nodeId;
     if (detailNodeId === id) { closeDetail(); return; }               // click again clears
+    tlState.clickedKey = `${id}@${el.dataset.period}`;
     const node = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
     if (node) openDetail(node, null, true);
   });
