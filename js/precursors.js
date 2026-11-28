@@ -38,20 +38,21 @@ const TUNING = {
                          // permanent label + hollow/dashed outline. Fixed value, not a
                          // percentile — so equally-sized nodes never split across the boundary.
   growthStep: 3,         // + hub radius per point of downstream influence (uncapped)
-  hubFont: 18,           // hub label font (px)
+  hubFont: 13,           // hub label font (screen px — labels hold this size at any zoom)
   hubMaxLabelWidth: 170, // hub label pixel width (world units) before ellipsis
   hubLabelThreshold: 0,  // on-screen radius (size × zoom, px) to reveal a hub label (0 = always)
   // ── Leaf tier ─────────────────────────────────────────────────────────────
   nodeBase: 11,          // base node radius (world units): every node grows from this base
   leafStep: 3,           // + leaf radius per point of downstream influence (hubs use growthStep)
-  leafFont: 15,          // leaf hover-label font (px)
+  leafFont: 12,          // leaf hover-label font (screen px — constant at any zoom)
   leafMaxLabelWidth: 170,// leaf label pixel width (world units) before ellipsis
   leafLabelThreshold: 5, // on-screen radius (size × zoom, px) to reveal a leaf label
   // ── Shared (whole simulation) ───────────────────────────────────────────────
   charge: -260,        // many-body repulsion (more negative = nodes push apart harder)
   linkDistance: 90,    // preferred edge length
   collidePad: 22,      // extra spacing beyond each node's radius (collision force)
-  linkWidth: 3,        // edge stroke width (world units); directional edges draw a touch thicker
+  gravity: 0.012,      // pull toward the centre, so separate clusters sit close to the main one
+  linkWidth: 2.4,       // edge stroke width (world units); directional edges draw a touch thicker
 };
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -125,7 +126,11 @@ const linkLayer = zoomLayer.append("g").attr("class", "links");
 const nodeLayer = zoomLayer.append("g").attr("class", "nodes");
 // Labels live in their own layer above every node, so a title is always drawn in
 // front of the circles (its own and its neighbours'), never hidden behind them.
-const labelLayer = zoomLayer.append("g").attr("class", "node-labels");
+// It sits OUTSIDE the zoom layer, in plain screen coordinates: positionLabels
+// maps each node through the zoom transform. Text inside a scaled group gets
+// re-rasterised at every zoom step and Chrome snaps its width back and forth,
+// which made labels shimmer while the camera moved; unscaled text stays put.
+const labelLayer = svg.append("g").attr("class", "node-labels");
 
 // Preset relationship types for connections. Directional types draw an arrow
 // from the origin (the node the connection is written on) and grow the origin
@@ -196,6 +201,8 @@ svg.append("rect")
 let autoFit = true;
 let lastFitScale = 1;      // the zoom the whole graph frames at (base for click zoom)
 let activeThread = null;   // the thread currently highlighted (null = none)
+let hoverKeep = null;      // Set of ids lit while hovering a node (it + its neighbours), else null
+let hoverNear = null;      // Set of ids two steps from the focus (partly faded), else null
 let threadKeep = null;     // Set of node ids kept lit for the active thread/scrub (else null)
 // Timeline scrubber state (shares threadKeep + the .is-thread-dim fade — the two
 // are mutually exclusive overlays).
@@ -205,6 +212,17 @@ let scrubIndex = 0;        // current position into scrubStops
 let scrubPlaying = false;
 let scrubPlayTimer = null;
 let currentScale = 1;  // live zoom scale, drives size-based label visibility
+// Labels stay hidden until a fresh layout has settled enough that the camera
+// has stopped zooming (alpha below this), then fade in.
+let labelsSettled = true;
+const LABEL_REVEAL_ALPHA = 0.15;
+function revealLabels() {
+  if (labelsSettled) return;
+  labelsSettled = true;
+  // A CSS transition rather than a d3 one: it can't be interrupted or stalled
+  // by d3's timer, which once left the labels stuck invisible.
+  labelLayer.style("transition", "opacity 0.35s ease").style("opacity", 1);
+}
 // Camera transitions use interpolateZoom — the "flyover" that zooms out, arcs
 // across, and zooms back in on longer moves. rho controls how aggressive that
 // arc is (default √2 ≈ 1.41); a lower rho flattens it. Tune rho below, or swap
@@ -216,7 +234,10 @@ const zoom = d3.zoom().scaleExtent([0.1, 4]).interpolate(d3.interpolateZoom.rho(
     `translate(${event.transform.x},${event.transform.y}) scale(${event.transform.k})`);
   currentScale = event.transform.k;
   if (event.sourceEvent) autoFit = false;
-  updateLabelVisibility();
+  // Labels are counter-scaled to stay a constant screen size, so re-place them
+  // (their scale(1/zoom) transform) on every zoom change.
+  const labelSel = labelLayer.selectAll("text.node-label");
+  positionLabels(labelSel.data(), labelSel);
 });
 svg.call(zoom);
 
@@ -255,6 +276,7 @@ document.addEventListener("pointerup", (e) => {
   if (!wrap.contains(t)) return;                     // outside the graph entirely
   if (detail.contains(t)) return;                    // inside the card
   if (t.closest && t.closest(".list-view")) return;  // the list view handles its own taps
+  if (t.closest && t.closest(".timeline-view")) return;  // so does the timeline view
   if (t.closest && t.closest("g.node")) return;      // a node — it toggles itself
   if (detailNodeId !== null) closeDetail();
   if (activeThread) selectThread(null);              // empty tap clears the thread
@@ -560,14 +582,21 @@ function nodeRadius(d) {
   return TUNING.nodeBase + (d.growth || 0) * step;
 }
 
-// Label font size (px) — per tier.
-function labelFontSize(d) {
-  return isHub(d) ? TUNING.hubFont : TUNING.leafFont;
-}
+// Label font size and truncation width, per tier, in *screen* px. Labels are drawn at this fixed font size
+// and shrunk/grown as a whole with a scale(1/zoom) transform (see
+// positionLabels). Changing font-size every frame instead makes the browser
+// re-snap glyph widths, so labels shimmer while the camera moves.
+function labelPx(d) { return isHub(d) ? TUNING.hubFont : TUNING.leafFont; }
+function labelMaxPx(d) { return isHub(d) ? TUNING.hubMaxLabelWidth : TUNING.leafMaxLabelWidth; }
 
-// Label truncation width (px) — per tier.
-function labelMaxWidth(d) {
-  return isHub(d) ? TUNING.hubMaxLabelWidth : TUNING.leafMaxLabelWidth;
+// Collision radius for the layout. Hub labels sit centred on the hub and are
+// usually much wider than its circle, so a hub claims room for half its label
+// width too; otherwise two hubs settle close enough that their names collide.
+function collideRadius(d) {
+  const r = nodeRadius(d) + TUNING.collidePad;
+  if (!isHub(d)) return r;
+  const w = measureTextWidth(truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d)), labelPx(d)) * 1.1; // ×1.1 ≈ bold
+  return Math.max(r, w / 2 + 10);
 }
 
 // Label tiers each have their own reveal threshold: a label shows on hover, or
@@ -577,25 +606,21 @@ function labelVisible(d) {
   const thr = isHub(d) ? TUNING.hubLabelThreshold : TUNING.leafLabelThreshold;
   return d.__hover === true || nodeRadius(d) * currentScale >= thr;
 }
+// Re-run label placement (hover/selection/thread changes alter which labels win
+// a contested spot), which also applies each label's opacity.
 function updateLabelVisibility() {
-  labelLayer.selectAll("text.node-label")
-    .style("opacity", (d) => {
-      const base = labelVisible(d) ? 1 : 0;
-      // Off-thread labels fade with the rest of the graph (kept here rather than
-      // in CSS because this inline opacity is re-applied on every zoom).
-      return (threadKeep && !threadKeep.has(d.id)) ? base * 0.12 : base;
-    });
+  const sel = labelLayer.selectAll("text.node-label");
+  positionLabels(sel.data(), sel);
 }
 
 // Re-apply label text/size/width/position in place (no simulation restart), so
 // font/width/threshold tuning updates the labels without moving the layout.
 function refreshLabels() {
   const sel = labelLayer.selectAll("text.node-label");
-  sel.text((d) => truncateLabel(graphLabel(d), labelFontSize(d), labelMaxWidth(d)))
-     .style("font-size", (d) => labelFontSize(d) + "px")
+  sel.text((d) => truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d)))
+     .style("font-size", (d) => labelPx(d) + "px")
      .style("font-weight", (d) => (isHub(d) ? "700" : "400"));
   positionLabels(sel.data(), sel);
-  updateLabelVisibility();
 }
 
 // Re-apply node/link/label appearance in place, without rebuilding the graph or
@@ -1023,6 +1048,8 @@ renderPlaceholder();   // start empty
 // it from every other node.
 function updateNodeSelection() {
   nodeLayer.selectAll("g.node").classed("is-selected", (d) => d.id === detailNodeId);
+  applyFocus();
+  if (typeof timelinePaint === "function") timelinePaint();   // timeline view's chain highlight
 }
 
 // Click a node to open its card near the cursor; clicking it again dismisses it.
@@ -1084,6 +1111,11 @@ function render(mode) {
 
   const { w, h } = size();
   autoFit = true;  // reframe this fresh layout as it settles
+  // Hide labels while a fresh layout settles: the camera is still zooming out,
+  // so constant-size labels would flash on, jump around, then blink off.
+  // They fade in once the layout has mostly settled (see the tick handler).
+  labelsSettled = false;
+  labelLayer.style("transition", "none").style("opacity", 0);
 
   // Count each node's connections in this view (edges touching it), for the
   // hover card. Done now, while link endpoints are still plain ids. Incoming
@@ -1164,16 +1196,16 @@ function render(mode) {
   label.exit().remove();
   const labelAll = label.enter().append("text").attr("class", "node-label").merge(label);
   labelAll
-    .text((d) => truncateLabel(graphLabel(d), labelFontSize(d), labelMaxWidth(d)))
+    .text((d) => truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d)))
     .style("fill", "var(--ink)")
     .style("font-family", "var(--font-sans)")
-    .style("font-size", (d) => labelFontSize(d) + "px")
+    .style("font-size", (d) => labelPx(d) + "px")
     .style("font-weight", (d) => (isHub(d) ? "700" : "400"));
 
   nodeAll
     // Hovering reveals the node's own label; clicking opens the detail panel.
-    .on("mouseenter", (event, d) => { d.__hover = true; updateLabelVisibility(); })
-    .on("mouseleave", (event, d) => { d.__hover = false; updateLabelVisibility(); })
+    .on("mouseenter", (event, d) => { d.__hover = true; setHoverHighlight(d); })
+    .on("mouseleave", (event, d) => { d.__hover = false; setHoverHighlight(null); })
     .on("click", (event, d) => { event.stopPropagation(); toggleDetail(d, event); })
     // clickDistance lets a tiny pointer jitter still register as a click (open the
     // card) rather than being swallowed as a drag gesture.
@@ -1191,7 +1223,12 @@ function render(mode) {
     .force("link", d3.forceLink(graph.links).id((d) => d.id).distance(TUNING.linkDistance).strength(0.5))
     .force("charge", d3.forceManyBody().strength(TUNING.charge))
     .force("center", d3.forceCenter(w / 2, h / 2))
-    .force("collide", d3.forceCollide().radius((d) => nodeRadius(d) + TUNING.collidePad))
+    // Gentle pull toward the middle. forceCenter only shifts the whole graph, so
+    // without this a cluster with no links to the rest drifts far away and the
+    // auto-fit has to zoom way out to keep it in frame.
+    .force("x", d3.forceX(w / 2).strength(TUNING.gravity))
+    .force("y", d3.forceY(h / 2).strength(TUNING.gravity))
+    .force("collide", d3.forceCollide().radius(collideRadius))
     .force("labels", forceLabelSeparation())
     .on("tick", () => {
       linkAll
@@ -1209,13 +1246,23 @@ function render(mode) {
       });
       positionLabels(graph.nodes, labelAll);
       if (autoFit) fitView(false);
+      if (!labelsSettled && simulation.alpha() < LABEL_REVEAL_ALPHA) revealLabels();
     })
     // One more fit once it settles, in case the last tick lagged the final layout.
-    .on("end", () => { if (autoFit) fitView(false); });
-  simulation.alpha(0.9).restart();
+    .on("end", () => { if (autoFit) fitView(false); revealLabels(); });
+  // Cool down about half as fast as d3's default (0.0228), so the layout gets
+  // more ticks to untangle crossings before it freezes. Labels stay hidden
+  // until it's mostly settled, so the longer settle isn't visible as motion.
+  simulation.alphaDecay(0.012);
+  // Run the first, most chaotic part of the layout instantly (before anything
+  // is drawn), then animate only the final settle — so labels appear in about
+  // a second instead of three.
+  simulation.alpha(0.9).stop();
+  simulation.tick(90);
+  simulation.restart();
 
   renderLegend(mode);
-  updateLabelVisibility();
+  applyFocus();   // also refreshes labels; re-derives the click/hover fade
 }
 
 // Place each node's label toward its most open side — the direction away from
@@ -1223,36 +1270,161 @@ function render(mode) {
 // from the centre. The open-space direction (d.__ldx/__ldy) is computed once per
 // tick by forceLabelSeparation, reusing that scan; here we just read it. Falls
 // back to the outward-from-centroid direction before the first scan has run.
+// Focus highlight: light up one node and its direct neighbours, fade the rest
+// (nodes, links and labels). The focus is the hovered node if any, else the node
+// whose card is open — so a click keeps the fade while you read the card, and
+// works on touch screens too. A thread / timeline fade (threadKeep) takes over
+// from the click fade; hovering still works on top of it.
+let hoverNode = null;
+function setHoverHighlight(d) {
+  hoverNode = d || null;
+  applyFocus();
+}
+function applyFocus() {
+  const focusId = hoverNode ? hoverNode.id : (threadKeep ? null : detailNodeId);
+  hoverKeep = null; hoverNear = null;
+  if (focusId !== null && focusId !== undefined &&
+      nodeLayer.selectAll("g.node").filter((n) => n.id === focusId).size()) {
+    const links = linkLayer.selectAll("line.link").data();
+    // Ring 1: the focus + direct neighbours (fully lit).
+    hoverKeep = new Set([focusId]);
+    for (const l of links) {
+      const s = idOf(l.source), t = idOf(l.target);
+      if (s === focusId) hoverKeep.add(t);
+      if (t === focusId) hoverKeep.add(s);
+    }
+    // Ring 2: neighbours of neighbours (partly faded, for context).
+    hoverNear = new Set();
+    for (const l of links) {
+      const s = idOf(l.source), t = idOf(l.target);
+      if (hoverKeep.has(s) && !hoverKeep.has(t)) hoverNear.add(t);
+      if (hoverKeep.has(t) && !hoverKeep.has(s)) hoverNear.add(s);
+    }
+  }
+  const ring = (id) => (!hoverKeep ? 0 : hoverKeep.has(id) ? 1 : hoverNear.has(id) ? 2 : 3);
+  nodeLayer.selectAll("g.node")
+    .classed("is-hover-near", (n) => ring(n.id) === 2)
+    .classed("is-hover-dim", (n) => ring(n.id) === 3);
+  linkLayer.selectAll("line.link")
+    // Links touching the focus stay lit; links out to ring 2 are partly faded.
+    .classed("is-hover-near", (l) => {
+      if (!hoverKeep) return false;
+      const s = idOf(l.source), t = idOf(l.target);
+      return s !== focusId && t !== focusId && ring(s) <= 2 && ring(t) <= 2;
+    })
+    .classed("is-hover-dim", (l) => {
+      if (!hoverKeep) return false;
+      const s = idOf(l.source), t = idOf(l.target);
+      return s !== focusId && t !== focusId && (ring(s) === 3 || ring(t) === 3);
+    });
+  svg.classed("has-focus", !!(hoverKeep || threadKeep));
+  updateLabelVisibility();
+}
+
 function positionLabels(nodes, labelSel) {
   if (!nodes.length) return;
   let sx = 0, sy = 0;
   for (const n of nodes) { sx += n.x || 0; sy += n.y || 0; }
   const cx = sx / nodes.length, cy = sy / nodes.length;
-  // Labels sit in their own top layer (world coordinates), so positions are the
-  // node's own x/y plus the offset — not relative to a node group.
-  labelSel.each(function (d) {
-    const nx = d.x || 0, ny = d.y || 0;
-    // Hubs carry their label centred on the node itself, not offset outward.
-    if (isHub(d)) {
-      d3.select(this)
-        .attr("x", nx).attr("y", ny)
-        .attr("text-anchor", "middle")
-        .attr("dominant-baseline", "middle");
-      return;
-    }
-    let ux = d.__ldx, uy = d.__ldy;
-    if (ux === undefined) {
-      const dx = nx - cx, dy = ny - cy;
-      const len = Math.hypot(dx, dy) || 1;
-      ux = dx / len; uy = dy / len;
-    }
-    const gap = nodeRadius(d) + 5;
-    d3.select(this)
-      .attr("x", nx + ux * gap)
-      .attr("y", ny + uy * gap)
-      .attr("text-anchor", ux > 0.25 ? "start" : ux < -0.25 ? "end" : "middle")
-      .attr("dominant-baseline", uy > 0.25 ? "hanging" : uy < -0.25 ? "auto" : "middle");
+  // Labels sit in their own top layer in *screen* coordinates, so each node's
+  // world x/y goes through the live zoom transform.
+  const t = d3.zoomTransform(svg.node());
+
+  // Screen-space circle of every node: leaf labels may not cover another node.
+  const circles = nodes.map((n) => {
+    const [px, py] = t.apply([n.x || 0, n.y || 0]);
+    return { n, x: px, y: py, r: nodeRadius(n) * t.k };
   });
+  const circleOf = new Map(circles.map((c) => [c.n, c]));
+
+  // Who gets first pick of space: hovered, then the open card, then the active
+  // thread, then hubs before leaves, then the more influential node.
+  const offThread = (d) => !!(threadKeep && !threadKeep.has(d.id));
+  const hoverDim = (d) => !!(hoverKeep && !hoverKeep.has(d.id) && !hoverNear.has(d.id));
+  const hoverNearOf = (d) => !!(hoverNear && hoverNear.has(d.id));
+  // While hovering, the hovered node's neighbours get next pick, so their names
+  // show around it.
+  const rank = (d) =>
+    (d.__hover ? 1e6 : 0) + (d.id === detailNodeId ? 5e5 : 0) +
+    (hoverKeep && hoverKeep.has(d.id) ? 2.5e5 : 0) +
+    (offThread(d) ? 0 : 1e5) + (isHub(d) ? 1e4 : 0) + (d.growth || 0) * 10 + nodeRadius(d);
+
+  const elById = new Map();
+  labelSel.each(function (d) { elById.set(d, this); });
+  const order = nodes.filter((d) => elById.has(d)).sort((a, b) => rank(b) - rank(a));
+
+  const placed = [];          // boxes of labels already shown this pass
+  const PAD = 3;              // min screen px between two labels
+  const hits = (b) => {
+    for (const o of placed) {
+      if (b.x0 < o.x1 + PAD && b.x1 > o.x0 - PAD && b.y0 < o.y1 + PAD && b.y1 > o.y0 - PAD) return true;
+    }
+    return false;
+  };
+  const coversNode = (b, self) => {
+    for (const c of circles) {
+      if (c.n === self) continue;
+      const nx = Math.max(b.x0, Math.min(c.x, b.x1)), ny = Math.max(b.y0, Math.min(c.y, b.y1));
+      if ((c.x - nx) ** 2 + (c.y - ny) ** 2 < c.r * c.r) return true;
+    }
+    return false;
+  };
+
+  for (const d of order) {
+    const el = elById.get(d);
+    const h = labelPx(d);
+    // Width only changes with the text/font, so measure once and cache it.
+    const key = el.textContent + "|" + h;
+    if (d.__lwKey !== key) { d.__lw = el.getComputedTextLength(); d.__lwKey = key; }
+    const w = d.__lw;
+    const c = circleOf.get(d);
+    const gap = c.r + 5;
+
+    // Candidate spots, best first. Hubs sit on their own node, else just above
+    // or below it. Leaves try the open side the layout picked, then the rest.
+    const spots = [];
+    if (isHub(d)) {
+      spots.push([0, 0, 0], [0, -1, gap], [0, 1, gap], [1, 0, gap], [-1, 0, gap],
+                 [0.7, -0.7, gap], [-0.7, -0.7, gap], [0.7, 0.7, gap], [-0.7, 0.7, gap]);
+    } else {
+      let ux = d.__ldx, uy = d.__ldy;
+      if (ux === undefined) {
+        const dx = (d.x || 0) - cx, dy = (d.y || 0) - cy;
+        const len = Math.hypot(dx, dy) || 1;
+        ux = dx / len; uy = dy / len;
+      }
+      spots.push([ux, uy, gap], [1, 0, gap], [-1, 0, gap], [0, 1, gap], [0, -1, gap]);
+    }
+
+    let chosen = null, first = null;
+    for (const [ux, uy, g] of spots) {
+      const x = c.x + ux * g, y = c.y + uy * g;
+      const anchor = ux > 0.25 ? "start" : ux < -0.25 ? "end" : "middle";
+      const base = uy > 0.25 ? "hanging" : uy < -0.25 ? "auto" : "middle";
+      const x0 = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2;
+      const y0 = base === "hanging" ? y : base === "auto" ? y - h : y - h / 2;
+      const box = { x, y, anchor, base, x0, y0, x1: x0 + w, y1: y0 + h };
+      if (!first) first = box;
+      if (!hits(box) && (isHub(d) || !coversNode(box, d))) { chosen = box; break; }
+    }
+
+    // Eligible = hub, or a leaf big enough on screen (see labelVisible), or
+    // hovered. A label with no free spot is hidden, unless it's hovered or its
+    // card is open — then it takes its best spot regardless.
+    const forced = d.__hover === true || d.id === detailNodeId;
+    if (!chosen && forced) chosen = first;
+    const show = labelVisible(d) && !!chosen;
+    const box = chosen || first;
+    if (show) placed.push(box);
+
+    d3.select(el)
+      .attr("x", box.x).attr("y", box.y)
+      .attr("text-anchor", box.anchor)
+      .attr("dominant-baseline", box.base)
+      // Off-thread labels fade with the rest of the graph (kept here rather than
+      // in CSS because this inline opacity is re-applied on every zoom).
+      .style("opacity", !show ? 0 : offThread(d) ? 0.12 : hoverDim(d) ? 0.4 : hoverNearOf(d) ? 0.75 : 1);
+  }
 }
 
 // For each node, gather nearby nodes/labels (weighted by distance, labels heavier),
@@ -1271,8 +1443,11 @@ function forceLabelSeparation() {
     const boxes = [];
     for (const L of nodes) {
       if (!labelVisible(L)) continue;
-      const fs = labelFontSize(L);
-      const w = Math.max(measureTextWidth(truncateLabel(graphLabel(L), fs, labelMaxWidth(L)), fs), fs);
+      // Box size is the label at zoom 1 (screen px = world units). Using the live
+      // zoom here would make the layout depend on the camera, and the camera
+      // depends on the layout (auto-fit) — a loop that keeps nodes twitching.
+      const fs = labelPx(L);
+      const w = Math.max(measureTextWidth(truncateLabel(graphLabel(L), fs, labelMaxPx(L)), fs), fs);
       const h = fs;
       const gap = nodeRadius(L) + 5;
       // Direction chosen last tick (or outward-from-centroid until one exists).
@@ -1518,7 +1693,7 @@ function applyThreadHighlight() {
     threadKeep = null;
     nodeLayer.selectAll("g.node").classed("is-thread-dim", false).classed("is-thread-origin", false);
     linkLayer.selectAll("line.link").classed("is-thread-dim", false);
-    updateLabelVisibility();
+    applyFocus();   // also refreshes labels; re-derives the click/hover fade
     autoFit = false;
     fitView(true);   // reframe the whole graph
     return;
@@ -1536,7 +1711,7 @@ function applyThreadHighlight() {
     const t = (d.target && d.target.id) || d.target;
     return !(keep.has(s) && keep.has(t));
   });
-  updateLabelVisibility();
+  applyFocus();   // also refreshes labels; re-derives the click/hover fade
   autoFit = false;
   const subset = simulation ? simulation.nodes().filter((n) => keep.has(n.id)) : [];
   fitView(true, subset);
@@ -1683,7 +1858,7 @@ function applyScrub(skipCamera) {
     const t = (d.target && d.target.id) || d.target;
     return !(keep.has(s) && keep.has(t));
   });
-  updateLabelVisibility();
+  applyFocus();   // also refreshes labels; re-derives the click/hover fade
   autoFit = false;
   // Only drag/playback moves the camera; opening the scrubber leaves it put.
   if (!skipCamera) {
@@ -1708,7 +1883,7 @@ function clearScrubFade() {
   threadKeep = null;
   nodeLayer.selectAll("g.node").classed("is-thread-dim", false).classed("is-thread-origin", false);
   linkLayer.selectAll("line.link").classed("is-thread-dim", false);
-  updateLabelVisibility();
+  applyFocus();   // also refreshes labels; re-derives the click/hover fade
 }
 
 function openTimeline() {
@@ -1819,6 +1994,8 @@ function relayout() {
   if (!simulation) return;
   const { w, h } = size();
   simulation.force("center", d3.forceCenter(w / 2, h / 2));
+  simulation.force("x", d3.forceX(w / 2).strength(TUNING.gravity));
+  simulation.force("y", d3.forceY(h / 2).strength(TUNING.gravity));
   simulation.alpha(0.3).restart();
   autoFit = true;
   fitView(true);
@@ -2128,13 +2305,18 @@ function setView(view) {
     b.classList.toggle("is-active", on);
     b.setAttribute("aria-pressed", on ? "true" : "false");
   });
-  // The timeline only means something on the graph: close it and hide the clock.
-  if (view === "list" && scrubOpen) closeTimeline();
-  if (timelineBtn) timelineBtn.classList.toggle("is-list-hidden", view === "list");
+  // The timeline scrubber only means something on the graph: close it and hide the clock.
+  const offGraph = view !== "graph";
+  if (offGraph && scrubOpen) closeTimeline();
+  if (timelineBtn) timelineBtn.classList.toggle("is-list-hidden", offGraph);
   // Threads is graph-only too: the list shows everything, filtered by category.
-  if (threadFilter) threadFilter.classList.toggle("is-list-hidden", view === "list");
+  if (threadFilter) threadFilter.classList.toggle("is-list-hidden", offGraph);
   if (listEl) listEl.hidden = view !== "list";
   if (graphArea) graphArea.classList.toggle("in-list", view === "list");
+  const tlEl = document.getElementById("timeline-view");
+  if (tlEl) tlEl.hidden = view !== "timeline";
+  if (graphArea) graphArea.classList.toggle("in-timeline", view === "timeline");
+  if (view === "timeline" && typeof renderTimeline === "function") renderTimeline();
   const tools = document.getElementById("list-tools");
   if (tools) tools.hidden = view !== "list";
   if (view === "list") { buildCategoryMenu(); renderList(); }
@@ -2215,6 +2397,7 @@ const TUNING_GROUPS = [
     ["charge", "Charge (repulsion)", -800, 0, 10, "How hard nodes push apart — more negative spreads the graph out."],
     ["linkDistance", "Link distance", 20, 240, 5, "Preferred length of each connection line."],
     ["collidePad", "Collision padding", 0, 80, 1, "Extra empty space kept around every node so they don't overlap."],
+    ["gravity", "Centre pull", 0, 0.3, 0.01, "How strongly everything is pulled toward the middle — higher keeps separate clusters close."],
     ["linkWidth", "Line thickness", 0.5, 6, 0.1, "Stroke width of the connection lines (arrowheads scale with it)."],
   ] },
   { side: "right", title: "Hub", controls: [
@@ -2236,7 +2419,7 @@ const TUNING_GROUPS = [
 // Only these knobs feed the force simulation, so only they re-lay-out the graph.
 // Everything else is visual (sizes/labels/colours) and updates in place — the
 // layout stays frozen so you can compare settings without it drifting.
-const LAYOUT_KEYS = new Set(["charge", "linkDistance", "collidePad"]);
+const LAYOUT_KEYS = new Set(["charge", "linkDistance", "collidePad", "gravity"]);
 
 // Snapshot of the baked-in defaults, so the Reset button can restore them.
 const TUNING_DEFAULTS = { ...TUNING };

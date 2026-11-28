@@ -53,6 +53,7 @@
            filterable list of every item (js/precursors.js, "List view"). -->
       <div class="mode-toggle view-toggle" role="group" aria-label="View">
         <button type="button" class="view-btn is-active" data-view="graph" aria-pressed="true">Graph</button>
+        <button type="button" class="view-btn" data-view="timeline" aria-pressed="false">Timeline</button>
         <button type="button" class="view-btn" data-view="list" aria-pressed="false">List</button>
       </div>
       <!-- Mode toggle hidden: the page is Discovery-only for now. To bring the
@@ -176,6 +177,18 @@
       <div class="list-view" id="list-view" hidden>
         <ol class="list-rows" id="list-rows"></ol>
       </div>
+      <!-- Timeline view: like the list, covers the graph canvas while on, leaving
+           the docked card on the right. Time runs down (newest first), one
+           column per kind, faint lines for each "discovered via" link; hover or
+           click an entry to light its chain. Built by js/precursors-timeline.js. -->
+      <div class="timeline-view" id="timeline-view" hidden>
+        <div class="tl-top">
+          <div class="tl-trail" id="tl-trail"></div>
+          <label class="tl-showall"><input type="checkbox" id="tl-showall"> Show all lines</label>
+        </div>
+        <div class="tl-heads" id="tl-heads"></div>
+        <div class="tl-scroll"><div class="tl-canvas" id="tl-canvas"></div></div>
+      </div>
       <!-- Docked node detail panel (right side); populated by js/precursors.js -->
       <div class="node-detail" id="node-detail"></div>
     </div>
@@ -198,5 +211,6 @@
   <script src="js/header.js"></script>
   <script src="js/theme.js"></script>
   <script src="js/precursors.js"></script>
+  <script src="js/precursors-timeline.js"></script>
 </body>
 </html>

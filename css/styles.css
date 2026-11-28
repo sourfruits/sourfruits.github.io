@@ -2307,6 +2307,18 @@ a.post-tag:focus-visible { color: var(--ink); }
    since that opacity is re-applied on every zoom.) */
 .node.is-thread-dim { opacity: 0.13; }
 .link.is-thread-dim { opacity: 0.08; }
+/* Hover highlight: hovering a node fades everything that isn't it or directly
+   connected to it, so one node's connections can be read out of the tangle. */
+.node, .link { transition: opacity 0.15s ease; }
+/* Lines sit back by default so crossings don't shout; when something is
+   highlighted (hover, click or a thread), its lit lines come up to full. */
+.link { opacity: 0.7; }
+#graph.has-focus .link:not(.is-hover-dim):not(.is-hover-near):not(.is-thread-dim) { opacity: 1; }
+.node.is-hover-dim { opacity: 0.4; }
+.link.is-hover-dim { opacity: 0.25; }
+/* Two steps from the focus: faded only slightly, so the wider context stays readable. */
+.node.is-hover-near { opacity: 0.75; }
+.link.is-hover-near { opacity: 0.55; }
 /* Origin node: soft accent glow + a thicker solid outline (the !important beats
    the per-node inline stroke set in JS). */
 .node.is-thread-origin { filter: drop-shadow(0 0 5px rgb(from var(--accent) r g b / 0.85)); }
@@ -2326,7 +2338,8 @@ a.post-tag:focus-visible { color: var(--ink); }
 /* Segmented Discovery / Connections switch. */
 .mode-toggle {
   display: inline-grid;
-  grid-template-columns: 1fr 1fr;   /* both buttons take the wider one's width */
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;   /* every button takes the widest one's width, however many there are */
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
   background: var(--surface);   /* solid, so it stays legible over the graph */
@@ -2868,6 +2881,11 @@ body.is-graph-faux-fs { overflow: hidden; }
 .node { cursor: pointer; }
 .node-label {
   paint-order: stroke;
+  /* Halo: a stroke in the canvas colour drawn behind the glyphs, so lines and
+     arrows passing under a label don't cut through the text. */
+  stroke: var(--surface);
+  stroke-width: 2.5px;
+  stroke-linejoin: round;
   pointer-events: none;
   user-select: none;
   transition: opacity 0.15s ease;
@@ -2968,7 +2986,8 @@ body.is-graph-faux-fs { overflow: hidden; }
   cursor: pointer;
 }
 .detail-viewgraph { display: none; }
-.graph-area.in-list .detail-viewgraph { display: inline-block; }
+.graph-area.in-list .detail-viewgraph,
+.graph-area.in-timeline .detail-viewgraph { display: inline-block; }
 .graph-area.in-list .detail-viewlist { display: none; }
 .detail-viewgraph:hover,
 .detail-viewlist:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
@@ -3768,4 +3787,149 @@ body.is-graph-faux-fs { overflow: hidden; }
   .writing-grid.is-featured > li:nth-child(n) { padding: 14px 0; }
   .writing-grid.is-featured > li:first-child:nth-child(n) { padding-top: 0; }
   .writing-grid.is-featured > li:last-child:nth-child(n) { padding-bottom: 0; }
+}
+
+
+/* ── Timeline view (js/precursors-timeline.js) ─────────────────────────────
+   Covers the graph canvas like the list does, leaving the docked card on the
+   right. Entries are HTML buttons over an SVG of faint curved lines; hovering
+   or opening an entry lights its chain and fades the rest. */
+.timeline-view {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: var(--graph-panel-w);
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  --tl-lane-0: #8a6fc9;   /* people */
+  --tl-lane-1: #2f9c78;   /* books */
+  --tl-lane-2: #3b82c4;   /* films */
+  --tl-lane-3: #c96a3b;   /* other */
+}
+.timeline-view[hidden] { display: none; }
+.tl-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px 8px;
+  border-bottom: 1px solid var(--line-light);
+}
+.tl-trail {
+  flex: 1 1 auto;
+  min-height: 1.4em;
+  font-size: var(--text-small);
+  color: var(--ink);
+  line-height: 1.45;
+}
+.tl-trail strong { font-weight: 700; }
+.tl-hint { color: var(--muted); }
+.tl-arrow { color: var(--muted); }
+.tl-led { display: block; color: var(--muted); font-size: var(--text-tiny); margin-top: 2px; }
+.tl-showall {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.tl-heads {
+  display: grid;
+  padding: 6px 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-light);
+}
+.tl-heads > span { padding-left: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.tl-key { display: inline-flex; gap: 4px 10px; flex-wrap: wrap; align-items: center; }
+.tl-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
+.tl-canvas { position: relative; }
+.tl-lines { position: absolute; top: 0; left: 0; pointer-events: none; }
+.tl-link {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1;
+  opacity: 0.14;
+  transition: opacity 0.15s ease, stroke 0.15s ease;
+}
+.timeline-view.show-all .tl-link { opacity: 0.45; }
+.timeline-view.has-focus .tl-link { opacity: 0.06; }
+.timeline-view .tl-link.is-lit { opacity: 0.95; stroke: var(--accent); stroke-width: 1.8; }
+.tl-year {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: none;
+  border-bottom: 1px solid var(--line-light);
+  background: var(--surface);
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
+  font-weight: 700;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  z-index: 1;
+}
+.tl-year-caret { width: 12px; color: var(--muted); font-weight: 400; }
+.tl-year-count { color: var(--muted); font-weight: 400; font-size: var(--text-tiny); }
+.tl-period { position: absolute; left: 0; right: 0; pointer-events: none; }
+.tl-period.is-alt { background: rgb(from var(--ink) r g b / 0.025); }
+.tl-period-label {
+  position: absolute;
+  top: 12px;
+  left: 30px;
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  color: var(--muted);
+}
+.tl-entry {
+  position: absolute;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  z-index: 2;
+  transition: opacity 0.15s ease;
+}
+.tl-entry:hover, .tl-entry.is-current { background: rgb(from var(--ink) r g b / 0.06); }
+.tl-entry.is-current .tl-label { font-weight: 700; }
+.timeline-view.has-focus .tl-entry:not(.is-lit) { opacity: 0.35; }
+.tl-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-dot {
+  flex: none;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tl-lane-3);
+}
+.lane-0 .tl-dot, .tl-dot.lane-0 { background: var(--tl-lane-0); }
+.lane-1 .tl-dot, .tl-dot.lane-1 { background: var(--tl-lane-1); }
+.lane-2 .tl-dot, .tl-dot.lane-2 { background: var(--tl-lane-2); }
+.lane-3 .tl-dot, .tl-dot.lane-3 { background: var(--tl-lane-3); }
+@media (max-width: 560px) {
+  /* Phones: full width until an entry is tapped, like the list. */
+  .graph-area:not(.has-detail) .timeline-view { right: 0; }
+  .tl-top { flex-direction: column; gap: 6px; }
 }
