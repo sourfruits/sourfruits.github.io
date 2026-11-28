@@ -31,11 +31,10 @@ const TL_ROW_H = 22;          // px per entry line
 const TL_BOTTOM_GAP = 30;     // px kept clear under the last band (scrollbar + full-screen button)
 const TL_LANE_PAD = 10;       // px above/below each band's entries
 const TL_GUTTER = 110;        // px for the band names on the left (sticky)
-const TL_SAME_MONTH = "mixed";    // same-month lines: "bracket" (left side, dot to dot) or "mixed" (out the end, round the right)
 const TL_TREE_STEP = 14;    // px each tree level is indented inside a month
 const TL_HEAD_H = 46;         // px for the year + month headings on top
 
-const tlState = { hover: null, showAll: true, folded: new Set(), scrolledOnce: false, lastDetail: null };
+const tlState = { hover: null, showAll: true, fade: { engaged: false, aware: false }, folded: new Set(), scrolledOnce: false, lastDetail: null };
 
 function tlLaneOf(kind) {
   const k = String(kind || "").toLowerCase();
@@ -251,7 +250,7 @@ function renderTimeline() {
     }
     return treeCache[k];
   }
-  function layoutFor(maxRows) {
+  function layoutFor(caps) {   // caps[li] = most rows band li may use before a month splits
     const cols = [];
     years.forEach((yr) => {
       const periods = byYear.get(yr);
@@ -266,7 +265,7 @@ function renderTimeline() {
         keys.forEach((k) => {
           const items = periods.get(k);
           const trees = treesOf(k, items);
-          const packs = TL_LANES.map((_, li) => tlPack(trees[li], maxRows));
+          const packs = TL_LANES.map((_, li) => tlPack(trees[li], caps[li]));
           const subs = Math.max(1, ...packs.map((pk) => pk.subs));
           // Only a sub-column that holds an indented tree gets wider (by its
           // indent), so indented names keep their room without stretching
@@ -296,7 +295,7 @@ function renderTimeline() {
   const avail = Math.max(0, scroller.clientHeight - TL_HEAD_H - TL_BOTTOM_GAP);
   let lay = null;
   for (let rows = 40; rows >= 2; rows--) {
-    lay = layoutFor(rows);
+    lay = layoutFor(TL_LANES.map(() => rows));
     if (lay.bandsH <= avail) break;
   }
   const { cols, laneRows } = lay;
@@ -390,11 +389,7 @@ function renderTimeline() {
   canvas.style.height = totalH + "px";
   const defs = `<defs><marker id="tl-arrow" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="7" markerHeight="7"
       markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0.5 L7,4 L0,7.5 Z" class="tl-arrowhead"/></marker>
-      <marker id="tl-arrow-out" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="7" markerHeight="7"
-      markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0.5 L7,4 L0,7.5 Z" class="tl-arrowhead is-out"/></marker>
       <marker id="tl-arrow-tree" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6"
-      markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0.5 L7,4 L0,7.5 Z" class="tl-arrowhead"/></marker>
-      <marker id="tl-arrow-start" viewBox="0 0 8 8" refX="0" refY="4" markerWidth="7" markerHeight="7"
       markerUnits="userSpaceOnUse" orient="auto"><path d="M0,0.5 L7,4 L0,7.5 Z" class="tl-arrowhead"/></marker></defs>`;
   canvas.innerHTML = `<svg class="tl-lines" width="${totalW}" height="${totalH}" aria-hidden="true">${defs}</svg>` + html.join("");
 
@@ -431,7 +426,7 @@ function renderTimeline() {
     const sx = a.folded ? a.x : (labelEnd[l.sk] || a.x) + 13;
     const ex = b.folded ? b.x : b.x - 21;   // the incoming "→" sits just left of the box
     const sy = a.y;
-    let d, bracket = false, tree = false;
+    let d, tree = false;
     if (b.parent === l.sk && a.sub === b.sub && !a.folded && !b.folded) {
       // Tree elbow: down from the source's dot, then right into the
       // indented entry's dot, ending in an arrowhead.
@@ -443,11 +438,10 @@ function renderTimeline() {
       // to turn around, just a plain forward S-curve like any other line.
       const run = Math.min(70, (ex - sx) * 0.4);
       d = `M${sx},${sy} C${sx + run},${sy} ${ex - run},${b.y} ${ex},${b.y}`;
-    } else if (a.col === b.col && !a.folded && !b.folded && TL_SAME_MONTH === "mixed") {
-      // Same month, "mixed": out from the END like every line, down a channel
-      // at the right edge of the source's column, back along the thin gap
-      // beside the target's row, then into the target's "→".
-      const down = b.y > a.y ? 1 : -1;
+    } else if (a.col === b.col && !a.folded && !b.folded) {
+      // Same month, target underneath (another band): out from the END like
+      // every line, round to a run halfway between the two entries, then
+      // round into the target's "→".
       {
         const r = 5;
         const vx = Math.max(sx + 2, a.right);
@@ -466,16 +460,6 @@ function renderTimeline() {
         d = `M${sx},${sy} C${ux},${sy} ${ux},${gy} ${sx},${gy} H${hx}` +
             ` C${ex - w},${gy} ${ex - w},${b.y} ${ex},${b.y}`;
       }
-    } else if (a.col === b.col && !a.folded && !b.folded) {
-      // Same month: the two entries sit one above the other (or in
-      // neighbouring sub-columns), so a line out of the source's END would
-      // have to loop back. Instead a simple bracket on the left joins the
-      // two, arriving at the target's "→" like every other line.
-      bracket = true;
-      const ax = a.x - 21, bx = ex;
-      const w = Math.min(16, 7 + Math.abs(b.y - a.y) * 0.04);
-      const lx = Math.min(ax, bx) - w;
-      d = `M${a.x - 8},${sy} C${lx},${sy} ${lx},${b.y} ${bx},${b.y}`;
     } else if (ex - sx <= 6) {
       // Neighbours across a column edge: the two "→"s already (nearly) touch.
       // A short straight join if there's any room, else no line at all.
@@ -486,12 +470,11 @@ function renderTimeline() {
       const run = Math.min(70, (ex - sx) * 0.4);
       d = `M${sx},${sy} C${sx + run},${sy} ${ex - run},${b.y} ${ex},${b.y}`;
     }
-    const sameMonth = a.col === b.col;   // lit lines skip these; the source / led to tags say it
     const sl = laneOfKey[l.sk], tl = laneOfKey[l.tk];
     const gx1 = a.folded ? a.x : sx, gx2 = ex;
     grads.push(`<linearGradient id="tlg-${gi}" gradientUnits="userSpaceOnUse" x1="${gx1}" y1="${sy}" x2="${gx2 === gx1 ? gx1 + 1 : gx2}" y2="${b.y}">` +
       `<stop offset="0" style="stop-color:var(--tl-lane-${sl})"/><stop offset="1" style="stop-color:var(--tl-lane-${tl})"/></linearGradient>`);
-    return `<path class="tl-link${l.aware ? " is-aware" : ""}${sameMonth ? " is-same-month" : ""}"${bracket ? ' data-bracket="1"' : ""}${tree ? ' data-tree="1"' : ""} data-s="${escapeHTML(l.s)}" data-t="${escapeHTML(l.t)}" style="--tl-grad:url(#tlg-${gi})" d="${d}"/>`;
+    return `<path class="tl-link${l.aware ? " is-aware" : ""}"${tree ? ' data-tree="1"' : ""} data-s="${escapeHTML(l.s)}" data-t="${escapeHTML(l.t)}" style="--tl-grad:url(#tlg-${gi})" d="${d}"/>`;
   }).join("");
   canvas.querySelector(".tl-lines defs").insertAdjacentHTML("beforeend", grads.join(""));
   canvas.querySelector(".tl-lines").insertAdjacentHTML("beforeend", paths);
@@ -613,12 +596,9 @@ function timelinePaint() {
   }
   const id = tlState.hover || detailNodeId;
   const { up, down } = tlCache.data;
-  // Three levels: the entry plus what it came straight from and led straight
-  // to are fully lit ("direct"); the rest of its lineage back to where it
-  // started is lit a step softer ("lineage"); everything else dims. Things it
-  // led to further downstream are NOT lit (that tree gets big fast).
+  // The entry plus what it came straight from and led straight to are lit;
+  // everything else dims (the trail bar spells out the path further back).
   const direct = id ? new Set([id, ...(up[id] || []), ...(down[id] || [])]) : null;
-  const lineage = new Set();   // (lineage level removed: the trail bar spells out the path back)
   // Dots that a drawn line of the selected entry leaves from / arrives at.
   const drawnOut = new Set(), drawnIn = new Set();
   if (id) tlCache.data.links.forEach((l) => {
@@ -626,7 +606,7 @@ function timelinePaint() {
     const p = tlCache.linkEls.find((x) => x.dataset.s === l.s && x.dataset.t === l.t);
     if (!p) return;   // not drawn
     if (p.dataset.tree) return;   // a tree elbow carries its own arrowhead
-    if (!p.dataset.bracket) drawnOut.add(l.sk);   // a same-month bracket leaves from the dot, not the end
+    drawnOut.add(l.sk);
     drawnIn.add(l.tk);
   });
   view.classList.toggle("has-focus", !!direct);
@@ -635,10 +615,12 @@ function timelinePaint() {
   if (focusItem) view.style.setProperty("--tl-lit", `var(--tl-lane-${focusItem.lane})`);
   else view.style.removeProperty("--tl-lit");
   view.classList.toggle("show-all", tlState.showAll);
+  view.classList.toggle("fade-engaged", tlState.fade.engaged);
+  view.classList.toggle("fade-aware", tlState.fade.aware);
+
   tlCache.entryEls.forEach((el) => {
     const nid = el.dataset.nodeId;
     el.classList.toggle("is-lit", !!direct && direct.has(nid));
-    el.classList.toggle("is-lineage", !!direct && !direct.has(nid) && lineage.has(nid));
     el.classList.toggle("is-current", nid === id);
     // Arrows sit only where a line is actually drawn, dot by dot: "→" after
     // a dot a line leaves from, "→" before a dot a line arrives at. (A
@@ -653,12 +635,9 @@ function timelinePaint() {
   tlCache.linkEls.forEach((p) => {
     const s = p.dataset.s, t = p.dataset.t;
     const isDirect = !!direct && (s === id || t === id);
-    // A lineage link runs between two ancestors (or an ancestor and a parent).
-    const isLineage = !!direct && !isDirect && lineage.has(s) && (lineage.has(t) || (up[id] || []).includes(t));
     p.classList.toggle("is-lit", isDirect);
     p.classList.toggle("is-in", isDirect && t === id);    // came from → arrives at the entry
     p.classList.toggle("is-out", isDirect && s === id);   // led to → leaves the entry
-    p.classList.toggle("is-lineage", isLineage);
   });
   document.querySelectorAll("#tl-canvas .tl-track").forEach((t) => t.classList.toggle("is-lit", !!direct && t.dataset.node === id));
 
@@ -884,6 +863,14 @@ function timelineReveal(id, force, key) {
   });
 
 
+  // The key doubles as a filter: click "Engaged" or "Aware" to fade those dots.
+  view.querySelectorAll(".tl-key-btn").forEach((b) => b.addEventListener("click", () => {
+    const k = b.dataset.kind;
+    tlState.fade[k] = !tlState.fade[k];
+    b.setAttribute("aria-pressed", tlState.fade[k] ? "false" : "true");
+    b.title = `Click to ${tlState.fade[k] ? "show" : "fade"} ${k}`;
+    timelinePaint();
+  }));
   document.getElementById("tl-showall").checked = tlState.showAll;   // on by default (browsers may restore an old state)
   document.getElementById("tl-showall").addEventListener("change", (e) => {
     tlState.showAll = e.target.checked;

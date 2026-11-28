@@ -825,9 +825,7 @@ function connectionRowHTML(c) {
   const onward = c.dir === "out" ? (growthById[c.other.id] || 0) : 0;
   // After the title: the target's own downstream count. Both modes prefix it with
   // an arrow — Connections = downstream influence, Discovery = onward discoveries.
-  const onwardText = currentMode === "discovery"
-    ? `· led to ${onward} more`
-    : `→ ${onward}`;
+  const onwardText = `→ ${onward}`;
   const onwardTitle = currentMode === "discovery"
     ? `leads to ${onward} more discover${onward === 1 ? "y" : "ies"} downstream`
     : `${onward} downstream influence${onward === 1 ? "" : "s"}`;
@@ -2327,7 +2325,7 @@ function setView(view) {
   const offGraph = view !== "graph";
   if (offGraph && scrubOpen) closeTimeline();
   if (timelineBtn) timelineBtn.classList.toggle("is-list-hidden", offGraph);
-  // Threads is graph-only too: the list shows everything, filtered by category.
+  // Threads is graph-only too.
   if (threadFilter) threadFilter.classList.toggle("is-list-hidden", offGraph);
   if (listEl) listEl.hidden = view !== "list";
   if (graphArea) graphArea.classList.toggle("in-list", view === "list");

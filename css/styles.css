@@ -3942,7 +3942,6 @@ body.is-graph-faux-fs { overflow: hidden; }
 }
 .tl-col.is-folded { background: rgb(from var(--ink) r g b / 0.05); }
 .tl-band-shade { position: absolute; left: 0; background: rgb(from var(--ink) r g b / 0.035); pointer-events: none; }
-.tl-band-rule { position: absolute; left: 0; border-top: 1px dashed var(--line-light); pointer-events: none; }
 .tl-year {
   position: absolute;
   top: 0;
@@ -4045,13 +4044,9 @@ body.is-graph-faux-fs { overflow: hidden; }
 .tl-entry.lane-3::before, .tl-entry.lane-3::after { color: var(--tl-lane-3); }
 .tl-entry.lane-4::before, .tl-entry.lane-4::after { color: var(--tl-lane-4); }
 .tl-entry.is-ledto::before, .tl-entry.has-in::before { left: -13px; }   /* tip touches the box's edge, not the dot */
-.timeline-view .tl-link.is-lineage { opacity: 0.4; stroke-width: 1.3; }
 /* Arrowheads on lit lines show which way a discovery went (source → found). */
 
 .tl-arrowhead { fill: var(--tl-lit, var(--ink)); }
-/* Same-month bracket: an arrowhead where it leaves the source's dot (pointing
-   out, to the left), matching the "→" where it arrives at the target. */
-.timeline-view .tl-link.is-lit[data-bracket] { marker-start: url(#tl-arrow-start); }
 /* Tree elbows inside a month: always faintly there (they're the structure of
    the month), dark with an arrowhead when lit. */
 .timeline-view .tl-link[data-tree] { opacity: 0.4; }
@@ -4059,7 +4054,6 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* Track: joins one entry's own dots along its row (heard of it → read it). */
 .tl-track { fill: none; stroke: var(--muted); stroke-width: 1; stroke-dasharray: 1 3; stroke-linecap: round; opacity: 0; }
 .timeline-view .tl-track.is-lit { opacity: 0.9; stroke: var(--ink); }
-.tl-arrowhead.is-out { fill: var(--muted); }
 .tl-key-lines {
   flex: none;
   display: inline-flex;
@@ -4070,7 +4064,6 @@ body.is-graph-faux-fs { overflow: hidden; }
   white-space: nowrap;
 }
 .tl-key-lines > span { display: inline-flex; align-items: center; gap: 5px; }
-.tl-key-lines line { stroke: var(--muted); stroke-width: 1.5; }
 /* Aware-only (heard of it, not yet engaged): dashed, like the graph legend. */
 
 .tl-entry {
@@ -4111,10 +4104,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 .tl-entry.is-current .tl-label { font-weight: 700; }
 .tl-entry.is-current .tl-dot { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
 .tl-entry.is-flash { background: rgb(from var(--accent) r g b / 0.22); }
-.timeline-view.has-focus .tl-entry:not(.is-lit):not(.is-lineage) { opacity: 0.4; }
-/* Lineage back to the origin: fully readable, no tint, normal weight — a
-   step softer than direct connections. */
-.timeline-view.has-focus .tl-entry.is-lineage { opacity: 0.9; }
+.timeline-view.has-focus .tl-entry:not(.is-lit) { opacity: 0.4; }
 /* Direct connections of the hovered/open entry: a light tint and a slightly
    heavier label, so they stand out without the rest having to disappear. */
 .timeline-view.has-focus .tl-entry.is-lit:not(.is-current) { background: rgb(from var(--ink) r g b / 0.05); }
@@ -4156,8 +4146,25 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* "Show all lines": every link shows faintly behind everything. */
 .timeline-view.show-all .tl-link:not(.is-lit) { opacity: 0.09; }
 .timeline-view.show-all.has-focus .tl-link:not(.is-lit) { opacity: 0.05; }
-.tl-key-lines svg { margin-right: -2px; }
 .tl-key-dot { margin-right: 2px; }
+/* The key is also a filter: each item toggles fading that kind of dot. */
+.tl-key-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.tl-key-btn:hover { border-color: var(--line); }
+.tl-key-btn[aria-pressed="false"] { opacity: 0.45; text-decoration: line-through; }
+.timeline-view.fade-aware .tl-entry.is-aware-pos:not(.is-lit) { opacity: 0.18; }
+.timeline-view.fade-engaged .tl-entry:not(.is-aware-pos):not(.is-lit) { opacity: 0.18; }
+
 .tl-key-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
 .tl-key-dot.is-hollow { background: none; box-shadow: inset 0 0 0 1.6px var(--muted); }
 @media (max-width: 560px) {
