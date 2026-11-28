@@ -3996,7 +3996,7 @@ body.is-graph-faux-fs { overflow: hidden; }
   text-shadow: 0 0 2px var(--surface), 0 0 3px var(--surface);
 }
 .tl-entry.is-source::after, .tl-entry.has-out::after { right: -11px; }
-.tl-entry.is-ledto::before, .tl-entry.has-in::before { left: -9px; }
+.tl-entry.is-ledto::before, .tl-entry.has-in::before { left: -13px; }   /* tip touches the box's edge, not the dot */
 .timeline-view .tl-link.is-lineage { opacity: 0.4; stroke-width: 1.3; }
 /* Arrowheads on lit lines show which way a discovery went (source → found). */
 
@@ -4126,6 +4126,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 }
 .tl-edge:hover { border-color: var(--ink); }
 .tl-edge.is-faint { color: var(--muted); }
+.tl-edge.is-self { border-color: var(--ink); font-weight: 600; }   /* the selected entry's own other dot */
 .tl-edge-l { left: 126px; }
 .tl-edge-r { right: 10px; }
 

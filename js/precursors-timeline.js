@@ -95,14 +95,27 @@ function tlData() {
   // event's first date, and leaves from the source's latest dot at or before
   // that date (else its earliest).
   const links = [];
+  const reminders = [];   // "heard of it again" links: no line, but still connections
   rawData.nodes.forEach((n) => {
     discoveredVia(n).forEach((d) => {
       if (!d.source || !ids.has(d.source) || d.source === n.id) return;
+      // No date yet = pending (e.g. something you mean to watch "via" a book
+      // you've just read). It's listed in the card, but there's no moment on
+      // the timeline to draw it to until you add a date.
+      if (!d.awareDate && !d.engagedDate) return;
       // The event lands on the dot for its moment: an event that made you
       // aware → the aware dot; one where you engaged → the engaged dot.
       const kind = d.awareDate && !(d.engagedDate && tlPeriod(d.engagedDate) === tlPeriod(d.awareDate)) ? "aware" : "engaged";
       const t = byId[n.id].find((a) => a.moment === kind) || byId[n.id][0];
       const when = (kind === "aware" ? d.awareDate : d.engagedDate) || d.awareDate || d.engagedDate || "";
+      // A later "heard of" (you'd already heard of it in an earlier month) is a
+      // reminder: the card lists it with its date, but there's no earlier
+      // moment to draw it to without going backwards, so no line. It becomes a
+      // real line once you add an engaged date to it.
+      if (kind === "aware" && t.moment === "aware" && when && tlPeriod(when) > t.period) {
+        reminders.push({ s: d.source, t: n.id });   // still counts in the trail's "Led to"
+        return;
+      }
       const srcs = byId[d.source];
       // Compare by month: a source dot from the same month as the event
       // counts as "before" it (e.g. Pickpocket watched May 18 → Bresson,
@@ -115,7 +128,7 @@ function tlData() {
     });
   });
   const up = {}, down = {};
-  links.forEach((l) => {
+  [...links, ...reminders].forEach((l) => {
     if (!(up[l.t] || []).includes(l.s)) (up[l.t] = up[l.t] || []).push(l.s);
     if (!(down[l.s] || []).includes(l.t)) (down[l.s] = down[l.s] || []).push(l.t);
   });
@@ -288,7 +301,7 @@ function renderTimeline() {
     // Out: just after the source's label (past its "→"). In: just before the
     // target's dot (at its "→").
     const sx = a.folded ? a.x : (labelEnd[l.sk] || a.x) + 13;
-    const ex = b.folded ? b.x : b.x - 17;
+    const ex = b.folded ? b.x : b.x - 21;   // the incoming "→" sits just left of the box
     const sy = a.y;
     let d;
     const behind = ex - sx <= 6 && a.col === b.col && !a.folded && !b.folded;
@@ -347,6 +360,13 @@ function timelinePaint() {
   // led to further downstream are NOT lit (that tree gets big fast).
   const direct = id ? new Set([id, ...(up[id] || []), ...(down[id] || [])]) : null;
   const lineage = new Set();   // (lineage level removed: the trail bar spells out the path back)
+  // Dots that a drawn line of the selected entry leaves from / arrives at.
+  const drawnOut = new Set(), drawnIn = new Set();
+  if (id) tlCache.data.links.forEach((l) => {
+    if (l.s !== id && l.t !== id) return;
+    if (!tlCache.linkEls.some((p) => p.dataset.s === l.s && p.dataset.t === l.t)) return;   // not drawn
+    drawnOut.add(l.sk); drawnIn.add(l.tk);
+  });
   view.classList.toggle("has-focus", !!direct);
   view.classList.toggle("show-all", tlState.showAll);
   tlCache.entryEls.forEach((el) => {
@@ -354,13 +374,15 @@ function timelinePaint() {
     el.classList.toggle("is-lit", !!direct && direct.has(nid));
     el.classList.toggle("is-lineage", !!direct && !direct.has(nid) && lineage.has(nid));
     el.classList.toggle("is-current", nid === id);
-    // Say how each direct connection relates to the selected entry.
-    el.classList.toggle("is-source", !!direct && nid !== id && (up[id] || []).includes(nid));
-    el.classList.toggle("is-ledto", !!direct && nid !== id && (down[id] || []).includes(nid));
-    // The selected entry gets arrows too, so every lit line has one at each
-    // end: "→" before it if something led to it, "→" after if it led on.
-    el.classList.toggle("has-in", nid === id && !!(up[id] || []).length);
-    el.classList.toggle("has-out", nid === id && !!(down[id] || []).length);
+    // Arrows sit only where a line is actually drawn, dot by dot: "→" after
+    // a dot a line leaves from, "→" before a dot a line arrives at. (A
+    // "heard of again" link has no line, so it gets no arrow either.)
+    const k = `${nid}@${el.dataset.period}`;
+    const outHere = !!id && drawnOut.has(k), inHere = !!id && drawnIn.has(k);
+    el.classList.toggle("is-source", nid !== id && outHere);
+    el.classList.toggle("is-ledto", nid !== id && inHere);
+    el.classList.toggle("has-in", nid === id && inHere);
+    el.classList.toggle("has-out", nid === id && outHere);
   });
   tlCache.linkEls.forEach((p) => {
     const s = p.dataset.s, t = p.dataset.t;
@@ -412,6 +434,21 @@ function timelineEdges() {
   const view = document.getElementById("timeline-view");
   // Only the immediate connections (what it came straight from / led straight to).
   const lit = tlCache.entryEls.filter((el) => el.classList.contains("is-lit"));
+  // The selected entry's own other dot (heard of ↔ read/watched) counts too.
+  const here = tlCache.entryEls.filter((el) => el.classList.contains("is-current"));
+  const twin = here.length > 1 ? here : [];
+  // The dot you're at: the one you arrived at (is-here), else the labelled
+  // main one. Only connections whose line actually touches THAT dot get a
+  // marker — e.g. at Gillian Welch's Oct (engaged) dot, Lucinda Williams'
+  // line goes to her Feb (aware) dot, so it's not listed until you're there.
+  const keyOf = (el) => `${el.dataset.nodeId}@${el.dataset.period}`;
+  const atEl = here.find((el) => el.classList.contains("is-here")) || here.find((el) => !el.classList.contains("is-ghost")) || here[0];
+  const atKey = atEl ? keyOf(atEl) : null;
+  const touching = new Set();
+  tlCache.data.links.forEach((l) => {
+    if (l.sk === atKey) touching.add(l.tk);
+    if (l.tk === atKey) touching.add(l.sk);
+  });
   if (!view.classList.contains("has-focus") || !lit.length) { box.innerHTML = ""; return; }
   const left = scroller.scrollLeft, right = left + scroller.clientWidth - TL_GUTTER;
   const top = -scroller.scrollTop;   // markers sit in a layer at the strip's top edge
@@ -420,8 +457,26 @@ function timelineEdges() {
   const onScreen = (el) => el.offsetLeft + el.offsetWidth >= left + 12 && el.offsetLeft <= right - 12;
   const shown = new Set(lit.filter(onScreen).map((el) => el.dataset.nodeId));   // any dot of it in view
   const done = new Set();
+  twin.forEach((el) => {
+    if (el === atEl || onScreen(el)) return;
+    const x0 = el.offsetLeft, x1 = x0 + el.offsetWidth;
+    const side = x1 < left + 12 ? "l" : x0 > right - 12 ? "r" : null;
+    if (!side) return;
+    let y = top + el.offsetTop + 2;
+    while (used[side].some((u) => Math.abs(u - y) < 20)) y += 20;
+    used[side].push(y);
+    const id = el.dataset.nodeId, p = el.dataset.period || "undated";
+    // Short: it's the selected entry's own other dot, so no need to repeat
+    // its name — just which moment and when ("aware · Feb ’26").
+    const what = el.classList.contains("is-aware-pos") ? "aware" : "engaged";
+    const when = p === "undated" ? "" : ` · ${p.length === 4 ? p : `${MONTH_NAMES[parseInt(p.slice(5, 7), 10) - 1].slice(0, 3)} ’${p.slice(2, 4)}`}`;
+    const name = escapeHTML((nodeById[id] || {}).label || id);
+    out.push(`<button type="button" class="tl-edge tl-edge-${side} is-self" data-node-id="${escapeHTML(id)}" data-period="${escapeHTML(p)}"
+      style="top:${y}px" title="Scroll to ${name} (${what})">${side === "l" ? "← " : ""}${what}${escapeHTML(when)}${side === "r" ? " →" : ""}</button>`);
+  });
   lit.forEach((el) => {
     if (el.classList.contains("is-current")) return;
+    if (atKey && !touching.has(keyOf(el))) return;
     const id0 = el.dataset.nodeId;
     if (shown.has(id0) || done.has(id0)) return;   // one marker per connection, none if it's visible
     const x0 = el.offsetLeft, x1 = x0 + el.offsetWidth;
@@ -517,7 +572,7 @@ function timelineReveal(id, force, key) {
   // Edge markers: click to scroll to that entry; keep them in place on scroll.
   document.getElementById("tl-edges").addEventListener("click", (e) => {
     const b = e.target.closest(".tl-edge");
-    if (b) timelineReveal(b.dataset.nodeId, true);
+    if (b) timelineReveal(b.dataset.nodeId, true, b.dataset.period ? `${b.dataset.nodeId}@${b.dataset.period}` : null);
   });
   document.getElementById("tl-scroll").addEventListener("scroll", () => timelineEdges(), { passive: true });
 

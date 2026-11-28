@@ -966,12 +966,24 @@ function openDetail(node, event, skipCamera) {
     body += `<div class="detail-meta-row"><span class="detail-meta-label">Discovered via</span> ${dvLabel(d)}${dvDate(d)}${dvThread(d)}</div>`;
     if (d.note) body += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
   } else if (currentMode === "discovery" && dvs.length > 1) {
-    const items = dvs.map((d) => {
+    // A later "heard of" (aware only, in a later month than the first one) isn't
+    // a second discovery — it's another path to something you already knew of.
+    // It's listed last as "Also via <source> · <date>" (the timeline gives it
+    // no dot or line).
+    const monthOf = (x) => String(x || "").slice(0, 7);
+    const firstAware = dvs.map((d) => monthOf(d.awareDate)).filter(Boolean).sort()[0] || "";
+    const isAlso = (d) => !d.engagedDate && d.awareDate && monthOf(d.awareDate) > firstAware;
+    const main = dvs.filter((d) => !isAlso(d)), also = dvs.filter(isAlso);
+    const items = main.map((d) => {
       let li = `<li>${dvLabel(d)}${dvDate(d)}${dvThread(d)}`;
       if (d.note) li += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
       return li + `</li>`;
+    }).join("") + also.map((d) => {
+      let li = `<li><span class="detail-meta-label">Also via</span> ${dvLabel(d)}&nbsp;· <span class="detail-dv-date">${escapeHTML(formatDiscoveryDate(d.awareDate))}</span>${dvThread(d)}`;
+      if (d.note) li += `<div class="detail-meta-note">${escapeHTML(d.note)}</div>`;
+      return li + `</li>`;
     }).join("");
-    body += `<div class="detail-discovered"><div class="detail-section-label">Discovered via (${dvs.length})</div>` +
+    body += `<div class="detail-discovered"><div class="detail-section-label">Discovered via${main.length > 1 ? ` (${main.length})` : ""}</div>` +
             `<ul class="detail-dv-list">${items}</ul></div>`;
   }
 
