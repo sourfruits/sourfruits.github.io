@@ -44,12 +44,12 @@ const TUNING = {
   // ── Leaf tier ─────────────────────────────────────────────────────────────
   nodeBase: 11,          // base node radius (world units): every node grows from this base
   leafStep: 3,           // + leaf radius per point of downstream influence (hubs use growthStep)
-  leafFont: 12,          // leaf hover-label font (screen px — constant at any zoom)
-  leafMaxLabelWidth: 170,// leaf label pixel width (world units) before ellipsis
+  leafFont: 11.5,         // leaf hover-label font (screen px — constant at any zoom)
+  leafMaxLabelWidth: 130,// leaf label pixel width (world units) before ellipsis
   leafLabelThreshold: 5, // on-screen radius (size × zoom, px) to reveal a leaf label
   // ── Shared (whole simulation) ───────────────────────────────────────────────
-  charge: -260,        // many-body repulsion (more negative = nodes push apart harder)
-  linkDistance: 90,    // preferred edge length
+  charge: -340,        // many-body repulsion (more negative = nodes push apart harder)
+  linkDistance: 105,   // preferred edge length
   collidePad: 22,      // extra spacing beyond each node's radius (collision force)
   gravity: 0.012,      // pull toward the centre, so separate clusters sit close to the main one
   linkWidth: 2.4,       // edge stroke width (world units); directional edges draw a touch thicker
@@ -613,11 +613,21 @@ function updateLabelVisibility() {
   positionLabels(sel.data(), sel);
 }
 
+// A label like "Le Samouraï (1967)": the title in ink, the year smaller and
+// grey, so the date reads as a quiet aside. (A shortened "…" label stays plain.)
+function setLabelText(sel, text) {
+  sel.text(null);
+  const m = /^(.*\S)\s+(\(\d{4}\))$/.exec(text);
+  if (!m) { sel.text(text); return; }
+  sel.append("tspan").text(m[1] + " ");
+  sel.append("tspan").attr("class", "label-year").text(m[2]);
+}
+
 // Re-apply label text/size/width/position in place (no simulation restart), so
 // font/width/threshold tuning updates the labels without moving the layout.
 function refreshLabels() {
   const sel = labelLayer.selectAll("text.node-label");
-  sel.text((d) => truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d)))
+  sel.each(function (d) { setLabelText(d3.select(this), truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d))); })
      .style("font-size", (d) => labelPx(d) + "px")
      .style("font-weight", "400");   // hubs stand out by size, not bold
   positionLabels(sel.data(), sel);
@@ -1237,7 +1247,7 @@ function render(mode) {
   label.exit().remove();
   const labelAll = label.enter().append("text").attr("class", "node-label").merge(label);
   labelAll
-    .text((d) => truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d)))
+    .each(function (d) { setLabelText(d3.select(this), truncateLabel(graphLabel(d), labelPx(d), labelMaxPx(d))); })
     .style("fill", "var(--ink)")
     .style("font-family", "var(--font-sans)")
     .style("font-size", (d) => labelPx(d) + "px")
@@ -1580,11 +1590,16 @@ function renderLegend(mode) {
     ).join("");
     return;
   }
+  // Kept short: the categories, then one row for the two kinds of line. (Hubs
+  // explain themselves: bigger, ringed, always labelled.)
   const dc = "var(--muted)";   // lines take their categories' colours, so the key is neutral
   legend.innerHTML =
-    hubItem +
-    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>Engagement →</span>` +
-    `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc};border-top-style:dashed"></span>Awareness →</span>`;
+    catItems +
+    `<span class="legend-divider"></span>` +
+    `<span class="legend-row">` +
+      `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc}"></span>Engaged</span>` +
+      `<span class="legend-item"><span class="legend-swatch" style="border-top-color:${dc};border-top-style:dashed"></span>Aware</span>` +
+    `</span>`;
 }
 
 // --- drag -----------------------------------------------------------------

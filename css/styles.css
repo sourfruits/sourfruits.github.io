@@ -2718,6 +2718,8 @@ a.post-tag:focus-visible { color: var(--ink); }
 }
 .graph-legend:empty { display: none; }
 .legend-item { display: inline-flex; align-items: center; gap: 6px; }
+.legend-row { display: flex; gap: 12px; }
+.legend-divider { border-top: 1px solid var(--line-light); margin: 1px 0; }
 .legend-swatch {
   display: inline-block;
   width: 14px;
@@ -2732,12 +2734,15 @@ a.post-tag:focus-visible { color: var(--ink); }
   border: 2px solid var(--muted);
   border-radius: 50%;
   background: color-mix(in srgb, var(--muted) 22%, var(--bg));
+  box-sizing: border-box;
+  margin: 0 1px;   /* every swatch takes the same 14px, so the names line up */
 }
 /* Collapsed, the legend is a plain 32px button like reset / full screen. */
 .graph-legend-card:not([open]) {
   height: 32px;
   padding: 0 11px;
-  justify-content: center;
+  flex-direction: row;
+  align-items: center;   /* "▸ Legend" sits in the middle of the button */
   box-shadow: none;
 }
 
@@ -2890,6 +2895,7 @@ body.is-graph-faux-fs { overflow: hidden; }
 #graph:active { cursor: grabbing; }
 .grid-dot { fill: var(--grid-dot); }
 .node { cursor: pointer; }
+.node-label .label-year { fill: var(--muted); font-size: 0.85em; }
 .node-label {
   paint-order: stroke;
   /* Halo: a stroke in the canvas colour drawn behind the glyphs, so lines and
