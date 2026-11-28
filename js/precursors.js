@@ -825,7 +825,9 @@ function connectionRowHTML(c) {
   const onward = c.dir === "out" ? (growthById[c.other.id] || 0) : 0;
   // After the title: the target's own downstream count. Both modes prefix it with
   // an arrow — Connections = downstream influence, Discovery = onward discoveries.
-  const onwardText = `→ ${onward}`;
+  const onwardText = currentMode === "discovery"
+    ? `· led to ${onward} more`
+    : `→ ${onward}`;
   const onwardTitle = currentMode === "discovery"
     ? `leads to ${onward} more discover${onward === 1 ? "y" : "ies"} downstream`
     : `${onward} downstream influence${onward === 1 ? "" : "s"}`;
@@ -1000,11 +1002,12 @@ function openDetail(node, event, skipCamera) {
             `<ul class="detail-post-list">${items}</ul></div>`;
   }
 
-  // Fixed footer under the scrolling body: "View in graph →" while the List
-  // view is on, "View in list →" while the graph is (CSS shows one or the other).
-  const foot = `<div class="detail-foot">` +
-    `<button type="button" class="detail-viewgraph">View in graph →</button>` +
-    `<button type="button" class="detail-viewlist">View in list →</button>` +
+  // Fixed footer under the scrolling body: "See in  Timeline  Graph  List",
+  // jumping to this item in another view. CSS hides the view you're already in.
+  const foot = `<div class="detail-foot"><span class="detail-foot-label">See in</span>` +
+    `<button type="button" class="detail-goto" data-goto="timeline">Timeline</button>` +
+    `<button type="button" class="detail-goto" data-goto="graph">Graph</button>` +
+    `<button type="button" class="detail-goto" data-goto="list">List</button>` +
     `</div>`;
   detail.innerHTML = head + `<div class="detail-body">${body}</div>` + foot;
 
@@ -1077,15 +1080,18 @@ if (detail) {
   // as the thread menu). Checked before the node link so a thread sub-line inside
   // a row never falls through to opening a node.
   detail.addEventListener("click", (e) => {
-    if (e.target.closest(".detail-viewgraph")) {
+    const go = e.target.closest(".detail-goto");
+    if (go) {
       const id = detailNodeId;
-      setView("graph");
-      const node = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
-      if (node) openDetail(node);   // re-pans the camera to it
-      return;
-    }
-    if (e.target.closest(".detail-viewlist")) {
-      showInList(detailNodeId);
+      const where = go.dataset.goto;
+      if (where === "list") { showInList(id); return; }
+      setView(where);
+      if (where === "graph") {
+        const node = (simulation ? simulation.nodes().find((n) => n.id === id) : null) || nodeById[id];
+        if (node) openDetail(node);   // re-pans the camera to it
+      } else if (where === "timeline" && typeof timelineReveal === "function") {
+        timelineReveal(id);           // scroll the timeline to it
+      }
       return;
     }
     const threadEl = e.target.closest("[data-thread]");
@@ -2044,7 +2050,7 @@ if (fsBtn) {
 // the Threads menu) and a sort. Threads and the clock are graph-only. Tapping a row
 // opens that item's card in the side panel; the card's "View in graph" flips over.
 // `var` so the hoisted guard in renderList() is safe if it's called early.
-var listState = { view: "graph", category: "all", sort: "recent", collapsedYears: new Set() };   // "recent" = By date (the default)
+var listState = { view: "timeline", category: "all", sort: "recent", collapsedYears: new Set() };   // "recent" = By date (the default)
 
 // The category dropdown is built straight from the `kind` values in
 // precursors.txt — no hand-made grouping to maintain. A new kind (say
@@ -2548,6 +2554,7 @@ Promise.all([
     status.textContent = "";
     buildThreadMenu();
     setMode(currentMode);
+    setView("timeline");   // the page opens on the Timeline view (Graph / List one click away)
   })
   .catch((err) => {
     status.textContent = "Couldn't load the graph. If you opened this file directly, run a local server (see the README).";

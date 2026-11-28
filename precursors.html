@@ -52,8 +52,8 @@
       <!-- Graph / List switch: flips the box between the graph and a ranked,
            filterable list of every item (js/precursors.js, "List view"). -->
       <div class="mode-toggle view-toggle" role="group" aria-label="View">
-        <button type="button" class="view-btn is-active" data-view="graph" aria-pressed="true">Graph</button>
-        <button type="button" class="view-btn" data-view="timeline" aria-pressed="false">Timeline</button>
+        <button type="button" class="view-btn is-active" data-view="timeline" aria-pressed="true">Timeline</button>
+        <button type="button" class="view-btn" data-view="graph" aria-pressed="false">Graph</button>
         <button type="button" class="view-btn" data-view="list" aria-pressed="false">List</button>
       </div>
       <!-- Mode toggle hidden: the page is Discovery-only for now. To bring the
@@ -103,7 +103,7 @@
         <div class="thread-dropdown-menu" id="thread-dropdown-menu" role="group" aria-label="Highlight a thread" hidden></div>
       </div>
       <!-- Timeline scrubber toggle (Discovery only; hidden in Connections). -->
-      <button type="button" class="graph-icon-btn timeline-btn" id="timeline-btn" aria-pressed="false" aria-label="Timeline" title="Timeline">
+      <button type="button" class="graph-icon-btn timeline-btn" id="timeline-btn" aria-pressed="false" aria-label="Play through time" title="Play through time">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="9"></circle>
           <polyline points="12 7 12 12 15 14"></polyline>
@@ -178,16 +178,24 @@
         <ol class="list-rows" id="list-rows"></ol>
       </div>
       <!-- Timeline view: like the list, covers the graph canvas while on, leaving
-           the docked card on the right. Time runs down (newest first), one
-           column per kind, faint lines for each "discovered via" link; hover or
+           the docked card on the right. Time runs left to right (opens at the
+           newest end), one band per kind, faint lines for each "discovered via" link; hover or
            click an entry to light its chain. Built by js/precursors-timeline.js. -->
       <div class="timeline-view" id="timeline-view" hidden>
         <div class="tl-top">
           <div class="tl-trail" id="tl-trail"></div>
+          <span class="tl-key-lines" aria-label="Key">
+            <span><svg width="18" height="6" aria-hidden="true"><line x1="0" y1="3" x2="18" y2="3"/></svg><i class="tl-key-dot" aria-hidden="true"></i>Engaged</span>
+            <span><svg width="18" height="6" aria-hidden="true"><line x1="0" y1="3" x2="18" y2="3" stroke-dasharray="4 4"/></svg><i class="tl-key-dot is-hollow" aria-hidden="true"></i>Aware</span>
+          </span>
           <label class="tl-showall"><input type="checkbox" id="tl-showall"> Show all lines</label>
         </div>
-        <div class="tl-heads" id="tl-heads"></div>
-        <div class="tl-scroll"><div class="tl-canvas" id="tl-canvas"></div></div>
+        <!-- Edge markers for off-screen connections ("← Felix · 2023"), placed by js. -->
+        <div class="tl-edges" id="tl-edges"></div>
+        <div class="tl-scroll" id="tl-scroll">
+          <div class="tl-gutter" id="tl-gutter"></div>
+          <div class="tl-canvas" id="tl-canvas"></div>
+        </div>
       </div>
       <!-- Docked node detail panel (right side); populated by js/precursors.js -->
       <div class="node-detail" id="node-detail"></div>

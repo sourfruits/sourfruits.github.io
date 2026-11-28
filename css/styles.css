@@ -2120,6 +2120,9 @@ a.post-tag:focus-visible { color: var(--ink); }
      controls (Threads + clock) stop just short of the boundary divider rather
      than touching it; tuning is pinned into the card zone. */
   padding: 8px calc(var(--graph-panel-w) + 12px) 8px 12px;
+  /* Same height in every view: the Timeline view hides the Threads / clock /
+     list controls, which would otherwise let the bar shrink a few px. */
+  min-height: 49px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-bottom: none;
@@ -2636,6 +2639,9 @@ a.post-tag:focus-visible { color: var(--ink); }
   cursor: pointer;
 }
 .graph-fs-icon:hover { color: var(--ink); }
+/* Keep full screen available in the Timeline view: same spot as on the
+   graph, just stacked above the timeline panel. */
+.graph-area.in-timeline .graph-fs-icon { z-index: 9; }
 .graph-fs-icon:focus-visible { outline: none; color: var(--ink); }
 
 /* Reset lives at the bottom-right, just to the left of the full-screen button
@@ -2966,31 +2972,36 @@ body.is-graph-faux-fs { overflow: hidden; }
   cursor: pointer;
 }
 .detail-close:hover { color: var(--ink); }
-/* Card footer: pinned under the scrolling body (never scrolls away), holding
-   "View in graph →" in List view or "View in list →" in Graph view. */
+/* Card footer: pinned under the scrolling body (never scrolls away):
+   "See in  Timeline  Graph  List", minus the view you're already in. */
 .detail-foot {
   flex-shrink: 0;
   margin-top: 10px;
   padding-top: 10px;
   border-top: 1px solid var(--line-light);
-  text-align: right;
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 14px;
+  font-family: var(--font-sans);
+  font-size: var(--text-small);
 }
-.detail-viewgraph,
-.detail-viewlist {
+.detail-foot-label { color: var(--muted); margin-right: auto; }
+.detail-goto {
   padding: 0;
   border: none;
   background: none;
-  color: var(--muted);
-  font-family: var(--font-sans);
-  font-size: var(--text-small);
+  color: var(--ink);
+  font: inherit;
   cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
 }
-.detail-viewgraph { display: none; }
-.graph-area.in-list .detail-viewgraph,
-.graph-area.in-timeline .detail-viewgraph { display: inline-block; }
-.graph-area.in-list .detail-viewlist { display: none; }
-.detail-viewgraph:hover,
-.detail-viewlist:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.detail-goto:hover { color: var(--accent); text-decoration-color: currentColor; }
+.graph-area.in-timeline .detail-goto[data-goto="timeline"],
+.graph-area.in-list .detail-goto[data-goto="list"],
+.graph-area:not(.in-timeline):not(.in-list) .detail-goto[data-goto="graph"] { display: none; }
 /* Brief highlight on the row "View in list" jumped to. */
 .list-row.is-flash { background: rgb(from var(--accent) r g b / 0.14); transition: background 0.6s ease; }
 
@@ -3027,10 +3038,12 @@ body.is-graph-faux-fs { overflow: hidden; }
 /* Metadata line — small and muted. */
 .detail-meta-row { color: var(--muted); font-size: var(--text-small); }
 .detail-meta-label { color: var(--muted); }
-/* Personal note as a pull-quote: serif italic, primary text, accent left edge. */
+/* Personal note as a pull-quote: serif italic, primary text, accent left edge.
+   Given a little extra room — it's the nicest thing in the card. */
 .detail-meta-note {
-  margin-top: 10px;
-  padding-left: 12px;
+  margin: 14px 0 6px;
+  padding: 2px 0 2px 14px;
+  line-height: 1.5;
   border-left: 2px solid var(--accent);
   font-family: var(--font-serif);
   font-style: italic;
@@ -3792,7 +3805,8 @@ body.is-graph-faux-fs { overflow: hidden; }
 
 /* ── Timeline view (js/precursors-timeline.js) ─────────────────────────────
    Covers the graph canvas like the list does, leaving the docked card on the
-   right. Entries are HTML buttons over an SVG of faint curved lines; hovering
+   right. Time runs left to right in a sideways-scrolling strip; one band per
+   kind. Entries are HTML buttons over an SVG of faint curved lines; hovering
    or opening an entry lights its chain and fades the rest. */
 .timeline-view {
   position: absolute;
@@ -3804,73 +3818,107 @@ body.is-graph-faux-fs { overflow: hidden; }
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  --tl-lane-0: #8a6fc9;   /* people */
-  --tl-lane-1: #2f9c78;   /* books */
-  --tl-lane-2: #3b82c4;   /* films */
-  --tl-lane-3: #c96a3b;   /* other */
+  --tl-lane-0: #c96a3b;   /* music */
+  --tl-lane-1: #8a6fc9;   /* people and places */
+  --tl-lane-2: #2f9c78;   /* books and writers */
+  --tl-lane-3: #3b82c4;   /* films */
+  --tl-lane-4: #9a958a;   /* other */
 }
 .timeline-view[hidden] { display: none; }
+/* Fixed height on purpose: if this bar grew with a long chain, everything
+   under the cursor would shift and the hover would flicker. */
 .tl-top {
+  flex: none;
+  height: 52px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  padding: 10px 12px 8px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--line-light);
+  overflow: hidden;
 }
 .tl-trail {
   flex: 1 1 auto;
-  min-height: 1.4em;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   font-size: var(--text-small);
   color: var(--ink);
-  line-height: 1.45;
 }
-.tl-trail strong { font-weight: 700; }
+.tl-led { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-chain { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tl-trail-link {
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
+}
+.tl-trail-link:hover { color: var(--accent); text-decoration-color: currentColor; }
+.tl-chain strong { font-weight: 700; }
 .tl-hint { color: var(--muted); }
 .tl-arrow { color: var(--muted); }
-.tl-led { display: block; color: var(--muted); font-size: var(--text-tiny); margin-top: 2px; }
-.tl-showall {
+.tl-led { color: var(--muted); font-size: var(--text-tiny); }
+.tl-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: flex-start;
+}
+/* Band names stay pinned on the left while the strip scrolls sideways. */
+.tl-gutter {
+  position: sticky;
+  left: 0;
+  z-index: 4;
   flex: none;
-  display: inline-flex;
-  align-items: center;
+  width: 118px;
+  background: var(--surface);
+  border-right: 1px solid var(--line-light);
+}
+/* Soft fade just right of the band names, so labels scrolling under them
+   fade out instead of showing clipped fragments. */
+.tl-gutter::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -28px;
+  width: 28px;
+  background: linear-gradient(to right, var(--surface), rgb(from var(--surface) r g b / 0));
+  pointer-events: none;
+}
+.tl-band {
+  position: absolute;
+  left: 10px;
+  right: 6px;
+  display: flex;
+  align-items: flex-start;
+  line-height: 1.25;
   gap: 6px;
   font-family: var(--font-sans);
   font-size: var(--text-tiny);
   color: var(--muted);
-  cursor: pointer;
-  white-space: nowrap;
 }
-.tl-heads {
-  display: grid;
-  padding: 6px 0;
-  font-family: var(--font-sans);
-  font-size: var(--text-tiny);
-  color: var(--muted);
-  border-bottom: 1px solid var(--line-light);
-}
-.tl-heads > span { padding-left: 8px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.tl-key { display: inline-flex; gap: 4px 10px; flex-wrap: wrap; align-items: center; }
-.tl-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; }
-.tl-canvas { position: relative; }
-.tl-lines { position: absolute; top: 0; left: 0; pointer-events: none; }
-.tl-link {
-  fill: none;
-  stroke: var(--muted);
-  stroke-width: 1;
-  opacity: 0.14;
-  transition: opacity 0.15s ease, stroke 0.15s ease;
-}
-.timeline-view.show-all .tl-link { opacity: 0.45; }
-.timeline-view.has-focus .tl-link { opacity: 0.06; }
-.timeline-view .tl-link.is-lit { opacity: 0.95; stroke: var(--accent); stroke-width: 1.8; }
+.tl-canvas { position: relative; flex: none; }
+.tl-lines { position: absolute; top: 0; left: 0; pointer-events: none; z-index: 1; }
+.tl-col { position: absolute; top: 0; pointer-events: none; }
+.tl-col { border-left: 1px solid var(--line-light); }
+.tl-col.is-folded { background: rgb(from var(--ink) r g b / 0.05); }
+.tl-band-rule { position: absolute; left: 0; border-top: 1px dashed var(--line-light); pointer-events: none; }
 .tl-year {
   position: absolute;
-  left: 0;
-  right: 0;
-  height: 34px;
+  top: 0;
+  height: 24px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0 12px;
+  gap: 4px;
+  padding: 0 10px;
   border: none;
   border-bottom: 1px solid var(--line-light);
   background: var(--surface);
@@ -3878,22 +3926,82 @@ body.is-graph-faux-fs { overflow: hidden; }
   font-size: var(--text-small);
   font-weight: 700;
   color: var(--ink);
-  text-align: left;
+  white-space: nowrap;
+  overflow: clip;
   cursor: pointer;
-  z-index: 1;
+  z-index: 3;
 }
-.tl-year-caret { width: 12px; color: var(--muted); font-weight: 400; }
+.tl-year:hover { color: var(--accent); }
+.tl-year-pin {
+  /* Stays at the left edge (just right of the band names) while you scroll
+     through that year, so the strip always says which year you're in. */
+  position: sticky;
+  left: 150px;   /* clear of the band names and their fade */
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tl-year-caret { width: 10px; color: var(--muted); font-weight: 400; }
 .tl-year-count { color: var(--muted); font-weight: 400; font-size: var(--text-tiny); }
-.tl-period { position: absolute; left: 0; right: 0; pointer-events: none; }
-.tl-period.is-alt { background: rgb(from var(--ink) r g b / 0.025); }
-.tl-period-label {
+.tl-month {
   position: absolute;
-  top: 12px;
-  left: 30px;
+  top: 27px;
   font-family: var(--font-sans);
   font-size: var(--text-tiny);
   color: var(--muted);
+  pointer-events: none;
 }
+.tl-foldcount {
+  position: absolute;
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  color: var(--muted);
+  pointer-events: none;
+}
+.tl-link {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1;
+  /* Hidden by default: only the hovered/open entry's links show, in dark
+     ink (not a category colour, so a lit line never reads as "books").
+     "Show all lines" turns every link on as faint background texture. */
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+.timeline-view .tl-link.is-lit { opacity: 0.85; stroke-width: 1.6; }
+/* Two kinds of lit line, so you can tell which way each one goes:
+   came from (into the entry) = dark ink; led to (out of it) = lighter grey. */
+.timeline-view .tl-link.is-in { stroke: var(--ink); opacity: 0.9; stroke-width: 1.8; }
+.timeline-view .tl-link.is-out { stroke: var(--muted); opacity: 0.9; stroke-width: 1.4; }
+.timeline-view .tl-link.is-out { marker-end: url(#tl-arrow-out); }
+/* Connections inside one month are too close for a line to read; the
+   source / led to tags on the entries carry them instead. */
+.timeline-view .tl-link.is-same-month.is-lit { opacity: 0; }
+/* Tags on the selected entry's direct connections. */
+/* Direct connections read as a sentence around the selected entry:
+   "Notes →" (it led here) and "→ White Nights" (this led there). */
+.tl-entry.is-source::after { content: "→"; flex: none; margin-left: 1px; font-weight: 700; color: var(--ink); }
+.tl-entry.is-ledto::before { content: "→"; flex: none; margin-right: -2px; color: var(--muted); }
+.timeline-view .tl-link.is-lineage { opacity: 0.4; stroke-width: 1.3; }
+/* Arrowheads on lit lines show which way a discovery went (source → found). */
+.timeline-view .tl-link.is-lit,
+.timeline-view .tl-link.is-lineage { marker-end: url(#tl-arrow); }
+.tl-arrowhead { fill: var(--ink); }
+.tl-arrowhead.is-out { fill: var(--muted); }
+.tl-key-lines {
+  flex: none;
+  display: inline-flex;
+  gap: 12px;
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.tl-key-lines > span { display: inline-flex; align-items: center; gap: 5px; }
+.tl-key-lines line { stroke: var(--muted); stroke-width: 1.5; }
+/* Aware-only (heard of it, not yet engaged): dashed, like the graph legend. */
+.tl-link.is-aware { stroke-dasharray: 4 4; }
 .tl-entry {
   position: absolute;
   height: 22px;
@@ -3912,24 +4020,93 @@ body.is-graph-faux-fs { overflow: hidden; }
   z-index: 2;
   transition: opacity 0.15s ease;
 }
-.tl-entry:hover, .tl-entry.is-current { background: rgb(from var(--ink) r g b / 0.06); }
+.tl-entry:hover { background: rgb(from var(--ink) r g b / 0.06); }
+/* The selected entry: an outlined pill with a tint, so it's obvious at a glance. */
+.tl-entry.is-current {
+  background: rgb(from var(--ink) r g b / 0.1);
+  outline: 1.5px solid var(--ink);
+  outline-offset: 0;
+  z-index: 3;
+}
+/* A soft halo in the page colour around the letters only: lines still show
+   right up to the text, but never cut through it. */
+.tl-label { text-shadow: 0 0 2px var(--surface), 0 0 2px var(--surface), 0 0 4px var(--surface); }
 .tl-entry.is-current .tl-label { font-weight: 700; }
-.timeline-view.has-focus .tl-entry:not(.is-lit) { opacity: 0.35; }
-.tl-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-entry.is-current .tl-dot { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
+.tl-entry.is-flash { background: rgb(from var(--accent) r g b / 0.22); }
+.timeline-view.has-focus .tl-entry:not(.is-lit):not(.is-lineage) { opacity: 0.4; }
+/* Lineage back to the origin: fully readable, no tint, normal weight — a
+   step softer than direct connections. */
+.timeline-view.has-focus .tl-entry.is-lineage { opacity: 0.9; }
+/* Direct connections of the hovered/open entry: a light tint and a slightly
+   heavier label, so they stand out without the rest having to disappear. */
+.timeline-view.has-focus .tl-entry.is-lit:not(.is-current) { background: rgb(from var(--ink) r g b / 0.05); }
+.timeline-view.has-focus .tl-entry.is-lit .tl-label { font-weight: 600; }
+.tl-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tl-dot {
   flex: none;
   display: inline-block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--tl-lane-3);
+  background: var(--tl-lane-4);
 }
 .lane-0 .tl-dot, .tl-dot.lane-0 { background: var(--tl-lane-0); }
 .lane-1 .tl-dot, .tl-dot.lane-1 { background: var(--tl-lane-1); }
 .lane-2 .tl-dot, .tl-dot.lane-2 { background: var(--tl-lane-2); }
 .lane-3 .tl-dot, .tl-dot.lane-3 { background: var(--tl-lane-3); }
+.lane-4 .tl-dot, .tl-dot.lane-4 { background: var(--tl-lane-4); }
+/* Placed at an aware date (heard of it here; engaged later or not yet):
+   hollow ring in the band's colour instead of a filled dot. */
+.tl-entry.is-aware-pos .tl-dot { background: var(--surface); }
+.lane-0.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-0); }
+.lane-1.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-1); }
+.lane-2.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-2); }
+.lane-3.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-3); }
+.lane-4.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--tl-lane-4); }
+.tl-entry.is-current.is-aware-pos .tl-dot { box-shadow: inset 0 0 0 1.6px var(--ink), 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
+.tl-showall {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+/* "Show all lines": every link shows faintly behind everything. */
+.timeline-view.show-all .tl-link { opacity: 0.16; }
+.timeline-view.show-all.has-focus .tl-link { opacity: 0.07; }
+.tl-key-lines svg { margin-right: -2px; }
+.tl-key-dot { margin-right: 2px; }
+.tl-key-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+.tl-key-dot.is-hollow { background: none; box-shadow: inset 0 0 0 1.6px var(--muted); }
 @media (max-width: 560px) {
   /* Phones: full width until an entry is tapped, like the list. */
   .graph-area:not(.has-detail) .timeline-view { right: 0; }
-  .tl-top { flex-direction: column; gap: 6px; }
+  .tl-key-lines, .tl-showall { display: none; }
 }
+
+/* Off-screen connection markers, pinned to the left/right edge of the strip. */
+.tl-edges { position: relative; height: 0; z-index: 6; }
+.tl-edge {
+  position: absolute;
+  max-width: 220px;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  font-family: var(--font-sans);
+  font-size: var(--text-tiny);
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+.tl-edge:hover { border-color: var(--ink); }
+.tl-edge.is-faint { color: var(--muted); }
+.tl-edge-l { left: 126px; }
+.tl-edge-r { right: 10px; }
