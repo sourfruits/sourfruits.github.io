@@ -4010,6 +4010,8 @@ body.is-graph-faux-fs { overflow: hidden; }
   color: var(--muted);
   pointer-events: none;
 }
+/* Aware lines (heard of it) are dashed, same as on the graph; engaged are solid. */
+.tl-link.is-aware { stroke-dasharray: 5 4; }
 .tl-link {
   fill: none;
   stroke: var(--ink);
